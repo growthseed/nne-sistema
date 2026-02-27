@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:app.reformistas.org.br)",
+      "WebFetch(domain:sdarm.app)",
+      "Bash(dir:*)",
+      "mcp__firecrawl__firecrawl_scrape",
+      "mcp__firecrawl__firecrawl_map",
+      "mcp__firecrawl__firecrawl_extract",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(if not exist \"C:\\\\Users\\\\EFEITO DIGITAL\\\\nne sistema\\\\src\\\\pages\\\\cadastro\\\\steps\" mkdir \"C:\\\\Users\\\\EFEITO DIGITAL\\\\nne sistema\\\\src\\\\pages\\\\cadastro\\\\steps\")",
+      "Bash(python3 -c \" import sys, json for line in sys.stdin: try: obj = json.loads\\(line.strip\\(\\)\\) if obj.get\\(''type''\\) == ''human'': print\\(''USER:'', str\\(obj.get\\(''message'', {}\\).get\\(''content'', ''''\\)\\)[:500]\\) elif obj.get\\(''type''\\) == ''assistant'': content = obj.get\\(''message'', {}\\).get\\(''content'', ''''\\) if isinstance\\(content, list\\): for item in content: if isinstance\\(item, dict\\) and item.get\\(''type''\\) == ''text'': print\\(''ASSISTANT:'', item[''text''][:500]\\) elif isinstance\\(content, str\\): print\\(''ASSISTANT:'', content[:500]\\) except: pass \")",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(echo:*)"
+    ]
+  }
+}
