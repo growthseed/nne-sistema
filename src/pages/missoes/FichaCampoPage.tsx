@@ -275,29 +275,110 @@ export default function FichaCampoPage() {
 
   async function gerarPDF() {
     if (!fichaRef.current) return
-    const canvas = await html2canvas(fichaRef.current, { scale: 2, useCORS: true })
+
+    // Scroll to top to avoid html2canvas viewport issues
+    window.scrollTo(0, 0)
+
+    // Wait a moment for scroll and any rendering to settle
+    await new Promise(resolve => setTimeout(resolve, 300))
+
+    const element = fichaRef.current
+    const elementHeight = element.scrollHeight
+    const elementWidth = element.scrollWidth
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      scrollY: 0,
+      scrollX: 0,
+      windowWidth: elementWidth,
+      windowHeight: elementHeight,
+      height: elementHeight,
+      width: elementWidth,
+      // Ensure the entire element is captured regardless of viewport
+      onclone: (clonedDoc: Document) => {
+        const clonedEl = clonedDoc.querySelector('[data-ficha-ref]') as HTMLElement
+        if (clonedEl) {
+          clonedEl.style.overflow = 'visible'
+          clonedEl.style.height = 'auto'
+        }
+        // Force all images to be visible in the clone
+        const images = clonedDoc.querySelectorAll('img')
+        images.forEach(img => {
+          img.style.display = 'inline-block'
+          img.crossOrigin = 'anonymous'
+        })
+        // Ensure hidden fallback divs are properly handled
+        const hiddenDivs = clonedDoc.querySelectorAll('.hidden')
+        hiddenDivs.forEach(div => {
+          // Keep hidden elements hidden
+          ;(div as HTMLElement).style.display = 'none'
+        })
+      }
+    })
+
     const pdf = new jsPDF('p', 'mm', 'a4')
-    const w = pdf.internal.pageSize.getWidth()
-    const h = (canvas.height * w) / canvas.width
-    // Handle multi-page if content is tall
-    const pageH = pdf.internal.pageSize.getHeight()
-    if (h <= pageH) {
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, h)
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfPageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 5 // mm margin
+
+    const usableWidth = pdfWidth - margin * 2
+    const imgTotalHeight = (canvas.height * usableWidth) / canvas.width
+
+    if (imgTotalHeight <= pdfPageHeight - margin * 2) {
+      // Content fits on a single page
+      pdf.addImage(
+        canvas.toDataURL('image/jpeg', 0.95),
+        'JPEG',
+        margin,
+        margin,
+        usableWidth,
+        imgTotalHeight
+      )
     } else {
+      // Multi-page: slice the canvas into page-sized chunks
+      const usablePageHeight = pdfPageHeight - margin * 2
+      // How many canvas pixels correspond to one PDF page height
+      const pixelsPerPage = (usablePageHeight / usableWidth) * canvas.width
       let yOffset = 0
+      let pageNum = 0
+
       while (yOffset < canvas.height) {
-        const sliceH = Math.min(canvas.height - yOffset, (pageH / w) * canvas.width)
+        if (pageNum > 0) pdf.addPage()
+
+        const sliceH = Math.min(canvas.height - yOffset, pixelsPerPage)
         const sliceCanvas = document.createElement('canvas')
         sliceCanvas.width = canvas.width
         sliceCanvas.height = sliceH
+
         const ctx = sliceCanvas.getContext('2d')!
-        ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH)
-        const imgH = (sliceH * w) / canvas.width
-        pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, w, imgH)
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height)
+        ctx.drawImage(
+          canvas,
+          0, yOffset,              // source x, y
+          canvas.width, sliceH,    // source width, height
+          0, 0,                    // dest x, y
+          canvas.width, sliceH     // dest width, height
+        )
+
+        const sliceImgHeight = (sliceH * usableWidth) / canvas.width
+        pdf.addImage(
+          sliceCanvas.toDataURL('image/jpeg', 0.95),
+          'JPEG',
+          margin,
+          margin,
+          usableWidth,
+          sliceImgHeight
+        )
+
         yOffset += sliceH
-        if (yOffset < canvas.height) pdf.addPage()
+        pageNum++
       }
     }
+
     const safeName = dados?.missionario.nome.replace(/\s+/g, '-') || 'obreiro'
     pdf.save(`ficha-campo-${safeName}-${new Date().toISOString().slice(0, 10)}.pdf`)
   }
@@ -363,7 +444,7 @@ export default function FichaCampoPage() {
       </div>
 
       {/* === FICHA COMPLETA (captured by html2canvas) === */}
-      <div ref={fichaRef} className="bg-white rounded-xl border p-8 space-y-8 print:p-4 print:border-0">
+      <div ref={fichaRef} data-ficha-ref className="bg-white rounded-xl border p-8 space-y-8 print:p-4 print:border-0">
 
         {/* === HEADER UNINORTE === */}
         <div className="border-b-2 pb-6" style={{ borderColor: '#006D43' }}>
@@ -384,9 +465,9 @@ export default function FichaCampoPage() {
               <span className="text-white font-bold text-xl">NNE</span>
             </div>
             <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#006D43' }}>
-              Igreja Adventista do Setimo Dia — Movimento de Reforma
+              Igreja Adventista do Sétimo Dia — Movimento de Reforma
             </p>
-            <p className="text-sm font-semibold text-gray-700 mt-0.5">Uniao Norte Nordeste Brasileira</p>
+            <p className="text-sm font-semibold text-gray-700 mt-0.5">União Norte Nordeste Brasileira</p>
             <div className="flex items-center justify-center gap-3 mt-3">
               <div className="flex-1 max-w-[80px] h-[2px]" style={{ backgroundColor: '#006D43' }} />
               <p className="text-base font-bold tracking-wide" style={{ color: '#006D43' }}>
@@ -395,7 +476,7 @@ export default function FichaCampoPage() {
               <div className="flex-1 max-w-[80px] h-[2px]" style={{ backgroundColor: '#006D43' }} />
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              Quadrienio {new Date().getFullYear()} — {new Date().getFullYear() + 3}
+              Quadriênio {new Date().getFullYear()} — {new Date().getFullYear() + 3}
             </p>
           </div>
 
@@ -668,48 +749,48 @@ export default function FichaCampoPage() {
           </div>
         )}
 
-        {/* === TERMO DE COMPROMISSO MISSIONARIO === */}
+        {/* === TERMO DE COMPROMISSO MISSIONÁRIO === */}
         <div className="mt-10 pt-6 border-t">
           <h2 className="text-lg font-bold text-gray-900 text-center mb-1">
-            TERMO DE COMPROMISSO MISSIONARIO
+            TERMO DE COMPROMISSO MISSIONÁRIO
           </h2>
           <p className="text-sm font-semibold text-gray-700 text-center mb-1">
-            (Quadrienio 2026-2029)
+            (QUADRIÊNIO 2026-2029)
           </p>
           <p className="text-xs text-gray-500 text-center mb-1">
-            Uniao Norte Nordeste dos Adventistas do Setimo Dia — Movimento de Reforma
+            União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de Reforma
           </p>
           <p className="text-sm font-semibold text-gray-800 text-center italic mb-4">
-            &ldquo;Fieis ate o Fim: Gerindo para a Eternidade&rdquo;
+            &ldquo;Féis até o Fim: Gerindo para a Eternidade&rdquo;
           </p>
 
           <div className="bg-gray-50 border-l-4 border-gray-300 p-3 mb-4 rounded-r">
             <p className="text-xs text-gray-600 leading-relaxed italic text-justify">
-              &ldquo;A maior licao que os obreiros tem a aprender e a de sua propria
-              insuficiencia e a necessidade de se entregarem inteiramente a Deus. A
-              religiao de Cristo nao consiste apenas no perdao dos pecados; significa
-              a renovacao do coracao e a conformacao da vida com a vontade de Deus.
+              &ldquo;A maior lição que os obreiros têm a aprender é a de sua própria
+              insuficiência e a necessidade de se entregarem inteiramente a Deus. A
+              religião de Cristo não consiste apenas no perdão dos pecados; significa
+              a renovação do coração e a conformação da vida com a vontade de Deus.
               [...] <strong>A fidelidade nas pequenas coisas, o desempenho dos deveres
-              comuns da vida, requerem esforco e determinacao tanto quanto as maiores
+              comuns da vida, requerem esforço e determinação tanto quanto as maiores
               empresas.</strong>&rdquo;
             </p>
             <p className="text-xs text-gray-500 mt-1 text-right font-medium">
-              — Ellen G. White, <em>Obreiros Evangelicos</em>, pag. 273.
+              — Ellen G. White, <em>Obreiros Evangélicos</em>, pág. 273.
             </p>
           </div>
 
           <p className="text-xs text-gray-700 leading-relaxed text-justify mb-3">
             Eu, <span className="font-bold underline">{m.nome}</span>,
-            diante de Deus e da lideranca desta Uniao, aceito o solene chamado para
-            servir como missionario durante o quadrienio 2026-2029. Compreendo que o
-            servico ao Mestre exige esmero, minudencia e uma busca constante pela
-            excelencia. Inspirado pelo compromisso de nunca me acomodar, assumo como
+            diante de Deus e da liderança desta União, aceito o solene chamado para
+            servir como missionário durante o quadriênio 2026-2029. Compreendo que o
+            serviço ao Mestre exige esmero, minudência e uma busca constante pela
+            excelência. Inspirado pelo compromisso de nunca me acomodar, assumo como
             meu lema pessoal: <strong>&ldquo;EU POSSO FAZER MELHOR&rdquo;</strong>.
           </p>
 
           <p className="text-xs text-gray-700 leading-relaxed text-justify mb-3">
             Pelo presente termo, comprometo-me voluntariamente a pautar meu
-            ministerio sob as seguintes diretrizes fundamentais:
+            ministério sob as seguintes diretrizes fundamentais:
           </p>
 
           <div className="space-y-3 mb-4">
@@ -718,45 +799,45 @@ export default function FichaCampoPage() {
               <p className="text-xs text-gray-700 leading-relaxed text-justify">
                 <strong>Evangelismo Relacional e Cuidado Atencioso:</strong> Dedicar-me-ei ao
                 pastoreio individualizado, realizando o envio de <strong>mensagens
-                semanais</strong> de instrucao e encorajamento a todos os membros,
-                interessados e aniversariantes da minha area de atuacao, zelando
+                semanais</strong> de instrução e encorajamento a todos os membros,
+                interessados e aniversariantes da minha área de atuação, zelando
                 para que cada alma se sinta assistida.
               </p>
             </div>
             <div className="flex gap-2">
               <span className="text-xs font-bold text-gray-800 shrink-0">2.</span>
               <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Edificacao Coletiva pelo Curso Biblico:</strong> Assumo o compromisso
-                de realizar o <strong>Curso Biblico com toda a igreja</strong>, integrando
-                membros e interessados em um estudo profundo e sistematico da
-                verdade presente, fortalecendo a unidade doutrinaria.
+                <strong>Edificação Coletiva pelo Curso Bíblico:</strong> Assumo o compromisso
+                de realizar o <strong>Curso Bíblico com toda a igreja</strong>, integrando
+                membros e interessados em um estudo profundo e sistemático da
+                verdade presente, fortalecendo a unidade doutrinária.
               </p>
             </div>
             <div className="flex gap-2">
               <span className="text-xs font-bold text-gray-800 shrink-0">3.</span>
               <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Classe Biblica Batismal Efetiva:</strong> Manterei a <strong>Classe Biblica
-                Batismal</strong> em funcionamento continuo e ininterrupto, garantindo que
-                seja um ambiente produtivo de preparo espiritual e doutrinario para
+                <strong>Classe Bíblica Batismal Efetiva:</strong> Manterei a <strong>Classe Bíblica
+                Batismal</strong> em funcionamento contínuo e ininterrupto, garantindo que
+                seja um ambiente produtivo de preparo espiritual e doutrinário para
                 os novos conversos.
               </p>
             </div>
             <div className="flex gap-2">
               <span className="text-xs font-bold text-gray-800 shrink-0">4.</span>
               <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Operosidade e Frutificacao (Alvo Batismal):</strong> Empenhar-me-ei,
-                sob a guia do Espirito Santo, para que o trabalho resulte em frutos
-                visiveis para o Reino de Deus, realizando <strong>no minimo um batismo por
+                <strong>Operosidade e Frutificação (Alvo Batismal):</strong> Empenhar-me-ei,
+                sob a guia do Espírito Santo, para que o trabalho resulte em frutos
+                visíveis para o Reino de Deus, realizando <strong>no mínimo um batismo por
                 trimestre</strong>.
               </p>
             </div>
           </div>
 
           <p className="text-xs text-gray-700 leading-relaxed text-justify">
-            Ao assinar este compromisso, declaro minha total submissao as diretrizes
-            da Uniao Norte Nordeste dos Adventistas do Setimo Dia — Movimento de
-            Reforma, reconhecendo que a fidelidade nos pequenos deveres e o que
-            compoe a grande obra da eternidade.
+            Ao assinar este compromisso, declaro minha total submissão às diretrizes
+            da União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de
+            Reforma, reconhecendo que a fidelidade nos pequenos deveres é o que
+            compõe a grande obra da eternidade.
           </p>
         </div>
 
@@ -772,7 +853,7 @@ export default function FichaCampoPage() {
         {/* === SIGNATURE FOOTER (for print/PDF) === */}
         <div className="mt-10 pt-4">
           <div className="grid grid-cols-2 gap-12">
-            {/* Assinatura do Missionario */}
+            {/* Assinatura do Missionário */}
             <div className="text-center">
               <div className="mt-20 mb-1 mx-8 border-t-2 border-gray-500" />
               <p className="font-bold text-gray-900 text-sm">{m.nome}</p>
@@ -781,37 +862,37 @@ export default function FichaCampoPage() {
               </p>
               <p className="text-xs text-gray-400">{m.associacao_nome} ({m.associacao_sigla})</p>
             </div>
-            {/* Assinatura do Representante da Uniao */}
+            {/* Assinatura do Representante da União */}
             <div className="text-center">
               <div className="mt-20 mb-1 mx-8 border-t-2 border-gray-500" />
-              <p className="font-bold text-gray-900 text-sm">Representante da Uniao</p>
-              <p className="text-xs text-gray-500">Uniao Norte Nordeste Brasileira</p>
+              <p className="font-bold text-gray-900 text-sm">Representante da União</p>
+              <p className="text-xs text-gray-500">União Norte Nordeste Brasileira</p>
               <p className="text-xs text-gray-400">IASD — Movimento de Reforma</p>
             </div>
           </div>
 
           {/* Segunda linha de assinaturas */}
           <div className="grid grid-cols-2 gap-12 mt-6">
-            {/* Assinatura do Presidente da Associacao */}
+            {/* Assinatura do Presidente da Associação */}
             <div className="text-center">
               <div className="mt-16 mb-1 mx-8 border-t-2 border-gray-500" />
-              <p className="font-bold text-gray-900 text-sm">Presidente da {m.associacao_sigla || 'Associacao'}</p>
+              <p className="font-bold text-gray-900 text-sm">Presidente da {m.associacao_sigla || 'Associação'}</p>
               <p className="text-xs text-gray-500">{m.associacao_nome}</p>
             </div>
-            {/* Assinatura do Secretario da Associacao */}
+            {/* Assinatura do Secretário da Associação */}
             <div className="text-center">
               <div className="mt-16 mb-1 mx-8 border-t-2 border-gray-500" />
-              <p className="font-bold text-gray-900 text-sm">Secretario da {m.associacao_sigla || 'Associacao'}</p>
+              <p className="font-bold text-gray-900 text-sm">Secretário da {m.associacao_sigla || 'Associação'}</p>
               <p className="text-xs text-gray-500">{m.associacao_nome}</p>
             </div>
           </div>
 
-          {/* Rodape institucional */}
+          {/* Rodapé institucional */}
           <div className="mt-10 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-between text-xs text-gray-400">
               <div>
-                <p className="font-medium text-gray-500">Igreja Adventista do Setimo Dia — Movimento de Reforma</p>
-                <p>Uniao Norte Nordeste Brasileira · NNE Sistema</p>
+                <p className="font-medium text-gray-500">Igreja Adventista do Sétimo Dia — Movimento de Reforma</p>
+                <p>União Norte Nordeste Brasileira · NNE Sistema</p>
               </div>
               <div className="text-right">
                 <p>Documento emitido em{' '}
@@ -822,7 +903,7 @@ export default function FichaCampoPage() {
                     day: 'numeric',
                   })}
                 </p>
-                <p>Quadrienio {new Date().getFullYear()} — {new Date().getFullYear() + 3}</p>
+                <p>Quadriênio {new Date().getFullYear()} — {new Date().getFullYear() + 3}</p>
               </div>
             </div>
           </div>

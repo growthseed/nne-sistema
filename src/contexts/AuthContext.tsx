@@ -56,6 +56,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!error && data) {
       setProfile(data as UserProfile)
+    } else if (error) {
+      // Profile doesn't exist yet in usuarios table - auto-create via RPC
+      console.warn('Perfil não encontrado, tentando criar via ensure_user_profile...')
+      try {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('ensure_user_profile')
+
+        if (!rpcError && rpcData) {
+          console.log('Perfil criado via RPC:', rpcData)
+          setProfile(rpcData as UserProfile)
+        } else {
+          // Fallback: try direct insert (may fail due to RLS)
+          console.warn('RPC falhou, tentando insert direto...', rpcError)
+          const { data: authUser } = await supabase.auth.getUser()
+          const email = authUser?.user?.email || ''
+          const nome = authUser?.user?.user_metadata?.nome || email.split('@')[0] || 'Novo Usuário'
+
+          const { data: newProfile, error: insertError } = await supabase
+            .from('usuarios')
+            .upsert({
+              id: userId,
+              nome,
+              email,
+              papel: 'admin' as UserRole,
+              ativo: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'id' })
+            .select()
+            .single()
+
+          if (!insertError && newProfile) {
+            setProfile(newProfile as UserProfile)
+          } else {
+            console.error('Erro ao criar perfil:', insertError)
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao criar perfil:', err)
+      }
     }
     setLoading(false)
   }
