@@ -215,7 +215,6 @@ export default function DetalheMissionarioPage() {
   const [editFinanceiroData, setEditFinanceiroData] = useState<{
     igreja_id: string; igreja_nome: string; mes: number; ano: number;
     receita_dizimos: number; receita_oferta_regular: number; receita_oferta_especial: number;
-    receita_primicias: number; receita_evangelismo: number;
     dizimo: number; primicias: number; assist_social: number; esc_sabatina: number;
     evangelismo: number; radio_curso_biblico: number; construcao: number; musica: number;
     gratidao_6pct: number; diverso_assoc: number; missoes_mensais: number; missoes_anuais: number;
@@ -282,10 +281,10 @@ export default function DetalheMissionarioPage() {
   async function fetchMissionario() {
     setLoading(true)
     try {
-      // 1. Main missionary data
+      // 1. Main missionary data (with associação join)
       const { data: mData, error: mErr } = await supabase
         .from('missionarios')
-        .select('*, usuario:usuarios(nome, email)')
+        .select('*, usuario:usuarios(nome, email), associacao:associacoes(nome, sigla)')
         .eq('id', id!)
         .single()
       if (mErr) throw mErr
@@ -401,7 +400,7 @@ export default function DetalheMissionarioPage() {
 
     const { data } = await supabase
       .from('dados_financeiros')
-      .select('igreja_id, mes, ano, receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_primicias, dizimo, primicias, assist_social, esc_sabatina, evangelismo, radio_curso_biblico, construcao, musica, gratidao_6pct, diverso_assoc, missoes_mensais, missoes_anuais, of_cultos_construcao, of_missionaria, of_juvenil, of_gratidao_pobres, diversos_local, flores')
+      .select('igreja_id, mes, ano, receita_dizimos, receita_oferta_regular, receita_oferta_especial, dizimo, primicias, assist_social, esc_sabatina, evangelismo, radio_curso_biblico, construcao, musica, gratidao_6pct, diverso_assoc, missoes_mensais, missoes_anuais, of_cultos_construcao, of_missionaria, of_juvenil, of_gratidao_pobres, diversos_local, flores')
       .in('igreja_id', igrejasIds)
       .eq('ano', new Date().getFullYear())
       .order('mes', { ascending: false })
@@ -416,7 +415,7 @@ export default function DetalheMissionarioPage() {
       if (!monthMap[key]) {
         monthMap[key] = { mes: d.mes, ano: d.ano, dizimos: 0, ofertas: 0, total: 0 }
       }
-      const diz = (d.receita_dizimos || 0) + (d.dizimo || 0) + (d.primicias || 0) + (d.receita_primicias || 0)
+      const diz = (d.receita_dizimos || 0) + (d.dizimo || 0) + (d.primicias || 0)
       const ofe = (d.receita_oferta_regular || 0) + (d.receita_oferta_especial || 0)
         + (d.assist_social || 0) + (d.esc_sabatina || 0) + (d.evangelismo || 0)
         + (d.radio_curso_biblico || 0) + (d.construcao || 0) + (d.musica || 0)
@@ -700,13 +699,12 @@ export default function DetalheMissionarioPage() {
   }
 
   async function loadFinanceiroData(mesNum: number, anoNum: number) {
-    const finFields = 'igreja_id, receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_primicias, receita_evangelismo, dizimo, primicias, assist_social, esc_sabatina, evangelismo, radio_curso_biblico, construcao, musica, gratidao_6pct, diverso_assoc, missoes_mensais, missoes_anuais, of_cultos_construcao, of_missionaria, of_juvenil, of_gratidao_pobres, diversos_local, flores'
+    const finFields = 'igreja_id, receita_dizimos, receita_oferta_regular, receita_oferta_especial, dizimo, primicias, assist_social, esc_sabatina, evangelismo, radio_curso_biblico, construcao, musica, gratidao_6pct, diverso_assoc, missoes_mensais, missoes_anuais, of_cultos_construcao, of_missionaria, of_juvenil, of_gratidao_pobres, diversos_local, flores'
 
     // Build one row per church
     const emptyRow = (ig: { id: string; nome: string }) => ({
       igreja_id: ig.id, igreja_nome: ig.nome, mes: mesNum, ano: anoNum,
       receita_dizimos: 0, receita_oferta_regular: 0, receita_oferta_especial: 0,
-      receita_primicias: 0, receita_evangelismo: 0,
       dizimo: 0, primicias: 0, assist_social: 0, esc_sabatina: 0,
       evangelismo: 0, radio_curso_biblico: 0, construcao: 0, musica: 0,
       gratidao_6pct: 0, diverso_assoc: 0, missoes_mensais: 0, missoes_anuais: 0,
@@ -2526,7 +2524,7 @@ export default function DetalheMissionarioPage() {
                 }
                 const fin = (key: string) => (row as any)[key] || 0
                 const totalRow = row.receita_dizimos + row.receita_oferta_regular + row.receita_oferta_especial
-                  + row.receita_primicias + row.dizimo + row.primicias + row.assist_social + row.esc_sabatina
+                  + row.dizimo + row.primicias + row.assist_social + row.esc_sabatina
                   + row.evangelismo + row.radio_curso_biblico + row.construcao + row.musica
                   + row.gratidao_6pct + row.diverso_assoc + row.missoes_mensais + row.missoes_anuais
                   + row.of_cultos_construcao + row.of_missionaria + row.of_juvenil
@@ -2543,7 +2541,6 @@ export default function DetalheMissionarioPage() {
                         { key: 'dizimo', label: 'Dízimo' },
                         { key: 'primicias', label: 'Primícias' },
                         { key: 'receita_dizimos', label: 'Dízimo (legado)' },
-                        { key: 'receita_primicias', label: 'Primícias (legado)' },
                       ].map(f => (
                         <MoneyInput key={f.key} label={f.label} value={fin(f.key)} onChange={v => updateField(f.key, v)} />
                       ))}
@@ -2563,7 +2560,6 @@ export default function DetalheMissionarioPage() {
                         { key: 'diverso_assoc', label: 'Diverso Associação' },
                         { key: 'missoes_mensais', label: 'Missões Mensais' },
                         { key: 'missoes_anuais', label: 'Missões Anuais' },
-                        { key: 'receita_evangelismo', label: 'Evang. (legado)' },
                       ].map(f => (
                         <MoneyInput key={f.key} label={f.label} value={fin(f.key)} onChange={v => updateField(f.key, v)} />
                       ))}
@@ -2680,7 +2676,7 @@ export default function DetalheMissionarioPage() {
                     </tr>
                     <tr>
                       <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Associação:</td>
-                      <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario.associacao as any)?.nome || 'ASPAR'}</td>
+                      <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario.associacao as any)?.nome || '-'}</td>
                       <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Data:</td>
                       <td style={{ padding: '4px 8px', color: '#333' }}>{new Date().toLocaleDateString('pt-BR')}</td>
                     </tr>
