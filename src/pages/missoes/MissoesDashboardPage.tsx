@@ -163,22 +163,19 @@ export default function MissoesDashboardPage() {
   }
 
   async function fetchKPIs() {
-    // Count membros ativos
-    let membrosQuery = supabase
-      .from('pessoas')
-      .select('id', { count: 'exact', head: true })
-      .eq('tipo', 'membro')
-      .eq('situacao', 'ativo')
-    membrosQuery = scopeFilter(membrosQuery)
-    const { count: totalMembros } = await membrosQuery
+    // Count membros ativos and interessados from igrejas table
+    let igrejasCountQuery = supabase
+      .from('igrejas')
+      .select('membros_ativos, interessados')
+    igrejasCountQuery = scopeFilter(igrejasCountQuery)
+    const { data: igrejasCountData } = await igrejasCountQuery
 
-    // Count interessados
-    let interessadosQuery = supabase
-      .from('pessoas')
-      .select('id', { count: 'exact', head: true })
-      .eq('tipo', 'interessado')
-    interessadosQuery = scopeFilter(interessadosQuery)
-    const { count: totalInteressados } = await interessadosQuery
+    let totalMembros = 0
+    let totalInteressados = 0
+    for (const ig of igrejasCountData || []) {
+      totalMembros += ig.membros_ativos || 0
+      totalInteressados += ig.interessados || 0
+    }
 
     // Financeiro do mes atual
     let finQuery = supabase

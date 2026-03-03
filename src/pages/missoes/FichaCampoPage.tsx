@@ -128,7 +128,7 @@ export default function FichaCampoPage() {
       if (igrejaIds.length > 0) {
         const { data: igrejas } = await supabase
           .from('igrejas')
-          .select('id, nome, endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_estado, endereco_cep, telefone')
+          .select('id, nome, endereco_rua, endereco_numero, endereco_bairro, endereco_cidade, endereco_estado, endereco_cep, telefone, membros_ativos, interessados')
           .in('id', igrejaIds)
 
         // Also try junction table for function info
@@ -141,19 +141,9 @@ export default function FichaCampoPage() {
 
         // Get member counts and financial data per church
         for (const ig of igrejas || []) {
-          const { count: membrosCount } = await supabase
-            .from('pessoas')
-            .select('id', { count: 'exact', head: true })
-            .eq('igreja_id', ig.id)
-            .eq('situacao', 'ativo')
-            .eq('tipo', 'membro')
-
-          const { count: intCount } = await supabase
-            .from('pessoas')
-            .select('id', { count: 'exact', head: true })
-            .eq('igreja_id', ig.id)
-            .eq('situacao', 'ativo')
-            .eq('tipo', 'interessado')
+          // Use pre-populated counts from igrejas table
+          const membrosCount = (ig as any).membros_ativos || 0
+          const intCount = (ig as any).interessados || 0
 
           // Financial data per church (current year)
           let igDizimos = 0

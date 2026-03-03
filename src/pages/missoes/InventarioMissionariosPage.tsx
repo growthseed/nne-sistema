@@ -125,34 +125,19 @@ export default function InventarioMissionariosPage() {
       }
       const uniqueIgrejaIds = [...new Set(allIgrejaIds)]
 
-      // 3. Get member counts per church
+      // 3. Get member counts per church from igrejas table
       const memberCounts: Record<string, number> = {}
       const interestCounts: Record<string, number> = {}
       if (uniqueIgrejaIds.length > 0) {
-        for (let i = 0; i < uniqueIgrejaIds.length; i += 20) {
-          const batch = uniqueIgrejaIds.slice(i, i + 20)
-          const { data: membros } = await supabase
-            .from('pessoas')
-            .select('igreja_id')
-            .in('igreja_id', batch)
-            .eq('situacao', 'ativo')
-            .eq('tipo', 'membro')
-          for (const m of membros || []) {
-            if (m.igreja_id) {
-              memberCounts[m.igreja_id] = (memberCounts[m.igreja_id] || 0) + 1
-            }
-          }
-
-          const { data: interessados } = await supabase
-            .from('pessoas')
-            .select('igreja_id')
-            .in('igreja_id', batch)
-            .eq('situacao', 'ativo')
-            .eq('tipo', 'interessado')
-          for (const inter of interessados || []) {
-            if (inter.igreja_id) {
-              interestCounts[inter.igreja_id] = (interestCounts[inter.igreja_id] || 0) + 1
-            }
+        for (let i = 0; i < uniqueIgrejaIds.length; i += 50) {
+          const batch = uniqueIgrejaIds.slice(i, i + 50)
+          const { data: igrejasData } = await supabase
+            .from('igrejas')
+            .select('id, membros_ativos, interessados')
+            .in('id', batch)
+          for (const ig of igrejasData || []) {
+            memberCounts[ig.id] = ig.membros_ativos || 0
+            interestCounts[ig.id] = ig.interessados || 0
           }
         }
       }
