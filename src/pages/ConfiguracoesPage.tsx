@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { UserProfile, UserRole } from '@/types'
-import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX } from 'react-icons/fi'
+import { UserProfile, UserRole, TermoCompromissoContent } from '@/types'
+import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX, FiFileText } from 'react-icons/fi'
+import { DEFAULT_TERMO, invalidateTermoCache } from '@/components/missoes/TermoCompromissoDisplay'
 
 // ========== CONSTANTS ==========
 
-type Tab = 'perfil' | 'usuarios' | 'sobre'
+type Tab = 'perfil' | 'usuarios' | 'documentos' | 'sobre'
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
@@ -52,6 +53,7 @@ export default function ConfiguracoesPage() {
   const tabs: { key: Tab; label: string; icon: typeof FiUser; adminOnly?: boolean }[] = [
     { key: 'perfil', label: 'Meu Perfil', icon: FiUser },
     { key: 'usuarios', label: 'Usuários', icon: FiUsers, adminOnly: true },
+    { key: 'documentos', label: 'Documentos', icon: FiFileText, adminOnly: true },
     { key: 'sobre', label: 'Sobre', icon: FiInfo },
   ]
 
@@ -59,7 +61,7 @@ export default function ConfiguracoesPage() {
 
   // Reset tab if admin-only tab is selected but user is not admin
   useEffect(() => {
-    if (activeTab === 'usuarios' && !isAdmin) {
+    if ((activeTab === 'usuarios' || activeTab === 'documentos') && !isAdmin) {
       setActiveTab('perfil')
     }
   }, [isAdmin, activeTab])
@@ -104,6 +106,7 @@ export default function ConfiguracoesPage() {
       {/* Tab Content */}
       {activeTab === 'perfil' && <MeuPerfilSection />}
       {activeTab === 'usuarios' && isAdmin && <GerenciarUsuariosSection />}
+      {activeTab === 'documentos' && isAdmin && <DocumentosSection />}
       {activeTab === 'sobre' && <SobreSection />}
     </div>
   )
@@ -616,6 +619,290 @@ function GerenciarUsuariosSection() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ========== DOCUMENTOS (Termo de Compromisso) ==========
+
+function DocumentosSection() {
+  const { profile } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [templateId, setTemplateId] = useState<string | null>(null)
+
+  // Termo fields
+  const [lema, setLema] = useState('')
+  const [citacao, setCitacao] = useState('')
+  const [citacaoRef, setCitacaoRef] = useState('')
+  const [declaracaoIntro, setDeclaracaoIntro] = useState('')
+  const [declaracaoCorpo, setDeclaracaoCorpo] = useState('')
+  const [diretrizes, setDiretrizes] = useState<string[]>([''])
+  const [declaracaoFinal, setDeclaracaoFinal] = useState('')
+
+  useEffect(() => {
+    fetchTermo()
+  }, [])
+
+  async function fetchTermo() {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('documento_templates')
+        .select('*')
+        .eq('tipo', 'termo_compromisso')
+        .eq('ativo', true)
+        .single()
+
+      if (!error && data) {
+        setTemplateId(data.id)
+        try {
+          const parsed: TermoCompromissoContent = JSON.parse(data.conteudo)
+          setLema(parsed.lema || '')
+          setCitacao(parsed.citacao || '')
+          setCitacaoRef(parsed.citacao_ref || '')
+          setDeclaracaoIntro(parsed.declaracao_intro || '')
+          setDeclaracaoCorpo(parsed.declaracao_corpo || '')
+          setDiretrizes(parsed.diretrizes?.length ? parsed.diretrizes : [''])
+          setDeclaracaoFinal(parsed.declaracao_final || '')
+        } catch {
+          // If JSON parse fails, load defaults
+          loadDefaults()
+        }
+      } else {
+        // No record found, load defaults
+        loadDefaults()
+      }
+    } catch (err) {
+      console.error('Erro ao buscar termo:', err)
+      loadDefaults()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function loadDefaults() {
+    const d = DEFAULT_TERMO
+    setLema(d.lema)
+    setCitacao(d.citacao)
+    setCitacaoRef(d.citacao_ref)
+    setDeclaracaoIntro(d.declaracao_intro)
+    setDeclaracaoCorpo(d.declaracao_corpo)
+    setDiretrizes(d.diretrizes)
+    setDeclaracaoFinal(d.declaracao_final)
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    setMessage(null)
+
+    const content: TermoCompromissoContent = {
+      lema,
+      citacao,
+      citacao_ref: citacaoRef,
+      declaracao_intro: declaracaoIntro,
+      declaracao_corpo: declaracaoCorpo,
+      diretrizes: diretrizes.filter(d => d.trim()),
+      declaracao_final: declaracaoFinal,
+    }
+
+    try {
+      if (templateId) {
+        const { error } = await supabase
+          .from('documento_templates')
+          .update({
+            conteudo: JSON.stringify(content),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', templateId)
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase
+          .from('documento_templates')
+          .insert({
+            tipo: 'termo_compromisso',
+            titulo: 'TERMO DE COMPROMISSO MISSIONÁRIO (QUADRIÊNIO 2026-2029)',
+            conteudo: JSON.stringify(content),
+            ativo: true,
+            created_by: profile?.id || null,
+          })
+          .select('id')
+          .single()
+        if (error) throw error
+        if (data) setTemplateId(data.id)
+      }
+
+      invalidateTermoCache()
+      setMessage({ type: 'success', text: 'Termo de Compromisso salvo com sucesso!' })
+    } catch (err: any) {
+      console.error('Erro ao salvar termo:', err)
+      setMessage({ type: 'error', text: 'Erro ao salvar. Tente novamente.' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function addDiretriz() {
+    setDiretrizes([...diretrizes, ''])
+  }
+
+  function removeDiretriz(index: number) {
+    setDiretrizes(diretrizes.filter((_, i) => i !== index))
+  }
+
+  function updateDiretriz(index: number, value: string) {
+    const updated = [...diretrizes]
+    updated[index] = value
+    setDiretrizes(updated)
+  }
+
+  if (loading) {
+    return <div className="card text-center text-gray-400 py-8">Carregando documentos...</div>
+  }
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-lg">
+            <FiFileText className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Termo de Compromisso Missionário</h2>
+            <p className="text-sm text-gray-500">Edite o texto que aparece na página e no PDF dos missionários</p>
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          {/* Lema */}
+          <div>
+            <label className="label-field">Lema</label>
+            <input
+              type="text"
+              value={lema}
+              onChange={e => setLema(e.target.value)}
+              className="input-field"
+              placeholder="Ex: Féis até o Fim: Gerindo para a Eternidade"
+            />
+          </div>
+
+          {/* Citação */}
+          <div>
+            <label className="label-field">Citação</label>
+            <textarea
+              value={citacao}
+              onChange={e => setCitacao(e.target.value)}
+              className="input-field min-h-[100px]"
+              placeholder="Texto da citação..."
+            />
+          </div>
+
+          {/* Referência da Citação */}
+          <div>
+            <label className="label-field">Referência da Citação</label>
+            <input
+              type="text"
+              value={citacaoRef}
+              onChange={e => setCitacaoRef(e.target.value)}
+              className="input-field"
+              placeholder="Ex: Ellen G. White, Obreiros Evangélicos, pág. 273."
+            />
+          </div>
+
+          {/* Declaração Intro */}
+          <div>
+            <label className="label-field">Declaração Introdutória</label>
+            <p className="text-xs text-gray-400 mb-1">Aparece após "Eu, [nome do missionário],"</p>
+            <textarea
+              value={declaracaoIntro}
+              onChange={e => setDeclaracaoIntro(e.target.value)}
+              className="input-field min-h-[80px]"
+              placeholder="diante de Deus e da liderança desta União..."
+            />
+          </div>
+
+          {/* Declaração Corpo */}
+          <div>
+            <label className="label-field">Texto de Transição (antes das diretrizes)</label>
+            <textarea
+              value={declaracaoCorpo}
+              onChange={e => setDeclaracaoCorpo(e.target.value)}
+              className="input-field min-h-[60px]"
+              placeholder="Pelo presente termo, comprometo-me..."
+            />
+          </div>
+
+          {/* Diretrizes */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="label-field mb-0">Diretrizes</label>
+              <button
+                type="button"
+                onClick={addDiretriz}
+                className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+              >
+                + Adicionar Diretriz
+              </button>
+            </div>
+            <div className="space-y-3">
+              {diretrizes.map((d, i) => (
+                <div key={i} className="flex gap-2">
+                  <span className="text-sm font-bold text-gray-500 mt-2 shrink-0 w-6">{i + 1}.</span>
+                  <textarea
+                    value={d}
+                    onChange={e => updateDiretriz(i, e.target.value)}
+                    className="input-field min-h-[60px] flex-1"
+                    placeholder={`Diretriz ${i + 1}: Título: Descrição detalhada...`}
+                  />
+                  {diretrizes.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeDiretriz(i)}
+                      className="text-red-400 hover:text-red-600 mt-2 shrink-0"
+                      title="Remover diretriz"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Declaração Final */}
+          <div>
+            <label className="label-field">Declaração Final</label>
+            <textarea
+              value={declaracaoFinal}
+              onChange={e => setDeclaracaoFinal(e.target.value)}
+              className="input-field min-h-[80px]"
+              placeholder="Ao assinar este compromisso..."
+            />
+          </div>
+
+          {/* Message */}
+          {message && (
+            <div
+              className={`text-sm px-4 py-2.5 rounded-lg ${
+                message.type === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          {/* Save */}
+          <div className="pt-2">
+            <button onClick={handleSave} disabled={saving} className="btn-primary inline-flex items-center gap-2">
+              <FiSave className="w-4 h-4" />
+              {saving ? 'Salvando...' : 'Salvar Termo de Compromisso'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

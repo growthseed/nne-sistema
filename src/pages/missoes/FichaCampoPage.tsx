@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { CARGO_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/missoes-constants'
 import type { CargoMinisterial, StatusMissionario } from '@/types'
+import TermoCompromissoDisplay from '@/components/missoes/TermoCompromissoDisplay'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -749,96 +750,9 @@ export default function FichaCampoPage() {
           </div>
         )}
 
-        {/* === TERMO DE COMPROMISSO MISSIONÁRIO === */}
+        {/* === TERMO DE COMPROMISSO MISSIONÁRIO (dinâmico do banco) === */}
         <div className="mt-10 pt-6 border-t">
-          <h2 className="text-lg font-bold text-gray-900 text-center mb-1">
-            TERMO DE COMPROMISSO MISSIONÁRIO
-          </h2>
-          <p className="text-sm font-semibold text-gray-700 text-center mb-1">
-            (QUADRIÊNIO 2026-2029)
-          </p>
-          <p className="text-xs text-gray-500 text-center mb-1">
-            União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de Reforma
-          </p>
-          <p className="text-sm font-semibold text-gray-800 text-center italic mb-4">
-            &ldquo;Féis até o Fim: Gerindo para a Eternidade&rdquo;
-          </p>
-
-          <div className="bg-gray-50 border-l-4 border-gray-300 p-3 mb-4 rounded-r">
-            <p className="text-xs text-gray-600 leading-relaxed italic text-justify">
-              &ldquo;A maior lição que os obreiros têm a aprender é a de sua própria
-              insuficiência e a necessidade de se entregarem inteiramente a Deus. A
-              religião de Cristo não consiste apenas no perdão dos pecados; significa
-              a renovação do coração e a conformação da vida com a vontade de Deus.
-              [...] <strong>A fidelidade nas pequenas coisas, o desempenho dos deveres
-              comuns da vida, requerem esforço e determinação tanto quanto as maiores
-              empresas.</strong>&rdquo;
-            </p>
-            <p className="text-xs text-gray-500 mt-1 text-right font-medium">
-              — Ellen G. White, <em>Obreiros Evangélicos</em>, pág. 273.
-            </p>
-          </div>
-
-          <p className="text-xs text-gray-700 leading-relaxed text-justify mb-3">
-            Eu, <span className="font-bold underline">{m.nome}</span>,
-            diante de Deus e da liderança desta União, aceito o solene chamado para
-            servir como missionário durante o quadriênio 2026-2029. Compreendo que o
-            serviço ao Mestre exige esmero, minudência e uma busca constante pela
-            excelência. Inspirado pelo compromisso de nunca me acomodar, assumo como
-            meu lema pessoal: <strong>&ldquo;EU POSSO FAZER MELHOR&rdquo;</strong>.
-          </p>
-
-          <p className="text-xs text-gray-700 leading-relaxed text-justify mb-3">
-            Pelo presente termo, comprometo-me voluntariamente a pautar meu
-            ministério sob as seguintes diretrizes fundamentais:
-          </p>
-
-          <div className="space-y-3 mb-4">
-            <div className="flex gap-2">
-              <span className="text-xs font-bold text-gray-800 shrink-0">1.</span>
-              <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Evangelismo Relacional e Cuidado Atencioso:</strong> Dedicar-me-ei ao
-                pastoreio individualizado, realizando o envio de <strong>mensagens
-                semanais</strong> de instrução e encorajamento a todos os membros,
-                interessados e aniversariantes da minha área de atuação, zelando
-                para que cada alma se sinta assistida.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <span className="text-xs font-bold text-gray-800 shrink-0">2.</span>
-              <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Edificação Coletiva pelo Curso Bíblico:</strong> Assumo o compromisso
-                de realizar o <strong>Curso Bíblico com toda a igreja</strong>, integrando
-                membros e interessados em um estudo profundo e sistemático da
-                verdade presente, fortalecendo a unidade doutrinária.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <span className="text-xs font-bold text-gray-800 shrink-0">3.</span>
-              <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Classe Bíblica Batismal Efetiva:</strong> Manterei a <strong>Classe Bíblica
-                Batismal</strong> em funcionamento contínuo e ininterrupto, garantindo que
-                seja um ambiente produtivo de preparo espiritual e doutrinário para
-                os novos conversos.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <span className="text-xs font-bold text-gray-800 shrink-0">4.</span>
-              <p className="text-xs text-gray-700 leading-relaxed text-justify">
-                <strong>Operosidade e Frutificação (Alvo Batismal):</strong> Empenhar-me-ei,
-                sob a guia do Espírito Santo, para que o trabalho resulte em frutos
-                visíveis para o Reino de Deus, realizando <strong>no mínimo um batismo por
-                trimestre</strong>.
-              </p>
-            </div>
-          </div>
-
-          <p className="text-xs text-gray-700 leading-relaxed text-justify">
-            Ao assinar este compromisso, declaro minha total submissão às diretrizes
-            da União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de
-            Reforma, reconhecendo que a fidelidade nos pequenos deveres é o que
-            compõe a grande obra da eternidade.
-          </p>
+          <TermoCompromissoDisplay missionarioNome={m.nome} />
         </div>
 
         {/* === LOCAL E DATA === */}

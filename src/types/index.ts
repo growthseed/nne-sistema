@@ -821,6 +821,29 @@ export interface MissionarioParametros {
   updated_at: string
 }
 
+// ============ DOCUMENTO TEMPLATES ============
+
+export interface TermoCompromissoContent {
+  lema: string
+  citacao: string
+  citacao_ref: string
+  declaracao_intro: string
+  declaracao_corpo: string
+  diretrizes: string[]
+  declaracao_final: string
+}
+
+export interface DocumentoTemplate {
+  id: string
+  tipo: string
+  titulo: string
+  conteudo: string // JSON string of TermoCompromissoContent (or other types)
+  ativo: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
 // ============ OFICIAIS DA IGREJA ============
 
 export interface IgrejaOficial {

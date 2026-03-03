@@ -45,6 +45,7 @@ import {
   FiDownload,
   FiChevronDown,
   FiChevronUp,
+  FiSearch,
 } from 'react-icons/fi'
 
 ChartJS.register(
@@ -61,6 +62,64 @@ ChartJS.register(
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { MISSOES_TABS, CARGO_LABELS, STATUS_LABELS, STATUS_COLORS, TIPO_ATIVIDADE_ICONS, TIPO_ATIVIDADE_LABELS, MESES_NOMES, MONTH_LABELS, ORDENACAO_MARCOS, ESCOLARIDADE_OPTIONS, ESTADO_CIVIL_OPTIONS, UF_OPTIONS, SEXO_OPTIONS } from '@/lib/missoes-constants'
+import TermoCompromissoDisplay from '@/components/missoes/TermoCompromissoDisplay'
+
+// ── MoneyInput: handles Brazilian decimal format properly ──
+function MoneyInput({ value, onChange, label }: { value: number; onChange: (v: number) => void; label?: string }) {
+  const [localValue, setLocalValue] = useState(value ? value.toString() : '')
+  const [focused, setFocused] = useState(false)
+
+  // Sync from parent when not focused
+  useEffect(() => {
+    if (!focused) {
+      setLocalValue(value ? value.toString() : '')
+    }
+  }, [value, focused])
+
+  return (
+    <div>
+      {label && <label className="label-field text-xs">{label}</label>}
+      <div className="relative">
+        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">R$</span>
+        <input
+          type="text"
+          inputMode="decimal"
+          className="input-field pl-8"
+          value={focused ? localValue : (value ? value.toFixed(2) : '')}
+          placeholder="0,00"
+          onFocus={() => {
+            setFocused(true)
+            setLocalValue(value ? value.toString() : '')
+          }}
+          onChange={e => {
+            // Allow digits, dots, and commas
+            let raw = e.target.value.replace(/[^0-9.,]/g, '')
+            // Convert comma to dot for calculation
+            setLocalValue(raw)
+            const numStr = raw.replace(',', '.')
+            const num = parseFloat(numStr)
+            if (!isNaN(num)) {
+              onChange(num)
+            } else if (raw === '' || raw === '0') {
+              onChange(0)
+            }
+          }}
+          onBlur={() => {
+            setFocused(false)
+            // Final parse on blur
+            const numStr = localValue.replace(',', '.')
+            const num = parseFloat(numStr)
+            if (!isNaN(num)) {
+              onChange(Math.round(num * 100) / 100)
+            } else {
+              onChange(0)
+            }
+          }}
+        />
+      </div>
+    </div>
+  )
+}
 
 const COLORS = ['#006D43', '#0F3999', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
 const MESES = MESES_NOMES
@@ -140,6 +199,32 @@ export default function DetalheMissionarioPage() {
   const pdfRef = useRef<HTMLDivElement>(null)
   const fotoInputRef = useRef<HTMLInputElement>(null)
   const [uploadingFoto, setUploadingFoto] = useState(false)
+
+  // Editable modals state
+  const [showIgrejasModal, setShowIgrejasModal] = useState(false)
+  const [allIgrejas, setAllIgrejas] = useState<{ id: string; nome: string }[]>([])
+  const [selectedIgrejasIds, setSelectedIgrejasIds] = useState<string[]>([])
+  const [igrejasSearch, setIgrejasSearch] = useState('')
+  const [savingIgrejas, setSavingIgrejas] = useState(false)
+
+  const [showContagensModal, setShowContagensModal] = useState(false)
+  const [editIgrejaContagens, setEditIgrejaContagens] = useState<Record<string, { membros_ativos: number; interessados: number }>>({})
+  const [savingContagens, setSavingContagens] = useState(false)
+
+  const [showFinanceiroModal, setShowFinanceiroModal] = useState(false)
+  const [editFinanceiroData, setEditFinanceiroData] = useState<{
+    igreja_id: string; igreja_nome: string; mes: number; ano: number;
+    receita_dizimos: number; receita_oferta_regular: number; receita_oferta_especial: number;
+    receita_primicias: number; receita_evangelismo: number;
+    dizimo: number; primicias: number; assist_social: number; esc_sabatina: number;
+    evangelismo: number; radio_curso_biblico: number; construcao: number; musica: number;
+    gratidao_6pct: number; diverso_assoc: number; missoes_mensais: number; missoes_anuais: number;
+    of_cultos_construcao: number; of_missionaria: number; of_juvenil: number;
+    of_gratidao_pobres: number; diversos_local: number; flores: number;
+  }[]>([])
+  const [savingFinanceiro, setSavingFinanceiro] = useState(false)
+  const [financeiroMes, setFinanceiroMes] = useState(new Date().getMonth() + 1)
+  const [financeiroAno, setFinanceiroAno] = useState(new Date().getFullYear())
 
   useEffect(() => {
     if (profile && id) fetchMissionario()
@@ -313,15 +398,12 @@ export default function DetalheMissionarioPage() {
 
   async function fetchFinancial(igrejasIds: string[]) {
     if (igrejasIds.length === 0) return
-    const now = new Date()
-    const threeMonthsAgo = new Date()
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 2)
 
     const { data } = await supabase
       .from('dados_financeiros')
-      .select('igreja_id, mes, ano, receita_dizimos, receita_oferta_regular, receita_oferta_especial')
+      .select('igreja_id, mes, ano, receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_primicias, dizimo, primicias, assist_social, esc_sabatina, evangelismo, radio_curso_biblico, construcao, musica, gratidao_6pct, diverso_assoc, missoes_mensais, missoes_anuais, of_cultos_construcao, of_missionaria, of_juvenil, of_gratidao_pobres, diversos_local, flores')
       .in('igreja_id', igrejasIds)
-      .eq('ano', now.getFullYear())
+      .eq('ano', new Date().getFullYear())
       .order('mes', { ascending: false })
       .limit(50)
 
@@ -329,18 +411,24 @@ export default function DetalheMissionarioPage() {
     const monthMap: Record<string, FinancialSummary> = {}
     const igrejaMap: Record<string, { dizimos: number; ofertas: number; total: number }> = {}
     for (const f of data || []) {
-      const key = `${f.ano}-${f.mes}`
+      const d = f as any
+      const key = `${d.ano}-${d.mes}`
       if (!monthMap[key]) {
-        monthMap[key] = { mes: f.mes, ano: f.ano, dizimos: 0, ofertas: 0, total: 0 }
+        monthMap[key] = { mes: d.mes, ano: d.ano, dizimos: 0, ofertas: 0, total: 0 }
       }
-      const diz = f.receita_dizimos || 0
-      const ofe = (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0)
+      const diz = (d.receita_dizimos || 0) + (d.dizimo || 0) + (d.primicias || 0) + (d.receita_primicias || 0)
+      const ofe = (d.receita_oferta_regular || 0) + (d.receita_oferta_especial || 0)
+        + (d.assist_social || 0) + (d.esc_sabatina || 0) + (d.evangelismo || 0)
+        + (d.radio_curso_biblico || 0) + (d.construcao || 0) + (d.musica || 0)
+        + (d.gratidao_6pct || 0) + (d.diverso_assoc || 0) + (d.missoes_mensais || 0) + (d.missoes_anuais || 0)
+        + (d.of_cultos_construcao || 0) + (d.of_missionaria || 0) + (d.of_juvenil || 0)
+        + (d.of_gratidao_pobres || 0) + (d.diversos_local || 0) + (d.flores || 0)
       monthMap[key].dizimos += diz
       monthMap[key].ofertas += ofe
       monthMap[key].total += diz + ofe
 
       // Aggregate by church
-      const igId = f.igreja_id as string
+      const igId = d.igreja_id as string
       if (!igrejaMap[igId]) igrejaMap[igId] = { dizimos: 0, ofertas: 0, total: 0 }
       igrejaMap[igId].dizimos += diz
       igrejaMap[igId].ofertas += ofe
@@ -349,7 +437,7 @@ export default function DetalheMissionarioPage() {
     const sorted = Object.values(monthMap).sort((a, b) =>
       a.ano !== b.ano ? a.ano - b.ano : a.mes - b.mes
     )
-    setFinanceiro(sorted.slice(-3))
+    setFinanceiro(sorted.slice(-6))
     setFinanceiroByIgreja(igrejaMap)
   }
 
@@ -532,6 +620,171 @@ export default function DetalheMissionarioPage() {
       pdf.save(`campo_${nomeArquivo.replace(/\s+/g, '_')}.pdf`)
     } catch (err) {
       console.error('Erro ao gerar PDF:', err)
+    }
+  }
+
+  const isAdmin = profile?.papel === 'admin' || profile?.papel === 'admin_uniao' || profile?.papel === 'admin_associacao'
+
+  // ── Igrejas Modal Functions ──
+  async function openIgrejasModal() {
+    // Fetch all churches for multi-select
+    const { data } = await supabase
+      .from('igrejas')
+      .select('id, nome')
+      .eq('ativo', true)
+      .order('nome')
+    setAllIgrejas(data || [])
+    setSelectedIgrejasIds(missionario?.igrejas_responsavel || [])
+    setIgrejasSearch('')
+    setShowIgrejasModal(true)
+  }
+
+  async function saveIgrejas() {
+    if (!missionario) return
+    setSavingIgrejas(true)
+    try {
+      const { error } = await supabase
+        .from('missionarios')
+        .update({ igrejas_responsavel: selectedIgrejasIds })
+        .eq('id', missionario.id)
+      if (error) throw error
+      setShowIgrejasModal(false)
+      fetchMissionario()
+    } catch (err) {
+      console.error('Erro ao salvar igrejas:', err)
+    } finally {
+      setSavingIgrejas(false)
+    }
+  }
+
+  // ── Contagens Modal Functions ──
+  function openContagensModal() {
+    const contagens: Record<string, { membros_ativos: number; interessados: number }> = {}
+    for (const ig of igrejas) {
+      contagens[ig.id] = {
+        membros_ativos: ig.membros_ativos || 0,
+        interessados: ig.interessados || 0,
+      }
+    }
+    setEditIgrejaContagens(contagens)
+    setShowContagensModal(true)
+  }
+
+  async function saveContagens() {
+    setSavingContagens(true)
+    try {
+      for (const [igId, vals] of Object.entries(editIgrejaContagens)) {
+        await supabase
+          .from('igrejas')
+          .update({ membros_ativos: vals.membros_ativos, interessados: vals.interessados })
+          .eq('id', igId)
+      }
+      setShowContagensModal(false)
+      fetchMissionario()
+    } catch (err) {
+      console.error('Erro ao salvar contagens:', err)
+    } finally {
+      setSavingContagens(false)
+    }
+  }
+
+  // ── Financeiro Modal Functions ──
+  async function openFinanceiroModal(mes?: number, ano?: number) {
+    const mesNum = mes || new Date().getMonth() + 1
+    const anoNum = ano || new Date().getFullYear()
+    setFinanceiroMes(mesNum)
+    setFinanceiroAno(anoNum)
+
+    await loadFinanceiroData(mesNum, anoNum)
+    setShowFinanceiroModal(true)
+  }
+
+  async function loadFinanceiroData(mesNum: number, anoNum: number) {
+    const finFields = 'igreja_id, receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_primicias, receita_evangelismo, dizimo, primicias, assist_social, esc_sabatina, evangelismo, radio_curso_biblico, construcao, musica, gratidao_6pct, diverso_assoc, missoes_mensais, missoes_anuais, of_cultos_construcao, of_missionaria, of_juvenil, of_gratidao_pobres, diversos_local, flores'
+
+    // Build one row per church
+    const emptyRow = (ig: { id: string; nome: string }) => ({
+      igreja_id: ig.id, igreja_nome: ig.nome, mes: mesNum, ano: anoNum,
+      receita_dizimos: 0, receita_oferta_regular: 0, receita_oferta_especial: 0,
+      receita_primicias: 0, receita_evangelismo: 0,
+      dizimo: 0, primicias: 0, assist_social: 0, esc_sabatina: 0,
+      evangelismo: 0, radio_curso_biblico: 0, construcao: 0, musica: 0,
+      gratidao_6pct: 0, diverso_assoc: 0, missoes_mensais: 0, missoes_anuais: 0,
+      of_cultos_construcao: 0, of_missionaria: 0, of_juvenil: 0,
+      of_gratidao_pobres: 0, diversos_local: 0, flores: 0,
+    })
+    const rows = igrejas.map(ig => emptyRow(ig))
+
+    const igIds = igrejas.map(ig => ig.id)
+    if (igIds.length > 0) {
+      const { data } = await supabase
+        .from('dados_financeiros')
+        .select(finFields)
+        .in('igreja_id', igIds)
+        .eq('mes', mesNum)
+        .eq('ano', anoNum)
+
+      if (data) {
+        for (const d of data) {
+          const row = rows.find(r => r.igreja_id === (d as any).igreja_id)
+          if (row) {
+            for (const key of Object.keys(d) as string[]) {
+              if (key !== 'igreja_id' && key in row) {
+                (row as any)[key] = (d as any)[key] || 0
+              }
+            }
+          }
+        }
+      }
+    }
+
+    setEditFinanceiroData(rows)
+  }
+
+  async function saveFinanceiro() {
+    setSavingFinanceiro(true)
+    try {
+      for (const row of editFinanceiroData) {
+        const { igreja_nome, ...payload } = row as any
+        payload.updated_at = new Date().toISOString()
+
+        // Check if record already exists
+        const { data: existing } = await supabase
+          .from('dados_financeiros')
+          .select('id')
+          .eq('igreja_id', payload.igreja_id)
+          .eq('mes', payload.mes)
+          .eq('ano', payload.ano)
+          .maybeSingle()
+
+        if (existing?.id) {
+          // UPDATE existing record
+          const { error } = await supabase
+            .from('dados_financeiros')
+            .update(payload)
+            .eq('id', existing.id)
+          if (error) {
+            console.error('Erro ao atualizar financeiro:', error)
+            alert(`Erro ao salvar ${row.igreja_nome}: ${error.message}`)
+          }
+        } else {
+          // INSERT new record
+          const { error } = await supabase
+            .from('dados_financeiros')
+            .insert(payload)
+          if (error) {
+            console.error('Erro ao inserir financeiro:', error)
+            alert(`Erro ao salvar ${row.igreja_nome}: ${error.message}`)
+          }
+        }
+      }
+      setShowFinanceiroModal(false)
+      fetchMissionario()
+    } catch (err) {
+      console.error('Erro ao salvar financeiro:', err)
+      alert('Erro inesperado ao salvar. Verifique o console.')
+    } finally {
+      setSavingFinanceiro(false)
     }
   }
 
@@ -739,6 +992,11 @@ export default function DetalheMissionarioPage() {
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[missionario.status] || 'bg-gray-100 text-gray-600'}`}>
                 {STATUS_LABELS[missionario.status] || missionario.status}
               </span>
+              {isAdmin && (
+                <button onClick={openEditModal} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-green-600 transition-colors" title="Editar ficha completa">
+                  <FiEdit2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             <p className="text-sm text-green-700 font-medium mb-3">
@@ -1035,7 +1293,7 @@ export default function DetalheMissionarioPage() {
 
           {/* KPI Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-green-100">
                   <FiUsers className="w-5 h-5 text-green-600" />
@@ -1045,8 +1303,13 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Membros Ativos</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={openContagensModal} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600" title="Editar contagens">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-blue-100">
                   <FiUsers className="w-5 h-5 text-blue-600" />
@@ -1056,8 +1319,13 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Interessados</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={openContagensModal} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-blue-600" title="Editar contagens">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-purple-100">
                   <FiMapPin className="w-5 h-5 text-purple-600" />
@@ -1067,8 +1335,13 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Igrejas</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={openIgrejasModal} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-purple-600" title="Editar igrejas">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-emerald-100">
                   <FiDollarSign className="w-5 h-5 text-emerald-600" />
@@ -1082,12 +1355,25 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Receita {new Date().getFullYear()}</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={() => openFinanceiroModal()} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600" title="Editar dados financeiros">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
           {/* Church Cards */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Igrejas do Campo</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Igrejas do Campo</h3>
+              {isAdmin && (
+                <button onClick={openIgrejasModal} className="text-xs text-green-600 hover:text-green-800 flex items-center gap-1 font-medium">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                  Editar Igrejas
+                </button>
+              )}
+            </div>
             {igrejas.length === 0 ? (
               <div className="card text-center py-8">
                 <FiMapPin className="w-8 h-8 text-gray-300 mx-auto mb-2" />
@@ -1155,7 +1441,7 @@ export default function DetalheMissionarioPage() {
                             {igFin && (
                               <>
                                 <div>
-                                  <p className="text-xs text-gray-500">Dízimos ({new Date().getFullYear()})</p>
+                                  <p className="text-xs text-gray-500">Dízimo/Primícia ({new Date().getFullYear()})</p>
                                   <p className="font-semibold text-green-700">R$ {igFin.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
                                 <div>
@@ -1176,22 +1462,35 @@ export default function DetalheMissionarioPage() {
 
           {/* Financial Summary */}
           <div className="card p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-800">
                 <FiDollarSign className="inline w-5 h-5 mr-1" />
                 Resumo Financeiro
               </h3>
+              {isAdmin && (
+                <button onClick={() => openFinanceiroModal()} className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600" title="Editar dados financeiros">
+                  <FiEdit2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
             {financeiro.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Sem dados financeiros disponíveis</div>
+              <div className="p-8 text-center text-gray-500">
+                <p>Sem dados financeiros disponíveis</p>
+                {isAdmin && (
+                  <button onClick={() => openFinanceiroModal()} className="mt-3 text-sm text-green-600 hover:text-green-800 font-medium">
+                    + Adicionar dados financeiros
+                  </button>
+                )}
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
                     <th className="px-4 py-3">Período</th>
-                    <th className="px-4 py-3 text-right">Dízimos</th>
+                    <th className="px-4 py-3 text-right">Dízimo/Primícia</th>
                     <th className="px-4 py-3 text-right">Ofertas</th>
                     <th className="px-4 py-3 text-right">Total</th>
+                    {isAdmin && <th className="px-4 py-3 w-10"></th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -1207,6 +1506,13 @@ export default function DetalheMissionarioPage() {
                       <td className="px-4 py-3 text-right font-medium text-gray-800">
                         R$ {f.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </td>
+                      {isAdmin && (
+                        <td className="px-2 py-3">
+                          <button onClick={() => openFinanceiroModal(f.mes, f.ano)} className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600" title="Editar este mês">
+                            <FiEdit2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -1271,6 +1577,9 @@ export default function DetalheMissionarioPage() {
             )}
           </div>
 
+          {/* Termo de Compromisso (online view) */}
+          <TermoCompromissoDisplay missionarioNome={nomeDisplay} />
+
           {/* Progress Bars (if goals exist) */}
           {currentGoal && (
             <div className="card">
@@ -1310,9 +1619,9 @@ export default function DetalheMissionarioPage() {
       {/* TAB: Campo */}
       {activeTab === 'campo' && (
         <div className="space-y-6">
-          {/* KPI Cards */}
+          {/* KPI Cards with edit buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-green-100">
                   <FiUsers className="w-6 h-6 text-green-600" />
@@ -1322,8 +1631,13 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Membros Ativos</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={openContagensModal} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600" title="Editar">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-blue-100">
                   <FiUsers className="w-6 h-6 text-blue-600" />
@@ -1333,8 +1647,13 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Interessados</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={openContagensModal} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-blue-600" title="Editar">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="card">
+            <div className="card relative">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-purple-100">
                   <FiMapPin className="w-6 h-6 text-purple-600" />
@@ -1344,8 +1663,47 @@ export default function DetalheMissionarioPage() {
                   <p className="text-xs text-gray-500">Igrejas</p>
                 </div>
               </div>
+              {isAdmin && (
+                <button onClick={openIgrejasModal} className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-purple-600" title="Editar igrejas">
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Quick Actions for Admin */}
+          {isAdmin && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <button onClick={openEditModal} className="card hover:shadow-md transition-shadow text-left flex items-center gap-3 cursor-pointer">
+                <div className="p-2 rounded-lg bg-gray-100"><FiUser className="w-5 h-5 text-gray-600" /></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Editar Ficha Biográfica</p>
+                  <p className="text-xs text-gray-500">Dados pessoais, documentos</p>
+                </div>
+              </button>
+              <button onClick={openIgrejasModal} className="card hover:shadow-md transition-shadow text-left flex items-center gap-3 cursor-pointer">
+                <div className="p-2 rounded-lg bg-purple-100"><FiMapPin className="w-5 h-5 text-purple-600" /></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Editar Igrejas</p>
+                  <p className="text-xs text-gray-500">Adicionar/remover igrejas</p>
+                </div>
+              </button>
+              <button onClick={openContagensModal} className="card hover:shadow-md transition-shadow text-left flex items-center gap-3 cursor-pointer">
+                <div className="p-2 rounded-lg bg-blue-100"><FiUsers className="w-5 h-5 text-blue-600" /></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Editar Membros</p>
+                  <p className="text-xs text-gray-500">Membros e interessados</p>
+                </div>
+              </button>
+              <button onClick={() => openFinanceiroModal()} className="card hover:shadow-md transition-shadow text-left flex items-center gap-3 cursor-pointer">
+                <div className="p-2 rounded-lg bg-emerald-100"><FiDollarSign className="w-5 h-5 text-emerald-600" /></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">Editar Financeiro</p>
+                  <p className="text-xs text-gray-500">Dízimos, primícias, ofertas</p>
+                </div>
+              </button>
+            </div>
+          )}
 
           {/* Link to Relatório de Campo */}
           <div className="card text-center py-6">
@@ -1988,6 +2346,263 @@ export default function DetalheMissionarioPage() {
         </div>
       )}
 
+      {/* ── MODAL: Editar Igrejas (Multi-select) ── */}
+      {showIgrejasModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800">Editar Igrejas do Campo</h3>
+              <button onClick={() => setShowIgrejasModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+
+            {/* Search */}
+            <div className="mb-3 relative">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                className="input-field pl-10"
+                placeholder="Buscar igreja..."
+                value={igrejasSearch}
+                onChange={e => setIgrejasSearch(e.target.value)}
+              />
+            </div>
+
+            {/* Selected count */}
+            <p className="text-xs text-gray-500 mb-2">{selectedIgrejasIds.length} igreja(s) selecionada(s)</p>
+
+            {/* Checkboxes */}
+            <div className="max-h-[50vh] overflow-y-auto space-y-1 border rounded-lg p-2">
+              {allIgrejas
+                .filter(ig => !igrejasSearch || ig.nome.toLowerCase().includes(igrejasSearch.toLowerCase()))
+                .map(ig => {
+                  const checked = selectedIgrejasIds.includes(ig.id)
+                  return (
+                    <label key={ig.id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 ${checked ? 'bg-green-50' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          setSelectedIgrejasIds(prev =>
+                            checked ? prev.filter(id => id !== ig.id) : [...prev, ig.id]
+                          )
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-sm text-gray-800">{ig.nome}</span>
+                    </label>
+                  )
+                })}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4">
+              <button onClick={() => setShowIgrejasModal(false)} className="btn-secondary">Cancelar</button>
+              <button onClick={saveIgrejas} disabled={savingIgrejas} className="btn-primary">
+                {savingIgrejas ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Editar Contagens (Membros/Interessados por Igreja) ── */}
+      {showContagensModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800">Editar Membros e Interessados</h3>
+              <button onClick={() => setShowContagensModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+
+            <div className="space-y-4">
+              {igrejas.map(ig => (
+                <fieldset key={ig.id} className="border rounded-lg p-3">
+                  <legend className="text-sm font-semibold text-gray-600 px-1">{ig.nome}</legend>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="label-field text-xs">Membros Ativos</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="input-field"
+                        value={editIgrejaContagens[ig.id]?.membros_ativos ?? 0}
+                        onChange={e => setEditIgrejaContagens(prev => ({
+                          ...prev,
+                          [ig.id]: { ...prev[ig.id], membros_ativos: Number(e.target.value) || 0 }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="label-field text-xs">Interessados</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="input-field"
+                        value={editIgrejaContagens[ig.id]?.interessados ?? 0}
+                        onChange={e => setEditIgrejaContagens(prev => ({
+                          ...prev,
+                          [ig.id]: { ...prev[ig.id], interessados: Number(e.target.value) || 0 }
+                        }))}
+                      />
+                    </div>
+                  </div>
+                </fieldset>
+              ))}
+            </div>
+
+            {igrejas.length === 0 && (
+              <p className="text-center text-gray-400 py-4">Nenhuma igreja vinculada. Adicione igrejas primeiro.</p>
+            )}
+
+            {/* Totals */}
+            {igrejas.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-gray-200 flex justify-between text-sm font-medium text-gray-700">
+                <span>Total: {Object.values(editIgrejaContagens).reduce((s, v) => s + v.membros_ativos, 0)} membros</span>
+                <span>{Object.values(editIgrejaContagens).reduce((s, v) => s + v.interessados, 0)} interessados</span>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button onClick={() => setShowContagensModal(false)} className="btn-secondary">Cancelar</button>
+              <button onClick={saveContagens} disabled={savingContagens} className="btn-primary">
+                {savingContagens ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Editar Dados Financeiros (Completo) ── */}
+      {showFinanceiroModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl my-8">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl z-10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold text-gray-800">Editar Dados Financeiros</h3>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowFinanceiroModal(false)} className="btn-secondary">Cancelar</button>
+                  <button onClick={saveFinanceiro} disabled={savingFinanceiro} className="btn-primary">
+                    {savingFinanceiro ? 'Salvando...' : 'Salvar'}
+                  </button>
+                </div>
+              </div>
+              {/* Month/Year Selector */}
+              <div className="flex items-center gap-3">
+                <select
+                  className="input-field w-auto"
+                  value={financeiroMes}
+                  onChange={async (e) => {
+                    const m = Number(e.target.value)
+                    setFinanceiroMes(m)
+                    await loadFinanceiroData(m, financeiroAno)
+                  }}
+                >
+                  {MESES_NOMES.map((nome, idx) => (
+                    <option key={idx} value={idx + 1}>{nome}</option>
+                  ))}
+                </select>
+                <select
+                  className="input-field w-auto"
+                  value={financeiroAno}
+                  onChange={async (e) => {
+                    const a = Number(e.target.value)
+                    setFinanceiroAno(a)
+                    await loadFinanceiroData(financeiroMes, a)
+                  }}
+                >
+                  {[2024, 2025, 2026, 2027, 2028, 2029].map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+                <span className="text-sm text-gray-500">Selecione o período</span>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {editFinanceiroData.map((row, idx) => {
+                const updateField = (field: string, val: number) => {
+                  const updated = [...editFinanceiroData]
+                  updated[idx] = { ...updated[idx], [field]: val }
+                  setEditFinanceiroData(updated)
+                }
+                const fin = (key: string) => (row as any)[key] || 0
+                const totalRow = row.receita_dizimos + row.receita_oferta_regular + row.receita_oferta_especial
+                  + row.receita_primicias + row.dizimo + row.primicias + row.assist_social + row.esc_sabatina
+                  + row.evangelismo + row.radio_curso_biblico + row.construcao + row.musica
+                  + row.gratidao_6pct + row.diverso_assoc + row.missoes_mensais + row.missoes_anuais
+                  + row.of_cultos_construcao + row.of_missionaria + row.of_juvenil
+                  + row.of_gratidao_pobres + row.diversos_local + row.flores
+
+                return (
+                  <fieldset key={row.igreja_id} className="border border-gray-200 rounded-lg p-4">
+                    <legend className="text-sm font-bold text-green-700 px-2">{row.igreja_nome}</legend>
+
+                    {/* Seção: Dízimos e Primícias */}
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2 mt-1">Dízimos e Primícias</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                      {[
+                        { key: 'dizimo', label: 'Dízimo' },
+                        { key: 'primicias', label: 'Primícias' },
+                        { key: 'receita_dizimos', label: 'Dízimo (legado)' },
+                        { key: 'receita_primicias', label: 'Primícias (legado)' },
+                      ].map(f => (
+                        <MoneyInput key={f.key} label={f.label} value={fin(f.key)} onChange={v => updateField(f.key, v)} />
+                      ))}
+                    </div>
+
+                    {/* Seção: Ofertas para Associação */}
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Ofertas para Associação</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                      {[
+                        { key: 'assist_social', label: 'Assist. Social' },
+                        { key: 'esc_sabatina', label: 'Escola Sabatina' },
+                        { key: 'evangelismo', label: 'Evangelismo' },
+                        { key: 'radio_curso_biblico', label: 'Rádio/Curso Bíblico' },
+                        { key: 'construcao', label: 'Construção' },
+                        { key: 'musica', label: 'Música' },
+                        { key: 'gratidao_6pct', label: 'Gratidão 6%' },
+                        { key: 'diverso_assoc', label: 'Diverso Associação' },
+                        { key: 'missoes_mensais', label: 'Missões Mensais' },
+                        { key: 'missoes_anuais', label: 'Missões Anuais' },
+                        { key: 'receita_evangelismo', label: 'Evang. (legado)' },
+                      ].map(f => (
+                        <MoneyInput key={f.key} label={f.label} value={fin(f.key)} onChange={v => updateField(f.key, v)} />
+                      ))}
+                    </div>
+
+                    {/* Seção: Ofertas Locais */}
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Ofertas Locais</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                      {[
+                        { key: 'receita_oferta_regular', label: 'Oferta Regular' },
+                        { key: 'receita_oferta_especial', label: 'Oferta Especial' },
+                        { key: 'of_cultos_construcao', label: 'Of. Cultos/Construção' },
+                        { key: 'of_missionaria', label: 'Of. Missionária' },
+                        { key: 'of_juvenil', label: 'Of. Juvenil' },
+                        { key: 'of_gratidao_pobres', label: 'Of. Gratidão/Pobres' },
+                        { key: 'diversos_local', label: 'Diversos Local' },
+                        { key: 'flores', label: 'Flores' },
+                      ].map(f => (
+                        <MoneyInput key={f.key} label={f.label} value={fin(f.key)} onChange={v => updateField(f.key, v)} />
+                      ))}
+                    </div>
+
+                    <div className="pt-2 border-t border-gray-100 text-right">
+                      <span className="text-sm font-bold text-green-700">
+                        Total: R$ {totalRow.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </fieldset>
+                )
+              })}
+
+              {editFinanceiroData.length === 0 && (
+                <p className="text-center text-gray-400 py-4">Nenhuma igreja vinculada.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Hidden PDF content (captured by html2canvas) ── */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <div ref={pdfRef} style={{ width: '794px', padding: '40px', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif' }}>
@@ -2140,66 +2755,17 @@ export default function DetalheMissionarioPage() {
             </div>
           )}
 
-          {/* ── TERMO DE COMPROMISSO MISSIONÁRIO ── */}
-          <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #006D43' }}>
-            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', textAlign: 'center', margin: '0 0 4px 0' }}>
-              TERMO DE COMPROMISSO MISSIONÁRIO
-            </p>
-            <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#555', textAlign: 'center', margin: '0 0 2px 0' }}>
-              (QUADRIÊNIO 2026-2029)
-            </p>
-            <p style={{ fontSize: '10px', color: '#666', textAlign: 'center', margin: '0 0 2px 0' }}>
-              União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de Reforma
-            </p>
-            <p style={{ fontSize: '11px', fontWeight: 'bold', fontStyle: 'italic', color: '#333', textAlign: 'center', margin: '0 0 12px 0' }}>
-              &ldquo;Féis até o Fim: Gerindo para a Eternidade&rdquo;
-            </p>
+          {/* ── TERMO DE COMPROMISSO MISSIONÁRIO (dinâmico do banco) ── */}
+          <TermoCompromissoDisplay
+            missionarioNome={(missionario as any)?.usuario?.nome || missionario?.nome || '_______________'}
+            forPdf={true}
+          />
 
-            {/* Citação Ellen G. White */}
-            <div style={{ backgroundColor: '#f8f8f8', borderLeft: '3px solid #999', padding: '10px 12px', marginBottom: '12px', borderRadius: '0 4px 4px 0' }}>
-              <p style={{ fontSize: '9px', color: '#555', lineHeight: '1.5', fontStyle: 'italic', margin: 0, textAlign: 'justify' }}>
-                &ldquo;A maior lição que os obreiros têm a aprender é a de sua própria insuficiência e a necessidade de se entregarem inteiramente a Deus. A religião de Cristo não consiste apenas no perdão dos pecados; significa a renovação do coração e a conformação da vida com a vontade de Deus. [...] A fidelidade nas pequenas coisas, o desempenho dos deveres comuns da vida, requerem esforço e determinação tanto quanto as maiores empresas.&rdquo;
-              </p>
-              <p style={{ fontSize: '9px', color: '#777', margin: '4px 0 0 0', textAlign: 'right', fontWeight: 'bold' }}>
-                — Ellen G. White, Obreiros Evangélicos, pág. 273.
-              </p>
-            </div>
-
-            {/* Declaração */}
-            <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 8px 0' }}>
-              Eu, <strong style={{ textDecoration: 'underline' }}>{(missionario as any)?.usuario?.nome || missionario?.nome || '_______________'}</strong>, diante de Deus e da liderança desta União, aceito o solene chamado para servir como missionário durante o quadriênio 2026-2029. Compreendo que o serviço ao Mestre exige esmero, minudência e uma busca constante pela excelência. Inspirado pelo compromisso de nunca me acomodar, assumo como meu lema pessoal: <strong>&ldquo;EU POSSO FAZER MELHOR&rdquo;</strong>.
-            </p>
-
-            <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 8px 0' }}>
-              Pelo presente termo, comprometo-me voluntariamente a pautar meu ministério sob as seguintes diretrizes fundamentais:
-            </p>
-
-            {/* Diretrizes */}
-            <div style={{ margin: '0 0 8px 8px' }}>
-              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
-                <strong>1. Evangelismo Relacional e Cuidado Atencioso:</strong> Dedicar-me-ei ao pastoreio individualizado, realizando o envio de <strong>mensagens semanais</strong> de instrução e encorajamento a todos os membros, interessados e aniversariantes da minha área de atuação, zelando para que cada alma se sinta assistida.
-              </p>
-              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
-                <strong>2. Edificação Coletiva pelo Curso Bíblico:</strong> Assumo o compromisso de realizar o <strong>Curso Bíblico com toda a igreja</strong>, integrando membros e interessados em um estudo profundo e sistemático da verdade presente, fortalecendo a unidade doutrinária.
-              </p>
-              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
-                <strong>3. Classe Bíblica Batismal Efetiva:</strong> Manterei a <strong>Classe Bíblica Batismal</strong> em funcionamento contínuo e ininterrupto, garantindo que seja um ambiente produtivo de preparo espiritual e doutrinário para os novos conversos.
-              </p>
-              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
-                <strong>4. Operosidade e Frutificação (Alvo Batismal):</strong> Empenhar-me-ei, sob a guia do Espírito Santo, para que o trabalho resulte em frutos visíveis para o Reino de Deus, realizando <strong>no mínimo um batismo por trimestre</strong>.
-              </p>
-            </div>
-
-            <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 16px 0' }}>
-              Ao assinar este compromisso, declaro minha total submissão às diretrizes da União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de Reforma, reconhecendo que a fidelidade nos pequenos deveres é o que compõe a grande obra da eternidade.
-            </p>
-
-            {/* Local e Data */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '40px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap' }}>Local e Data:</span>
-              <span style={{ flex: 1, borderBottom: '1px solid #333', minHeight: '18px' }}>&nbsp;</span>
-              <span style={{ fontSize: '11px', color: '#999', whiteSpace: 'nowrap' }}>,&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-            </div>
+          {/* Local e Data */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '40px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap' }}>Local e Data:</span>
+            <span style={{ flex: 1, borderBottom: '1px solid #333', minHeight: '18px' }}>&nbsp;</span>
+            <span style={{ fontSize: '11px', color: '#999', whiteSpace: 'nowrap' }}>,&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
           </div>
 
           {/* ── Signatures (4 campos) ── */}
