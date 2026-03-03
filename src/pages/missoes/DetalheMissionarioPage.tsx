@@ -445,6 +445,33 @@ export default function DetalheMissionarioPage() {
     if (!pdfRef.current || !missionario) return
     try {
       const element = pdfRef.current
+
+      // Pre-load all images inside the PDF element to ensure they render
+      const images = element.querySelectorAll('img')
+      await Promise.all(
+        Array.from(images).map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              if (img.complete && img.naturalHeight > 0) {
+                resolve()
+              } else {
+                img.onload = () => resolve()
+                img.onerror = () => resolve()
+                // Force reload with crossOrigin
+                if (img.src && !img.crossOrigin) {
+                  img.crossOrigin = 'anonymous'
+                  const src = img.src
+                  img.src = ''
+                  img.src = src
+                }
+              }
+            })
+        )
+      )
+
+      // Small delay to ensure images are painted
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
@@ -455,6 +482,13 @@ export default function DetalheMissionarioPage() {
         width: element.scrollWidth,
         windowHeight: element.scrollHeight,
         windowWidth: element.scrollWidth,
+        onclone: (clonedDoc: Document) => {
+          // Ensure all images in clone have crossOrigin set
+          const imgs = clonedDoc.querySelectorAll('img')
+          imgs.forEach(img => {
+            img.crossOrigin = 'anonymous'
+          })
+        },
       })
 
       const pdf = new jsPDF('p', 'mm', 'a4')
@@ -1957,10 +1991,22 @@ export default function DetalheMissionarioPage() {
       {/* ── Hidden PDF content (captured by html2canvas) ── */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <div ref={pdfRef} style={{ width: '794px', padding: '40px', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif' }}>
-          {/* Header UNINORTE */}
+          {/* Header UNINORTE com logo oficial */}
           <div style={{ borderBottom: '3px solid #006D43', paddingBottom: '16px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#006D43', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>
+              <img
+                src="/img/logo-nne.png"
+                alt="Logo NNE"
+                crossOrigin="anonymous"
+                style={{ height: '50px', width: 'auto', objectFit: 'contain' }}
+                onError={(e) => {
+                  // Fallback to NNE circle if image fails
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                  if (target.nextElementSibling) (target.nextElementSibling as HTMLElement).style.display = 'flex'
+                }}
+              />
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#006D43', display: 'none', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>
                 NNE
               </div>
               <div>
@@ -1971,25 +2017,61 @@ export default function DetalheMissionarioPage() {
             <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', marginTop: '12px', textAlign: 'center' }}>RELATÓRIO DO CAMPO MISSIONÁRIO</p>
           </div>
 
-          {/* Missionary Data */}
+          {/* Missionary Data com foto */}
           {missionario && (
             <div style={{ marginBottom: '20px' }}>
-              <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555', width: '120px' }}>Missionário:</td>
-                    <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario as any).usuario?.nome || missionario.nome || '-'}</td>
-                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555', width: '80px' }}>Cargo:</td>
-                    <td style={{ padding: '4px 8px', color: '#333' }}>{CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial || '-'}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Associação:</td>
-                    <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario.associacao as any)?.nome || 'ASPAR'}</td>
-                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Data:</td>
-                    <td style={{ padding: '4px 8px', color: '#333' }}>{new Date().toLocaleDateString('pt-BR')}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                {/* Foto do missionário */}
+                <div style={{ flexShrink: 0 }}>
+                  {missionario.foto_url ? (
+                    <img
+                      src={missionario.foto_url}
+                      alt={(missionario as any).usuario?.nome || missionario.nome || ''}
+                      crossOrigin="anonymous"
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid #e0f2e9',
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      backgroundColor: '#006D43',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '3px solid #e0f2e9',
+                    }}>
+                      <span style={{ color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>
+                        {((missionario as any).usuario?.nome || missionario.nome || '??')
+                          .split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0].toUpperCase()).join('')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* Dados do missionário */}
+                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555', width: '120px' }}>Missionário:</td>
+                      <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario as any).usuario?.nome || missionario.nome || '-'}</td>
+                      <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555', width: '80px' }}>Cargo:</td>
+                      <td style={{ padding: '4px 8px', color: '#333' }}>{CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial || '-'}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Associação:</td>
+                      <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario.associacao as any)?.nome || 'ASPAR'}</td>
+                      <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Data:</td>
+                      <td style={{ padding: '4px 8px', color: '#333' }}>{new Date().toLocaleDateString('pt-BR')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
