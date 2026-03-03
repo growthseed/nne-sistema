@@ -444,27 +444,56 @@ export default function DetalheMissionarioPage() {
   async function generatePDF() {
     if (!pdfRef.current || !missionario) return
     try {
-      const canvas = await html2canvas(pdfRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const imgWidth = 210
-      const pageHeight = 297
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      const element = pdfRef.current
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        height: element.scrollHeight,
+        width: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        windowWidth: element.scrollWidth,
+      })
 
-      if (imgHeight <= pageHeight) {
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight)
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfPageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 5
+      const usableWidth = pdfWidth - margin * 2
+      const imgTotalHeight = (canvas.height * usableWidth) / canvas.width
+
+      if (imgTotalHeight <= pdfPageHeight - margin * 2) {
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableWidth, imgTotalHeight)
       } else {
-        // Multi-page
-        let heightLeft = imgHeight
-        let position = 0
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-        while (heightLeft > 0) {
-          position -= pageHeight
-          pdf.addPage()
-          pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight)
-          heightLeft -= pageHeight
+        // Multi-page: slice the canvas into page-sized chunks
+        const usablePageHeight = pdfPageHeight - margin * 2
+        const pixelsPerPage = (usablePageHeight / usableWidth) * canvas.width
+        let yOffset = 0
+        let pageNum = 0
+
+        while (yOffset < canvas.height) {
+          if (pageNum > 0) pdf.addPage()
+
+          const sliceH = Math.min(canvas.height - yOffset, pixelsPerPage)
+          const sliceCanvas = document.createElement('canvas')
+          sliceCanvas.width = canvas.width
+          sliceCanvas.height = sliceH
+
+          const ctx = sliceCanvas.getContext('2d')!
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height)
+          ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH)
+
+          const sliceImgHeight = (sliceH * usableWidth) / canvas.width
+          pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableWidth, sliceImgHeight)
+
+          yOffset += sliceH
+          pageNum++
         }
       }
+
       const nomeArquivo = (missionario as any).usuario?.nome || missionario.nome || 'missionario'
       pdf.save(`campo_${nomeArquivo.replace(/\s+/g, '_')}.pdf`)
     } catch (err) {
@@ -2029,19 +2058,115 @@ export default function DetalheMissionarioPage() {
             </div>
           )}
 
-          {/* Signatures */}
-          <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'space-between', gap: '40px' }}>
+          {/* ── TERMO DE COMPROMISSO MISSIONÁRIO ── */}
+          <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #006D43' }}>
+            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', textAlign: 'center', margin: '0 0 4px 0' }}>
+              TERMO DE COMPROMISSO MISSIONÁRIO
+            </p>
+            <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#555', textAlign: 'center', margin: '0 0 2px 0' }}>
+              (QUADRIÊNIO 2026-2029)
+            </p>
+            <p style={{ fontSize: '10px', color: '#666', textAlign: 'center', margin: '0 0 2px 0' }}>
+              União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de Reforma
+            </p>
+            <p style={{ fontSize: '11px', fontWeight: 'bold', fontStyle: 'italic', color: '#333', textAlign: 'center', margin: '0 0 12px 0' }}>
+              &ldquo;Féis até o Fim: Gerindo para a Eternidade&rdquo;
+            </p>
+
+            {/* Citação Ellen G. White */}
+            <div style={{ backgroundColor: '#f8f8f8', borderLeft: '3px solid #999', padding: '10px 12px', marginBottom: '12px', borderRadius: '0 4px 4px 0' }}>
+              <p style={{ fontSize: '9px', color: '#555', lineHeight: '1.5', fontStyle: 'italic', margin: 0, textAlign: 'justify' }}>
+                &ldquo;A maior lição que os obreiros têm a aprender é a de sua própria insuficiência e a necessidade de se entregarem inteiramente a Deus. A religião de Cristo não consiste apenas no perdão dos pecados; significa a renovação do coração e a conformação da vida com a vontade de Deus. [...] A fidelidade nas pequenas coisas, o desempenho dos deveres comuns da vida, requerem esforço e determinação tanto quanto as maiores empresas.&rdquo;
+              </p>
+              <p style={{ fontSize: '9px', color: '#777', margin: '4px 0 0 0', textAlign: 'right', fontWeight: 'bold' }}>
+                — Ellen G. White, Obreiros Evangélicos, pág. 273.
+              </p>
+            </div>
+
+            {/* Declaração */}
+            <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 8px 0' }}>
+              Eu, <strong style={{ textDecoration: 'underline' }}>{(missionario as any)?.usuario?.nome || missionario?.nome || '_______________'}</strong>, diante de Deus e da liderança desta União, aceito o solene chamado para servir como missionário durante o quadriênio 2026-2029. Compreendo que o serviço ao Mestre exige esmero, minudência e uma busca constante pela excelência. Inspirado pelo compromisso de nunca me acomodar, assumo como meu lema pessoal: <strong>&ldquo;EU POSSO FAZER MELHOR&rdquo;</strong>.
+            </p>
+
+            <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 8px 0' }}>
+              Pelo presente termo, comprometo-me voluntariamente a pautar meu ministério sob as seguintes diretrizes fundamentais:
+            </p>
+
+            {/* Diretrizes */}
+            <div style={{ margin: '0 0 8px 8px' }}>
+              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
+                <strong>1. Evangelismo Relacional e Cuidado Atencioso:</strong> Dedicar-me-ei ao pastoreio individualizado, realizando o envio de <strong>mensagens semanais</strong> de instrução e encorajamento a todos os membros, interessados e aniversariantes da minha área de atuação, zelando para que cada alma se sinta assistida.
+              </p>
+              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
+                <strong>2. Edificação Coletiva pelo Curso Bíblico:</strong> Assumo o compromisso de realizar o <strong>Curso Bíblico com toda a igreja</strong>, integrando membros e interessados em um estudo profundo e sistemático da verdade presente, fortalecendo a unidade doutrinária.
+              </p>
+              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
+                <strong>3. Classe Bíblica Batismal Efetiva:</strong> Manterei a <strong>Classe Bíblica Batismal</strong> em funcionamento contínuo e ininterrupto, garantindo que seja um ambiente produtivo de preparo espiritual e doutrinário para os novos conversos.
+              </p>
+              <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 6px 0' }}>
+                <strong>4. Operosidade e Frutificação (Alvo Batismal):</strong> Empenhar-me-ei, sob a guia do Espírito Santo, para que o trabalho resulte em frutos visíveis para o Reino de Deus, realizando <strong>no mínimo um batismo por trimestre</strong>.
+              </p>
+            </div>
+
+            <p style={{ fontSize: '10px', color: '#333', lineHeight: '1.6', textAlign: 'justify', margin: '0 0 16px 0' }}>
+              Ao assinar este compromisso, declaro minha total submissão às diretrizes da União Norte Nordeste dos Adventistas do Sétimo Dia — Movimento de Reforma, reconhecendo que a fidelidade nos pequenos deveres é o que compõe a grande obra da eternidade.
+            </p>
+
+            {/* Local e Data */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '40px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap' }}>Local e Data:</span>
+              <span style={{ flex: 1, borderBottom: '1px solid #333', minHeight: '18px' }}>&nbsp;</span>
+              <span style={{ fontSize: '11px', color: '#999', whiteSpace: 'nowrap' }}>,&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
+          </div>
+
+          {/* ── Signatures (4 campos) ── */}
+          <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'space-between', gap: '40px' }}>
+            {/* Assinatura do Missionário */}
             <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ borderTop: '1px solid #333', paddingTop: '8px' }}>
+              <div style={{ borderTop: '1px solid #333', paddingTop: '8px', marginTop: '60px' }}>
                 <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>{(missionario as any)?.usuario?.nome || missionario?.nome || 'Missionário'}</p>
                 <p style={{ fontSize: '10px', color: '#666', margin: '2px 0 0 0' }}>{missionario ? (CARGO_LABELS[missionario.cargo_ministerial] || 'Missionário') : 'Missionário'}</p>
+                <p style={{ fontSize: '9px', color: '#999', margin: '2px 0 0 0' }}>{(missionario?.associacao as any)?.nome || ''}</p>
               </div>
             </div>
+            {/* Assinatura do Representante da União */}
             <div style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ borderTop: '1px solid #333', paddingTop: '8px' }}>
-                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>Presidente da União</p>
+              <div style={{ borderTop: '1px solid #333', paddingTop: '8px', marginTop: '60px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>Representante da União</p>
                 <p style={{ fontSize: '10px', color: '#666', margin: '2px 0 0 0' }}>União Norte Nordeste Brasileira</p>
+                <p style={{ fontSize: '9px', color: '#999', margin: '2px 0 0 0' }}>IASD — Movimento de Reforma</p>
               </div>
+            </div>
+          </div>
+
+          {/* Segunda linha de assinaturas */}
+          <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', gap: '40px' }}>
+            {/* Assinatura do Presidente da Associação */}
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ borderTop: '1px solid #333', paddingTop: '8px', marginTop: '40px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>Presidente da {(missionario?.associacao as any)?.sigla || 'Associação'}</p>
+                <p style={{ fontSize: '10px', color: '#666', margin: '2px 0 0 0' }}>{(missionario?.associacao as any)?.nome || ''}</p>
+              </div>
+            </div>
+            {/* Assinatura do Secretário da Associação */}
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ borderTop: '1px solid #333', paddingTop: '8px', marginTop: '40px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>Secretário da {(missionario?.associacao as any)?.sigla || 'Associação'}</p>
+                <p style={{ fontSize: '10px', color: '#666', margin: '2px 0 0 0' }}>{(missionario?.associacao as any)?.nome || ''}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Rodapé institucional */}
+          <div style={{ marginTop: '30px', paddingTop: '10px', borderTop: '1px solid #ddd', display: 'flex', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#666', margin: 0 }}>Igreja Adventista do Sétimo Dia — Movimento de Reforma</p>
+              <p style={{ fontSize: '9px', color: '#999', margin: '2px 0 0 0' }}>União Norte Nordeste Brasileira · NNE Sistema</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '9px', color: '#999', margin: 0 }}>Documento emitido em {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style={{ fontSize: '9px', color: '#999', margin: '2px 0 0 0' }}>Quadriênio {new Date().getFullYear()} — {new Date().getFullYear() + 3}</p>
             </div>
           </div>
         </div>
