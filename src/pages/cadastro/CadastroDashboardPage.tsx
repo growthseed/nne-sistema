@@ -27,6 +27,7 @@ import {
   HiOutlineEye,
   HiOutlineFilter,
   HiOutlineSearch,
+  HiOutlineDownload,
 } from 'react-icons/hi'
 
 ChartJS.register(
@@ -132,6 +133,47 @@ export default function CadastroDashboardPage() {
     navigator.clipboard.writeText(publicUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // ========== EXPORT CSV ==========
+  function exportCSV(rows: CadastroRow[], filename: string) {
+    const headers = [
+      'Nome', 'Email', 'Telefone', 'Data Nascimento', 'Sexo', 'Estado Civil',
+      'Escolaridade', 'Profissão', 'Cidade', 'Estado', 'CEP',
+      'Como Conheceu', 'Tempo Membro', 'Distância Igreja', 'Meio Transporte',
+      'Cargos', 'Pontos Fortes', 'Pontos Fracos', 'Prioridades',
+      'Satisfação', 'Participação', 'Opinião Departamentos',
+      'Etapa Atual', 'Completo', 'Data Resposta'
+    ]
+    const csvRows = [headers.join(';')]
+    for (const r of rows) {
+      const vals = [
+        r.nome || '', r.email || '', r.telefone || '', r.data_nascimento || '',
+        r.sexo || '', r.estado_civil || '', r.escolaridade || '', r.profissao || '',
+        r.cidade || '', r.estado || '', '',
+        r.como_conheceu || '', r.tempo_membro || '', r.distancia_igreja || '',
+        r.meio_transporte || '',
+        (r.cargos_ocupa || []).join(', '),
+        (r.pontos_fortes || []).join(', '),
+        (r.pontos_fracos || []).join(', '),
+        (r.prioridades || []).join(', '),
+        r.satisfacao ? JSON.stringify(r.satisfacao) : '',
+        r.participacao ? JSON.stringify(r.participacao) : '',
+        r.opiniao_departamentos || '',
+        String(r.etapa_atual),
+        r.completo ? 'Sim' : 'Não',
+        new Date(r.created_at).toLocaleDateString('pt-BR')
+      ]
+      csvRows.push(vals.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'))
+    }
+    const bom = '\uFEFF'
+    const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   // ========== FILTERED DATA ==========
@@ -598,6 +640,16 @@ export default function CadastroDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h3 className="text-base font-semibold text-gray-800">Respostas ({filteredRespostas.length})</h3>
             <div className="flex items-center gap-3">
+              {/* Export CSV */}
+              <button
+                onClick={() => exportCSV(filteredRespostas, `pesquisa_respostas_${tabFilter}_${new Date().toISOString().slice(0,10)}.csv`)}
+                disabled={filteredRespostas.length === 0}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Exportar CSV"
+              >
+                <HiOutlineDownload className="w-4 h-4" />
+                Exportar CSV
+              </button>
               {/* Search */}
               <div className="relative">
                 <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

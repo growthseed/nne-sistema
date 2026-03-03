@@ -17,6 +17,8 @@ import {
   FiChevronUp,
   FiChevronDown,
   FiSearch,
+  FiFileText,
+  FiDollarSign,
 } from 'react-icons/fi'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -24,8 +26,21 @@ import * as XLSX from 'xlsx'
 
 import { MISSOES_TABS, CARGO_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/missoes-constants'
 
-type SortField = 'nome' | 'cargo_ministerial' | 'associacao_nome' | 'total_igrejas' | 'total_membros' | 'media_estudos' | 'media_visitas' | 'dizimos_total' | 'classes_batismais_ativas' | 'kpi_score'
+type SortField = 'nome' | 'cargo_ministerial' | 'total_igrejas' | 'total_membros' | 'dizimos_total' | 'kpi_score'
 type SortDir = 'asc' | 'desc'
+
+interface GrupoAssociacao {
+  associacao_id: string
+  associacao_nome: string
+  associacao_sigla: string
+  missionarios: InventarioCampo[]
+  totais: {
+    membros: number
+    igrejas: number
+    dizimos: number
+    por_cargo: Record<string, number>
+  }
+}
 
 export default function InventarioMissionariosPage() {
   const { profile } = useAuth()
@@ -43,8 +58,11 @@ export default function InventarioMissionariosPage() {
   const [busca, setBusca] = useState('')
 
   // Sort
-  const [sortField, setSortField] = useState<SortField>('kpi_score')
-  const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [sortField, setSortField] = useState<SortField>('nome')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
+
+  // Accordion state
+  const [expandidos, setExpandidos] = useState<Record<string, boolean>>({})
 
   const [searchParams] = useSearchParams()
 
@@ -111,7 +129,6 @@ export default function InventarioMissionariosPage() {
       const memberCounts: Record<string, number> = {}
       const interestCounts: Record<string, number> = {}
       if (uniqueIgrejaIds.length > 0) {
-        // Fetch active members per church in batches
         for (let i = 0; i < uniqueIgrejaIds.length; i += 20) {
           const batch = uniqueIgrejaIds.slice(i, i + 20)
           const { data: membros } = await supabase
@@ -132,9 +149,9 @@ export default function InventarioMissionariosPage() {
             .in('igreja_id', batch)
             .eq('situacao', 'ativo')
             .eq('tipo', 'interessado')
-          for (const i of interessados || []) {
-            if (i.igreja_id) {
-              interestCounts[i.igreja_id] = (interestCounts[i.igreja_id] || 0) + 1
+          for (const inter of interessados || []) {
+            if (inter.igreja_id) {
+              interestCounts[inter.igreja_id] = (interestCounts[inter.igreja_id] || 0) + 1
             }
           }
         }
@@ -155,7 +172,6 @@ export default function InventarioMissionariosPage() {
             .from('relatorios_missionarios')
             .select('igreja_id, estudos_biblicos, visitas_missionarias, pessoas_trazidas, horas_trabalho')
             .in('igreja_id', batch)
-          // Date filter
           if (startAno === now.getFullYear()) {
             rQuery = rQuery.eq('ano', now.getFullYear()).gte('mes', startMes).lte('mes', now.getMonth() + 1)
           } else {
@@ -177,12 +193,12 @@ export default function InventarioMissionariosPage() {
         }
       }
 
-      // 5. Get financial data for assigned churches (last 3 months)
+      // 5. Get financial data
       const finByChurch: Record<string, { receita: number; dizimos: number }> = {}
       if (uniqueIgrejaIds.length > 0) {
         for (let i = 0; i < uniqueIgrejaIds.length; i += 20) {
           const batch = uniqueIgrejaIds.slice(i, i + 20)
-          let fQuery = supabase
+          const fQuery = supabase
             .from('dados_financeiros')
             .select('igreja_id, receita_dizimos, receita_oferta_regular, receita_oferta_especial')
             .in('igreja_id', batch)
@@ -227,7 +243,6 @@ export default function InventarioMissionariosPage() {
         let totalVisitas = 0
         let totalTrazidas = 0
         let totalHoras = 0
-        let reportCount = 0
         let receitaTotal = 0
         let dizimosTotal = 0
         let classesAtivas = 0
@@ -236,22 +251,18 @@ export default function InventarioMissionariosPage() {
         for (const igId of igrejaIds) {
           totalMembros += memberCounts[igId] || 0
           totalInteressados += interestCounts[igId] || 0
-
           const rep = reportsByChurch[igId]
           if (rep) {
             totalEstudos += rep.estudos
             totalVisitas += rep.visitas
             totalTrazidas += rep.trazidas
             totalHoras += rep.horas
-            reportCount += rep.count
           }
-
           const fin = finByChurch[igId]
           if (fin) {
             receitaTotal += fin.receita
             dizimosTotal += fin.dizimos
           }
-
           const cls = classesByChurch[igId]
           if (cls) {
             classesAtivas += cls.ativas
@@ -265,7 +276,6 @@ export default function InventarioMissionariosPage() {
         const mediaTrazidas = months > 0 ? Math.round(totalTrazidas / months) : 0
         const mediaHoras = months > 0 ? Math.round(totalHoras / months) : 0
 
-        // Simple KPI score calculation
         const kpi = Math.min(100, Math.round(
           (mediaEstudos * 2.5) + (mediaVisitas * 2) + (mediaTrazidas * 5) +
           (classesAtivas * 5) + (mediaHoras > 20 ? 10 : mediaHoras * 0.5)
@@ -276,7 +286,7 @@ export default function InventarioMissionariosPage() {
 
         return {
           missionario_id: m.id,
-          nome: usuario?.nome || 'Sem nome',
+          nome: m.nome || usuario?.nome || 'Sem nome',
           cargo_ministerial: m.cargo_ministerial,
           status: m.status,
           associacao_id: m.associacao_id,
@@ -297,6 +307,14 @@ export default function InventarioMissionariosPage() {
       })
 
       setInventario(result)
+
+      // Expand all association groups by default
+      const expand: Record<string, boolean> = {}
+      for (const r of result) {
+        const key = r.associacao_id || 'sem-associacao'
+        expand[key] = true
+      }
+      setExpandidos(expand)
     } catch (err) {
       console.error('Erro ao montar inventario:', err)
     } finally {
@@ -304,25 +322,16 @@ export default function InventarioMissionariosPage() {
     }
   }
 
-  // Filtered and sorted data
+  // Filtered data
   const filteredData = useMemo(() => {
     let data = [...inventario]
-
-    if (filtroAssociacao) {
-      data = data.filter(d => d.associacao_id === filtroAssociacao)
-    }
-    if (filtroStatus) {
-      data = data.filter(d => d.status === filtroStatus)
-    }
-    if (filtroCargo) {
-      data = data.filter(d => d.cargo_ministerial === filtroCargo)
-    }
+    if (filtroAssociacao) data = data.filter(d => d.associacao_id === filtroAssociacao)
+    if (filtroStatus) data = data.filter(d => d.status === filtroStatus)
+    if (filtroCargo) data = data.filter(d => d.cargo_ministerial === filtroCargo)
     if (busca.trim()) {
       const term = busca.toLowerCase()
       data = data.filter(d => d.nome.toLowerCase().includes(term))
     }
-
-    // Sort
     data.sort((a, b) => {
       let valA: any = a[sortField]
       let valB: any = b[sortField]
@@ -334,21 +343,50 @@ export default function InventarioMissionariosPage() {
       if (valA > valB) return sortDir === 'asc' ? 1 : -1
       return 0
     })
-
     return data
   }, [inventario, filtroAssociacao, filtroStatus, filtroCargo, busca, sortField, sortDir])
 
-  // Summary stats
-  const summary = useMemo(() => {
-    return {
-      total: filteredData.length,
-      mediaKPI: filteredData.length > 0
-        ? Math.round(filteredData.reduce((s, d) => s + d.kpi_score, 0) / filteredData.length)
-        : 0,
-      totalIgrejas: filteredData.reduce((s, d) => s + d.total_igrejas, 0),
-      totalMembros: filteredData.reduce((s, d) => s + d.total_membros, 0),
+  // Group by association
+  const grupos = useMemo<GrupoAssociacao[]>(() => {
+    const mapa = new Map<string, GrupoAssociacao>()
+    for (const d of filteredData) {
+      const aId = d.associacao_id || 'sem-associacao'
+      const aNome = d.associacao_nome || 'Sem Associacao'
+      if (!mapa.has(aId)) {
+        mapa.set(aId, {
+          associacao_id: aId,
+          associacao_nome: aNome,
+          associacao_sigla: '',
+          missionarios: [],
+          totais: { membros: 0, igrejas: 0, dizimos: 0, por_cargo: {} },
+        })
+      }
+      const g = mapa.get(aId)!
+      g.missionarios.push(d)
+      g.totais.membros += d.total_membros
+      g.totais.igrejas += d.total_igrejas
+      g.totais.dizimos += d.dizimos_total
+      const cargo = d.cargo_ministerial || 'sem_cargo'
+      g.totais.por_cargo[cargo] = (g.totais.por_cargo[cargo] || 0) + 1
     }
-  }, [filteredData])
+    // Fill sigla from associacoes list
+    for (const [aId, g] of mapa) {
+      const found = associacoes.find(a => a.id === aId)
+      if (found) g.associacao_sigla = found.sigla
+    }
+    return Array.from(mapa.values()).sort((a, b) => a.associacao_nome.localeCompare(b.associacao_nome))
+  }, [filteredData, associacoes])
+
+  // Summary stats
+  const summary = useMemo(() => ({
+    total: filteredData.length,
+    mediaKPI: filteredData.length > 0
+      ? Math.round(filteredData.reduce((s, d) => s + d.kpi_score, 0) / filteredData.length)
+      : 0,
+    totalIgrejas: filteredData.reduce((s, d) => s + d.total_igrejas, 0),
+    totalMembros: filteredData.reduce((s, d) => s + d.total_membros, 0),
+    totalDizimos: filteredData.reduce((s, d) => s + d.dizimos_total, 0),
+  }), [filteredData])
 
   const cargoDistribution = useMemo(() => {
     const dist: Record<string, number> = {}
@@ -384,6 +422,10 @@ export default function InventarioMissionariosPage() {
     return 'bg-red-100 text-red-700'
   }
 
+  function toggleGrupo(id: string) {
+    setExpandidos(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
   async function exportPDF() {
     if (!tableRef.current) return
     try {
@@ -393,7 +435,7 @@ export default function InventarioMissionariosPage() {
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
       pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight)
-      pdf.save('inventario-missionarios.pdf')
+      pdf.save(`ficha-campo-${new Date().toISOString().slice(0, 10)}.pdf`)
     } catch (err) {
       console.error('Erro ao exportar PDF:', err)
     }
@@ -401,22 +443,21 @@ export default function InventarioMissionariosPage() {
 
   function exportExcel() {
     const rows = filteredData.map(d => ({
+      Associacao: d.associacao_nome || '-',
       Nome: d.nome,
       Cargo: CARGO_LABELS[d.cargo_ministerial] || d.cargo_ministerial,
       Status: STATUS_LABELS[d.status as StatusMissionario] || d.status,
-      Associacao: d.associacao_nome || '-',
       Igrejas: d.total_igrejas,
       Membros: d.total_membros,
-      'Media Estudos': d.media_estudos,
-      'Media Visitas': d.media_visitas,
+      Interessados: d.total_interessados,
       'Dizimos (R$)': d.dizimos_total.toFixed(2),
       'Classes Batismais': d.classes_batismais_ativas,
       'KPI Score': d.kpi_score,
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Inventario')
-    XLSX.writeFile(wb, 'inventario-missionarios.xlsx')
+    XLSX.utils.book_append_sheet(wb, ws, 'Ficha de Campo')
+    XLSX.writeFile(wb, `ficha-campo-${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
   const cargoOptions = Object.entries(CARGO_LABELS)
@@ -447,8 +488,10 @@ export default function InventarioMissionariosPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Inventario de Missionarios</h1>
-          <p className="text-gray-500 mt-1">Visao consolidada do campo missionario</p>
+          <h1 className="text-2xl font-bold text-gray-800">Ficha de Campo - Inventario</h1>
+          <p className="text-gray-500 mt-1">
+            Visao consolidada da Uniao Norte Nordeste · Agrupado por Associacao
+          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={exportPDF} className="btn-secondary inline-flex items-center gap-2 text-sm">
@@ -463,7 +506,7 @@ export default function InventarioMissionariosPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="card">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-green-100">
@@ -471,18 +514,7 @@ export default function InventarioMissionariosPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800">{summary.total}</p>
-              <p className="text-xs text-gray-500">Total Missionarios</p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-blue-100">
-              <FiBarChart2 className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{summary.mediaKPI}</p>
-              <p className="text-xs text-gray-500">Media KPI</p>
+              <p className="text-xs text-gray-500">Total Obreiros</p>
             </div>
           </div>
         </div>
@@ -493,7 +525,7 @@ export default function InventarioMissionariosPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800">{summary.totalIgrejas}</p>
-              <p className="text-xs text-gray-500">Igrejas Cobertas</p>
+              <p className="text-xs text-gray-500">Igrejas / Campos</p>
             </div>
           </div>
         </div>
@@ -508,9 +540,35 @@ export default function InventarioMissionariosPage() {
             </div>
           </div>
         </div>
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-emerald-100">
+              <FiDollarSign className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">
+                {summary.totalDizimos > 0
+                  ? `R$ ${(summary.totalDizimos / 1000).toFixed(0)}k`
+                  : 'R$ 0'}
+              </p>
+              <p className="text-xs text-gray-500">Dizimos ({new Date().getFullYear()})</p>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-blue-100">
+              <FiBarChart2 className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{grupos.length}</p>
+              <p className="text-xs text-gray-500">Associacoes</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Distribuicao por Cargo */}
+      {/* Cargo Distribution */}
       {cargoDistribution.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {cargoDistribution.map(({ cargo, count }) => (
@@ -543,7 +601,7 @@ export default function InventarioMissionariosPage() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="input-field"
-              placeholder="Nome do missionario..."
+              placeholder="Nome do obreiro..."
             />
           </div>
           <div>
@@ -591,126 +649,162 @@ export default function InventarioMissionariosPage() {
         </div>
       </div>
 
-      {/* Main Table */}
+      {/* Grouped Listing by Association */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-          <span className="ml-3 text-gray-500">Carregando...</span>
+          <span className="ml-3 text-gray-500">Carregando inventario...</span>
         </div>
-      ) : filteredData.length === 0 ? (
+      ) : grupos.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-gray-500">Nenhum missionario encontrado com os filtros selecionados</p>
+          <FiUsers className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-500">Nenhum obreiro encontrado com os filtros selecionados</p>
         </div>
       ) : (
-        <div ref={tableRef} className="card p-0 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800">
-              {filteredData.length} missionario{filteredData.length !== 1 ? 's' : ''}
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                  <th
-                    className="px-4 py-3 cursor-pointer select-none"
-                    onClick={() => handleSort('nome')}
-                  >
-                    Nome <SortIcon field="nome" />
-                  </th>
-                  <th
-                    className="px-4 py-3 cursor-pointer select-none"
-                    onClick={() => handleSort('cargo_ministerial')}
-                  >
-                    Cargo <SortIcon field="cargo_ministerial" />
-                  </th>
-                  <th
-                    className="px-4 py-3 cursor-pointer select-none"
-                    onClick={() => handleSort('associacao_nome')}
-                  >
-                    Associacao <SortIcon field="associacao_nome" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center cursor-pointer select-none"
-                    onClick={() => handleSort('total_igrejas')}
-                  >
-                    Igrejas <SortIcon field="total_igrejas" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center cursor-pointer select-none"
-                    onClick={() => handleSort('total_membros')}
-                  >
-                    Membros <SortIcon field="total_membros" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center cursor-pointer select-none"
-                    onClick={() => handleSort('media_estudos')}
-                  >
-                    Med. Estudos <SortIcon field="media_estudos" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center cursor-pointer select-none"
-                    onClick={() => handleSort('media_visitas')}
-                  >
-                    Med. Visitas <SortIcon field="media_visitas" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-right cursor-pointer select-none"
-                    onClick={() => handleSort('dizimos_total')}
-                  >
-                    Dizimos <SortIcon field="dizimos_total" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center cursor-pointer select-none"
-                    onClick={() => handleSort('classes_batismais_ativas')}
-                  >
-                    Classes Bat. <SortIcon field="classes_batismais_ativas" />
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center cursor-pointer select-none"
-                    onClick={() => handleSort('kpi_score')}
-                  >
-                    KPI <SortIcon field="kpi_score" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredData.map((d) => (
-                  <tr
-                    key={d.missionario_id}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/missoes/missionario/${d.missionario_id}`)}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{d.nome}</div>
-                      <span className={`inline-block mt-0.5 text-xs px-1.5 py-0.5 rounded ${STATUS_COLORS[d.status] || 'bg-gray-100 text-gray-600'}`}>
-                        {STATUS_LABELS[d.status as StatusMissionario] || d.status}
+        <div ref={tableRef} className="space-y-4">
+          {grupos.map(grupo => {
+            const isExpanded = expandidos[grupo.associacao_id] !== false
+            return (
+              <div key={grupo.associacao_id} className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                {/* Association Header (accordion toggle) */}
+                <button
+                  onClick={() => toggleGrupo(grupo.associacao_id)}
+                  className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-green-700 to-green-600 text-white hover:from-green-800 hover:to-green-700 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <FiHome size={18} />
+                    <span className="font-semibold text-lg">{grupo.associacao_nome}</span>
+                    {grupo.associacao_sigla && (
+                      <span className="text-green-200 text-sm">({grupo.associacao_sigla})</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-6 text-sm">
+                    <span className="text-green-100">
+                      {grupo.missionarios.length} obreiro{grupo.missionarios.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-green-100">
+                      {grupo.totais.membros} membros
+                    </span>
+                    <span className="text-green-100">
+                      R$ {grupo.totais.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                    </span>
+                    {isExpanded ? <FiChevronUp size={20} /> : <FiChevronDown size={20} />}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div>
+                    {/* Table of missionaries in this association */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                            <th className="px-4 py-3 w-10">#</th>
+                            <th
+                              className="px-4 py-3 cursor-pointer select-none"
+                              onClick={() => handleSort('nome')}
+                            >
+                              Nome <SortIcon field="nome" />
+                            </th>
+                            <th
+                              className="px-4 py-3 cursor-pointer select-none"
+                              onClick={() => handleSort('cargo_ministerial')}
+                            >
+                              Cargo <SortIcon field="cargo_ministerial" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-center cursor-pointer select-none"
+                              onClick={() => handleSort('total_igrejas')}
+                            >
+                              Igrejas <SortIcon field="total_igrejas" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-center cursor-pointer select-none"
+                              onClick={() => handleSort('total_membros')}
+                            >
+                              Membros <SortIcon field="total_membros" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-right cursor-pointer select-none"
+                              onClick={() => handleSort('dizimos_total')}
+                            >
+                              Dizimos <SortIcon field="dizimos_total" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-center cursor-pointer select-none"
+                              onClick={() => handleSort('kpi_score')}
+                            >
+                              KPI <SortIcon field="kpi_score" />
+                            </th>
+                            <th className="px-4 py-3 text-gray-500 font-medium">Status</th>
+                            <th className="px-4 py-3 text-gray-500 font-medium">Acao</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {grupo.missionarios.map((d, idx) => (
+                            <tr
+                              key={d.missionario_id}
+                              className="hover:bg-gray-50 transition-colors"
+                            >
+                              <td className="px-4 py-3 text-gray-400">{idx + 1}</td>
+                              <td className="px-4 py-3">
+                                <div className="font-medium text-gray-800">{d.nome}</div>
+                              </td>
+                              <td className="px-4 py-3 text-gray-600 text-xs">
+                                {CARGO_LABELS[d.cargo_ministerial] || d.cargo_ministerial}
+                              </td>
+                              <td className="px-4 py-3 text-center text-gray-700">{d.total_igrejas}</td>
+                              <td className="px-4 py-3 text-center font-semibold text-gray-900">{d.total_membros}</td>
+                              <td className="px-4 py-3 text-right text-gray-600">
+                                R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${kpiColor(d.kpi_score)}`}>
+                                  {d.kpi_score}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[d.status] || 'bg-gray-100 text-gray-600'}`}>
+                                  {STATUS_LABELS[d.status as StatusMissionario] || d.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => navigate(`/missoes/missionario/${d.missionario_id}`)}
+                                  className="flex items-center gap-1 text-green-600 hover:text-green-800 text-xs font-medium"
+                                >
+                                  <FiFileText size={14} /> Ver Ficha
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Association footer: cargo summary */}
+                    <div className="px-6 py-3 bg-gray-50 border-t flex flex-wrap gap-4">
+                      {Object.entries(grupo.totais.por_cargo)
+                        .sort(([, a], [, b]) => b - a)
+                        .map(([cargo, qtd]) => (
+                          <span key={cargo} className="text-xs text-gray-500">
+                            <span className="font-semibold text-gray-700">
+                              {CARGO_LABELS[cargo as CargoMinisterial] || cargo}:
+                            </span>{' '}
+                            {qtd}
+                          </span>
+                        ))}
+                      <span className="text-xs text-gray-400 ml-auto">
+                        Total: {grupo.missionarios.length} obreiro{grupo.missionarios.length !== 1 ? 's' : ''} ·{' '}
+                        {grupo.totais.igrejas} igreja{grupo.totais.igrejas !== 1 ? 's' : ''} ·{' '}
+                        {grupo.totais.membros} membros
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
-                      {CARGO_LABELS[d.cargo_ministerial] || d.cargo_ministerial}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
-                      {d.associacao_nome || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-700">{d.total_igrejas}</td>
-                    <td className="px-4 py-3 text-center text-gray-700">{d.total_membros}</td>
-                    <td className="px-4 py-3 text-center text-blue-600 font-medium">{d.media_estudos}</td>
-                    <td className="px-4 py-3 text-center text-green-600">{d.media_visitas}</td>
-                    <td className="px-4 py-3 text-right text-gray-600">
-                      R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-700">{d.classes_batismais_ativas}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${kpiColor(d.kpi_score)}`}>
-                        {d.kpi_score}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, NavLink } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -42,6 +42,9 @@ import {
   FiUser,
   FiFile,
   FiAward,
+  FiDownload,
+  FiChevronDown,
+  FiChevronUp,
 } from 'react-icons/fi'
 
 ChartJS.register(
@@ -55,6 +58,8 @@ ChartJS.register(
   Filler
 )
 
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 import { MISSOES_TABS, CARGO_LABELS, STATUS_LABELS, STATUS_COLORS, TIPO_ATIVIDADE_ICONS, TIPO_ATIVIDADE_LABELS, MESES_NOMES, MONTH_LABELS, ORDENACAO_MARCOS, ESCOLARIDADE_OPTIONS, ESTADO_CIVIL_OPTIONS, UF_OPTIONS, SEXO_OPTIONS } from '@/lib/missoes-constants'
 
 const COLORS = ['#006D43', '#0F3999', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
@@ -72,12 +77,12 @@ const chartOptions = (titleText?: string): any => ({
 type TabKey = 'ficha_biografica' | 'visao_geral' | 'campo' | 'atividades' | 'relatorios' | 'avaliacoes' | 'metas'
 
 const DETAIL_TABS: { key: TabKey; label: string; icon: typeof FiActivity }[] = [
-  { key: 'ficha_biografica', label: 'Ficha Biografica', icon: FiUser },
-  { key: 'visao_geral', label: 'Visao Geral', icon: FiActivity },
+  { key: 'visao_geral', label: 'Visão Geral', icon: FiActivity },
+  { key: 'ficha_biografica', label: 'Ficha Biográfica', icon: FiUser },
   { key: 'campo', label: 'Campo', icon: FiMapPin },
   { key: 'atividades', label: 'Atividades', icon: FiCalendar },
-  { key: 'relatorios', label: 'Relatorios', icon: FiFileText },
-  { key: 'avaliacoes', label: 'Avaliacoes', icon: FiStar },
+  { key: 'relatorios', label: 'Relatórios', icon: FiFileText },
+  { key: 'avaliacoes', label: 'Avaliações', icon: FiStar },
   { key: 'metas', label: 'Metas', icon: FiTarget },
 ]
 
@@ -107,11 +112,13 @@ export default function DetalheMissionarioPage() {
   const { profile } = useAuth()
 
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<TabKey>('ficha_biografica')
+  const [activeTab, setActiveTab] = useState<TabKey>('visao_geral')
 
   // Data
   const [missionario, setMissionario] = useState<Missionario | null>(null)
-  const [igrejas, setIgrejas] = useState<{ id: string; nome: string }[]>([])
+  const [igrejas, setIgrejas] = useState<{ id: string; nome: string; endereco_cidade: string | null; endereco_estado: string | null; telefone: string | null; membros_ativos: number | null; interessados: number | null; tipo: string | null }[]>([])
+  const [expandedIgreja, setExpandedIgreja] = useState<string | null>(null)
+  const [financeiroByIgreja, setFinanceiroByIgreja] = useState<Record<string, { dizimos: number; ofertas: number; total: number }>>({})
   const [relatorios, setRelatorios] = useState<(RelatorioMissionario & { pessoa?: { nome: string } | null })[]>([])
   const [atividades, setAtividades] = useState<AtividadeMissionario[]>([])
   const [metas, setMetas] = useState<MetaMissionario[]>([])
@@ -122,14 +129,70 @@ export default function DetalheMissionarioPage() {
   const [classesBatismais, setClassesBatismais] = useState<{ id: string; nome: string; status: string; alunos: string[] }[]>([])
   const [monthlyReports, setMonthlyReports] = useState<ReportRow[]>([])
   const [historico, setHistorico] = useState<HistoricoMissionario[]>([])
+  const [parametros, setParametros] = useState<Record<string, any> | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editForm, setEditForm] = useState<Record<string, any>>({})
   const [editHistorico, setEditHistorico] = useState<HistoricoMissionario[]>([])
   const [savingEdit, setSavingEdit] = useState(false)
+  const [showParamModal, setShowParamModal] = useState(false)
+  const [editParamForm, setEditParamForm] = useState<Record<string, any>>({})
+  const [savingParam, setSavingParam] = useState(false)
+  const pdfRef = useRef<HTMLDivElement>(null)
+  const fotoInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingFoto, setUploadingFoto] = useState(false)
 
   useEffect(() => {
     if (profile && id) fetchMissionario()
   }, [profile, id])
+
+  // ---- Photo upload: resize + compress + save as data URL ----
+  async function handleFotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !missionario) return
+    setUploadingFoto(true)
+    try {
+      const dataUrl = await resizeImage(file, 300, 300, 0.8)
+      const { error } = await supabase
+        .from('missionarios')
+        .update({ foto_url: dataUrl })
+        .eq('id', missionario.id)
+      if (error) throw error
+      setMissionario({ ...missionario, foto_url: dataUrl })
+    } catch (err) {
+      console.error('Erro ao salvar foto:', err)
+      alert('Erro ao salvar foto. Tente novamente.')
+    } finally {
+      setUploadingFoto(false)
+      if (fotoInputRef.current) fotoInputRef.current.value = ''
+    }
+  }
+
+  function resizeImage(file: File, maxW: number, maxH: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let w = img.width, h = img.height
+          if (w > maxW || h > maxH) {
+            const ratio = Math.min(maxW / w, maxH / h)
+            w = Math.round(w * ratio)
+            h = Math.round(h * ratio)
+          }
+          canvas.width = w
+          canvas.height = h
+          const ctx = canvas.getContext('2d')!
+          ctx.drawImage(img, 0, 0, w, h)
+          resolve(canvas.toDataURL('image/jpeg', quality))
+        }
+        img.onerror = reject
+        img.src = ev.target?.result as string
+      }
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+  }
 
   async function fetchMissionario() {
     setLoading(true)
@@ -143,14 +206,19 @@ export default function DetalheMissionarioPage() {
       if (mErr) throw mErr
       setMissionario(mData)
 
-      // 2. Igrejas
+      // 2. Igrejas (expandido com membros, endereco, tipo)
       const igrejasIds: string[] = mData.igrejas_responsavel || []
       if (igrejasIds.length > 0) {
         const { data: igData } = await supabase
           .from('igrejas')
-          .select('id, nome')
+          .select('id, nome, endereco_cidade, endereco_estado, telefone, membros_ativos, interessados, tipo')
           .in('id', igrejasIds)
         setIgrejas(igData || [])
+        // Calcular totais de membros direto das igrejas (nao da tabela pessoas)
+        const totalM = (igData || []).reduce((sum: number, ig: any) => sum + (ig.membros_ativos || 0), 0)
+        const totalI = (igData || []).reduce((sum: number, ig: any) => sum + (ig.interessados || 0), 0)
+        setTotalMembros(totalM)
+        setTotalInteressados(totalI)
       }
 
       // Load all tab data in parallel
@@ -159,10 +227,10 @@ export default function DetalheMissionarioPage() {
         fetchActivities(),
         fetchGoals(),
         fetchEvaluations(),
-        fetchMemberCount(igrejasIds),
         fetchFinancial(igrejasIds),
         fetchBaptismalClasses(igrejasIds),
         fetchHistorico(),
+        fetchParametros(),
       ])
     } catch (err) {
       console.error('Erro ao buscar missionario:', err)
@@ -241,24 +309,7 @@ export default function DetalheMissionarioPage() {
     setAvaliacoes(data || [])
   }
 
-  async function fetchMemberCount(igrejasIds: string[]) {
-    if (igrejasIds.length === 0) return
-    const { count: membros } = await supabase
-      .from('pessoas')
-      .select('id', { count: 'exact', head: true })
-      .in('igreja_id', igrejasIds)
-      .eq('situacao', 'ativo')
-      .eq('tipo', 'membro')
-    setTotalMembros(membros || 0)
-
-    const { count: interessados } = await supabase
-      .from('pessoas')
-      .select('id', { count: 'exact', head: true })
-      .in('igreja_id', igrejasIds)
-      .eq('situacao', 'ativo')
-      .eq('tipo', 'interessado')
-    setTotalInteressados(interessados || 0)
-  }
+  // fetchMemberCount removido — totais calculados direto do fetch de igrejas
 
   async function fetchFinancial(igrejasIds: string[]) {
     if (igrejasIds.length === 0) return
@@ -268,27 +319,38 @@ export default function DetalheMissionarioPage() {
 
     const { data } = await supabase
       .from('dados_financeiros')
-      .select('mes, ano, receita_dizimos, receita_oferta_regular, receita_oferta_especial')
+      .select('igreja_id, mes, ano, receita_dizimos, receita_oferta_regular, receita_oferta_especial')
       .in('igreja_id', igrejasIds)
       .eq('ano', now.getFullYear())
       .order('mes', { ascending: false })
-      .limit(20)
+      .limit(50)
 
     // Aggregate by month
     const monthMap: Record<string, FinancialSummary> = {}
+    const igrejaMap: Record<string, { dizimos: number; ofertas: number; total: number }> = {}
     for (const f of data || []) {
       const key = `${f.ano}-${f.mes}`
       if (!monthMap[key]) {
         monthMap[key] = { mes: f.mes, ano: f.ano, dizimos: 0, ofertas: 0, total: 0 }
       }
-      monthMap[key].dizimos += f.receita_dizimos || 0
-      monthMap[key].ofertas += (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0)
-      monthMap[key].total += (f.receita_dizimos || 0) + (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0)
+      const diz = f.receita_dizimos || 0
+      const ofe = (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0)
+      monthMap[key].dizimos += diz
+      monthMap[key].ofertas += ofe
+      monthMap[key].total += diz + ofe
+
+      // Aggregate by church
+      const igId = f.igreja_id as string
+      if (!igrejaMap[igId]) igrejaMap[igId] = { dizimos: 0, ofertas: 0, total: 0 }
+      igrejaMap[igId].dizimos += diz
+      igrejaMap[igId].ofertas += ofe
+      igrejaMap[igId].total += diz + ofe
     }
     const sorted = Object.values(monthMap).sort((a, b) =>
       a.ano !== b.ano ? a.ano - b.ano : a.mes - b.mes
     )
     setFinanceiro(sorted.slice(-3))
+    setFinanceiroByIgreja(igrejaMap)
   }
 
   async function fetchBaptismalClasses(igrejasIds: string[]) {
@@ -307,6 +369,15 @@ export default function DetalheMissionarioPage() {
       .eq('missionario_id', id!)
       .order('data', { ascending: true })
     setHistorico(data || [])
+  }
+
+  async function fetchParametros() {
+    const { data } = await supabase
+      .from('missionario_parametros')
+      .select('*')
+      .eq('missionario_id', id!)
+      .maybeSingle()
+    setParametros(data)
   }
 
   function openEditModal() {
@@ -343,6 +414,61 @@ export default function DetalheMissionarioPage() {
       console.error('Erro ao salvar ficha:', err)
     } finally {
       setSavingEdit(false)
+    }
+  }
+
+
+  async function saveParamForm() {
+    if (!id) return
+    setSavingParam(true)
+    try {
+      const { id: _id, created_at, updated_at, ...fields } = editParamForm
+      const payload = { ...fields, missionario_id: id, updated_at: new Date().toISOString() }
+
+      if (parametros?.id) {
+        await supabase.from('missionario_parametros').update(payload).eq('id', parametros.id)
+      } else {
+        await supabase.from('missionario_parametros').insert(payload)
+      }
+
+      setShowParamModal(false)
+      fetchParametros()
+    } catch (err) {
+      console.error('Erro ao salvar parametros:', err)
+    } finally {
+      setSavingParam(false)
+    }
+  }
+
+  // PDF generation
+  async function generatePDF() {
+    if (!pdfRef.current || !missionario) return
+    try {
+      const canvas = await html2canvas(pdfRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const imgWidth = 210
+      const pageHeight = 297
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight)
+      } else {
+        // Multi-page
+        let heightLeft = imgHeight
+        let position = 0
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+        while (heightLeft > 0) {
+          position -= pageHeight
+          pdf.addPage()
+          pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight)
+          heightLeft -= pageHeight
+        }
+      }
+      const nomeArquivo = (missionario as any).usuario?.nome || missionario.nome || 'missionario'
+      pdf.save(`campo_${nomeArquivo.replace(/\s+/g, '_')}.pdf`)
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err)
     }
   }
 
@@ -456,9 +582,9 @@ export default function DetalheMissionarioPage() {
           ))}
         </nav>
         <div className="card text-center py-12">
-          <p className="text-gray-500">Missionario nao encontrado</p>
+          <p className="text-gray-500">Missionário não encontrado</p>
           <Link to="/missoes/inventario" className="text-green-600 hover:underline text-sm mt-2 inline-block">
-            Voltar ao inventario
+            Voltar ao inventário
           </Link>
         </div>
       </div>
@@ -466,6 +592,7 @@ export default function DetalheMissionarioPage() {
   }
 
   const usuario = missionario.usuario as { nome: string; email: string } | null
+  const nomeDisplay = missionario.nome || usuario?.nome || 'Sem nome'
 
   return (
     <div className="space-y-6">
@@ -493,36 +620,59 @@ export default function DetalheMissionarioPage() {
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <Link to="/missoes/inventario" className="hover:text-green-600 flex items-center gap-1">
           <FiArrowLeft className="w-4 h-4" />
-          Inventario
+          Inventário
         </Link>
         <span>/</span>
-        <span className="text-gray-800 font-medium">{usuario?.nome || 'Missionario'}</span>
+        <span className="text-gray-800 font-medium">{nomeDisplay}</span>
       </div>
 
       {/* Profile Header */}
       <div className="card">
         <div className="flex flex-col sm:flex-row gap-6">
-          {/* Avatar */}
-          <div className="flex-shrink-0">
-            {missionario.foto_url ? (
-              <img
-                src={missionario.foto_url}
-                alt={usuario?.nome || ''}
-                className="w-24 h-24 rounded-full object-cover border-4 border-green-100"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center border-4 border-green-50">
-                <span className="text-2xl font-bold text-green-700">
-                  {getInitials(usuario?.nome || 'M')}
-                </span>
+          {/* Avatar com upload */}
+          <div className="flex-shrink-0 relative group">
+            <input
+              ref={fotoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleFotoUpload}
+            />
+            <button
+              type="button"
+              onClick={() => fotoInputRef.current?.click()}
+              className="relative rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+              title="Clique para alterar a foto"
+              disabled={uploadingFoto}
+            >
+              {missionario.foto_url ? (
+                <img
+                  src={missionario.foto_url}
+                  alt={nomeDisplay}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-green-100"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center border-4 border-green-50">
+                  <span className="text-2xl font-bold text-green-700">
+                    {getInitials(nomeDisplay)}
+                  </span>
+                </div>
+              )}
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                {uploadingFoto ? (
+                  <svg className="animate-spin w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                ) : (
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><circle cx="12" cy="13" r="3" /></svg>
+                )}
               </div>
-            )}
+            </button>
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-800">{usuario?.nome || 'Sem nome'}</h1>
+              <h1 className="text-2xl font-bold text-gray-800">{nomeDisplay}</h1>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[missionario.status] || 'bg-gray-100 text-gray-600'}`}>
                 {STATUS_LABELS[missionario.status] || missionario.status}
               </span>
@@ -548,7 +698,7 @@ export default function DetalheMissionarioPage() {
               {missionario.data_inicio_ministerio && (
                 <span className="flex items-center gap-1.5">
                   <FiCalendar className="w-4 h-4" />
-                  Inicio: {new Date(missionario.data_inicio_ministerio).toLocaleDateString('pt-BR')}
+                  Início: {new Date(missionario.data_inicio_ministerio).toLocaleDateString('pt-BR')}
                 </span>
               )}
             </div>
@@ -586,7 +736,7 @@ export default function DetalheMissionarioPage() {
         ))}
       </div>
 
-      {/* TAB: Ficha Biografica */}
+      {/* TAB: Ficha Biográfica */}
       {activeTab === 'ficha_biografica' && (
         <div className="space-y-6">
           {/* Edit Button */}
@@ -607,15 +757,15 @@ export default function DetalheMissionarioPage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                ['Nome', usuario?.nome],
+                ['Nome', nomeDisplay],
                 ['Sexo', missionario.sexo === 'masculino' ? 'Masculino' : missionario.sexo === 'feminino' ? 'Feminino' : null],
                 ['Data de Nascimento', missionario.data_nascimento ? new Date(missionario.data_nascimento).toLocaleDateString('pt-BR') : null],
                 ['Naturalidade', missionario.cidade_nascimento && missionario.uf_nascimento ? `${missionario.cidade_nascimento} - ${missionario.uf_nascimento}` : missionario.cidade_nascimento],
                 ['Nacionalidade', missionario.nacionalidade],
-                ['Profissao', missionario.profissao],
+                ['Profissão', missionario.profissao],
                 ['Escolaridade', missionario.escolaridade],
                 ['Nome do Pai', missionario.nome_pai],
-                ['Nome da Mae', missionario.nome_mae],
+                ['Nome da Mãe', missionario.nome_mae],
                 ['Estado Civil', missionario.estado_civil],
                 ['Data de Casamento', missionario.data_casamento ? new Date(missionario.data_casamento).toLocaleDateString('pt-BR') : null],
               ].map(([label, value]) => (
@@ -639,7 +789,7 @@ export default function DetalheMissionarioPage() {
                 ['CPF', missionario.cpf],
                 ['PIS', missionario.pis_numero ? `${missionario.pis_numero}${missionario.pis_orgao ? ` (${missionario.pis_orgao})` : ''}` : null],
                 ['NIT', missionario.nit_numero],
-                ['Titulo Eleitor', missionario.titulo_eleitor],
+                ['Título Eleitor', missionario.titulo_eleitor],
                 ['CTPS Serie/UF', missionario.ctps_serie_uf],
                 ['CNH', missionario.cnh],
                 ['Passaporte', missionario.passaporte],
@@ -657,11 +807,11 @@ export default function DetalheMissionarioPage() {
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FiPhone className="w-5 h-5 text-purple-600" />
-              Contato e Endereco
+              Contato e Endereço
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                ['Endereco', missionario.endereco],
+                ['Endereço', missionario.endereco],
                 ['Bairro', missionario.endereco_bairro],
                 ['Cidade/UF', missionario.endereco_cidade && missionario.endereco_uf ? `${missionario.endereco_cidade} - ${missionario.endereco_uf}` : missionario.endereco_cidade],
                 ['CEP', missionario.endereco_cep],
@@ -685,9 +835,9 @@ export default function DetalheMissionarioPage() {
               <FiUsers className="w-5 h-5 text-amber-600" />
               Dependentes
             </h2>
-            {/* Conjuge */}
+            {/* Cônjuge */}
             <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Conjuge</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Cônjuge</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   ['Nome', missionario.conjuge_nome],
@@ -726,10 +876,10 @@ export default function DetalheMissionarioPage() {
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FiAward className="w-5 h-5 text-green-600" />
-              Ordenacoes e Marcos
+              Ordenações e Marcos
             </h2>
             <div className="mb-3">
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Religiao Anterior</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider">Religião Anterior</p>
               <p className="text-sm font-medium text-gray-800 mt-0.5">{missionario.religiao_anterior || '-'}</p>
             </div>
             <div className="relative pl-8">
@@ -762,7 +912,7 @@ export default function DetalheMissionarioPage() {
                           {local && <p>Local: {local}{uf ? ` - ${uf}` : ''}</p>}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400 mt-0.5">Nao registrado</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Não registrado</p>
                       )}
                     </div>
                   </div>
@@ -771,13 +921,13 @@ export default function DetalheMissionarioPage() {
             </div>
           </div>
 
-          {/* Secao F - Historico Biografico */}
+          {/* Secao F - Histórico Biográfico */}
           <div className="card p-0 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800">Historico Biografico</h2>
+              <h2 className="text-lg font-semibold text-gray-800">Histórico Biográfico</h2>
             </div>
             {historico.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Nenhum historico registrado</div>
+              <div className="p-8 text-center text-gray-500">Nenhum histórico registrado</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -785,8 +935,8 @@ export default function DetalheMissionarioPage() {
                     <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
                       <th className="px-4 py-3">Data</th>
                       <th className="px-4 py-3">Cidade/UF</th>
-                      <th className="px-4 py-3">Funcao</th>
-                      <th className="px-4 py-3">Decisao</th>
+                      <th className="px-4 py-3">Função</th>
+                      <th className="px-4 py-3">Decisão</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -803,19 +953,268 @@ export default function DetalheMissionarioPage() {
               </div>
             )}
           </div>
+
+          {/* Seções G e H (Bancário/Parâmetros) removidas conforme solicitado */}
         </div>
       )}
 
-      {/* TAB: Visao Geral */}
+      {/* TAB: Visão Geral */}
       {activeTab === 'visao_geral' && (
         <div className="space-y-6">
-          {/* KPI Progress Bars */}
-          {currentGoal ? (
+          {/* Header with PDF button */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-800">Visão Geral do Campo</h2>
+            <button onClick={generatePDF} className="btn-primary flex items-center gap-2">
+              <FiDownload className="w-4 h-4" />
+              Gerar PDF
+            </button>
+          </div>
+
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="card">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Progresso das Metas - {MESES[mesAtual - 1]} {anoAtual}</h2>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-green-100">
+                  <FiUsers className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{totalMembros}</p>
+                  <p className="text-xs text-gray-500">Membros Ativos</p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-blue-100">
+                  <FiUsers className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{totalInteressados}</p>
+                  <p className="text-xs text-gray-500">Interessados</p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-purple-100">
+                  <FiMapPin className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{igrejas.length}</p>
+                  <p className="text-xs text-gray-500">Igrejas</p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-100">
+                  <FiDollarSign className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {financeiro.length > 0
+                      ? `R$ ${financeiro.reduce((s, f) => s + f.total, 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                      : 'R$ 0'}
+                  </p>
+                  <p className="text-xs text-gray-500">Receita {new Date().getFullYear()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Church Cards */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Igrejas do Campo</h3>
+            {igrejas.length === 0 ? (
+              <div className="card text-center py-8">
+                <FiMapPin className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500">Nenhuma igreja vinculada</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {igrejas.map(ig => {
+                  const igFin = financeiroByIgreja[ig.id]
+                  const isExpanded = expandedIgreja === ig.id
+                  return (
+                    <div key={ig.id} className="card p-0 overflow-hidden">
+                      <button
+                        onClick={() => setExpandedIgreja(isExpanded ? null : ig.id)}
+                        className="w-full text-left p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-gray-800">{ig.nome}</h4>
+                              {ig.tipo && (
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                  ig.tipo === 'Templo' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                                }`}>
+                                  {ig.tipo}
+                                </span>
+                              )}
+                            </div>
+                            {(ig.endereco_cidade || ig.endereco_estado) && (
+                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                                <FiMapPin className="w-3 h-3" />
+                                {[ig.endereco_cidade, ig.endereco_estado].filter(Boolean).join(' - ')}
+                              </p>
+                            )}
+                          </div>
+                          {isExpanded ? <FiChevronUp className="w-4 h-4 text-gray-400" /> : <FiChevronDown className="w-4 h-4 text-gray-400" />}
+                        </div>
+                        <div className="flex gap-4 mt-2 text-sm">
+                          <span className="text-green-700 font-medium">{ig.membros_ativos || 0} membros</span>
+                          <span className="text-blue-600">{ig.interessados || 0} interessados</span>
+                          {igFin && <span className="text-emerald-600">R$ {igFin.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                            <div>
+                              <p className="text-xs text-gray-500">Membros Ativos</p>
+                              <p className="font-semibold text-gray-800">{ig.membros_ativos || 0}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Interessados</p>
+                              <p className="font-semibold text-gray-800">{ig.interessados || 0}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Tipo</p>
+                              <p className="font-semibold text-gray-800">{ig.tipo || '-'}</p>
+                            </div>
+                            {ig.telefone && (
+                              <div>
+                                <p className="text-xs text-gray-500">Telefone</p>
+                                <p className="font-semibold text-gray-800">{ig.telefone}</p>
+                              </div>
+                            )}
+                            {igFin && (
+                              <>
+                                <div>
+                                  <p className="text-xs text-gray-500">Dízimos ({new Date().getFullYear()})</p>
+                                  <p className="font-semibold text-green-700">R$ {igFin.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500">Ofertas ({new Date().getFullYear()})</p>
+                                  <p className="font-semibold text-blue-600">R$ {igFin.ofertas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Financial Summary */}
+          <div className="card p-0 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800">
+                <FiDollarSign className="inline w-5 h-5 mr-1" />
+                Resumo Financeiro
+              </h3>
+            </div>
+            {financeiro.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">Sem dados financeiros disponíveis</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th className="px-4 py-3">Período</th>
+                    <th className="px-4 py-3 text-right">Dízimos</th>
+                    <th className="px-4 py-3 text-right">Ofertas</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {financeiro.map(f => (
+                    <tr key={`${f.ano}-${f.mes}`} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-gray-800">{MESES[f.mes - 1]} {f.ano}</td>
+                      <td className="px-4 py-3 text-right text-gray-600">
+                        R$ {f.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-4 py-3 text-right text-gray-600">
+                        R$ {f.ofertas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-4 py-3 text-right font-medium text-gray-800">
+                        R$ {f.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Baptismal Classes */}
+          <div className="card p-0 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800">
+                <FiCheckCircle className="inline w-5 h-5 mr-1 text-green-500" />
+                Classes Batismais
+                {classesBatismais.length > 0 && (
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    ({classesBatismais.reduce((s, c) => s + (c.alunos?.length || 0), 0)} alunos total)
+                  </span>
+                )}
+              </h3>
+            </div>
+            {classesBatismais.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">Nenhuma classe batismal registrada</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                    <th className="px-4 py-3">Nome</th>
+                    <th className="px-4 py-3 text-center">Alunos</th>
+                    <th className="px-4 py-3 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {classesBatismais.map(c => (
+                    <tr key={c.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-800">{c.nome}</td>
+                      <td className="px-4 py-3 text-center text-gray-600">{c.alunos?.length || 0}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          c.status === 'ativa' ? 'bg-green-100 text-green-700' :
+                          c.status === 'concluida' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {c.status === 'ativa' ? 'Ativa' : c.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Monthly Trend Chart */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Tendência Mensal</h3>
+            {monthlyReports.length > 0 ? (
+              <div className="h-72">
+                <Line data={lineChartData} options={chartOptions()} />
+              </div>
+            ) : (
+              <p className="text-center text-gray-400 py-8">Sem dados de relatórios para exibir</p>
+            )}
+          </div>
+
+          {/* Progress Bars (if goals exist) */}
+          {currentGoal && (
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Progresso das Metas - {MESES[mesAtual - 1]} {anoAtual}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
-                  { label: 'Estudos Biblicos', actual: currentMonthReport?.estudos_biblicos || 0, goal: currentGoal.meta_estudos_biblicos },
+                  { label: 'Estudos Bíblicos', actual: currentMonthReport?.estudos_biblicos || 0, goal: currentGoal.meta_estudos_biblicos },
                   { label: 'Visitas', actual: currentMonthReport?.visitas_missionarias || 0, goal: currentGoal.meta_visitas },
                   { label: 'Pessoas Trazidas', actual: currentMonthReport?.pessoas_trazidas || 0, goal: currentGoal.meta_pessoas_trazidas },
                   { label: 'Horas Trabalho', actual: currentMonthReport?.horas_trabalho || 0, goal: currentGoal.meta_horas_trabalho },
@@ -841,42 +1240,6 @@ export default function DetalheMissionarioPage() {
                 })}
               </div>
             </div>
-          ) : (
-            <div className="card text-center py-8">
-              <FiTarget className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500">Nenhuma meta definida para o periodo atual</p>
-            </div>
-          )}
-
-          {/* Monthly Trend Chart */}
-          <div className="card">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Tendencia Mensal</h2>
-            {monthlyReports.length > 0 ? (
-              <div className="h-72">
-                <Line data={lineChartData} options={chartOptions()} />
-              </div>
-            ) : (
-              <p className="text-center text-gray-400 py-8">Sem dados de relatorios para exibir</p>
-            )}
-          </div>
-
-          {/* Current Month Summary */}
-          {currentMonthReport && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { label: 'Estudos', value: currentMonthReport.estudos_biblicos, color: 'text-blue-600' },
-                { label: 'Visitas', value: currentMonthReport.visitas_missionarias, color: 'text-green-600' },
-                { label: 'Trazidas', value: currentMonthReport.pessoas_trazidas, color: 'text-amber-600' },
-                { label: 'Horas', value: currentMonthReport.horas_trabalho, color: 'text-purple-600' },
-                { label: 'Literatura', value: currentMonthReport.literatura_distribuida, color: 'text-pink-600' },
-                { label: 'Contatos', value: currentMonthReport.pessoas_contatadas, color: 'text-gray-600' },
-              ].map(item => (
-                <div key={item.label} className="card text-center">
-                  <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
-                  <p className="text-xs text-gray-500 mt-1">{item.label}</p>
-                </div>
-              ))}
-            </div>
           )}
         </div>
       )}
@@ -884,7 +1247,7 @@ export default function DetalheMissionarioPage() {
       {/* TAB: Campo */}
       {activeTab === 'campo' && (
         <div className="space-y-6">
-          {/* Member Count Cards */}
+          {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="card">
               <div className="flex items-center gap-4">
@@ -921,84 +1284,14 @@ export default function DetalheMissionarioPage() {
             </div>
           </div>
 
-          {/* Financial Summary */}
-          <div className="card p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800">
-                <FiDollarSign className="inline w-5 h-5 mr-1" />
-                Resumo Financeiro
-              </h2>
-            </div>
-            {financeiro.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Sem dados financeiros disponiveis</div>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3">Periodo</th>
-                    <th className="px-4 py-3 text-right">Dizimos</th>
-                    <th className="px-4 py-3 text-right">Ofertas</th>
-                    <th className="px-4 py-3 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {financeiro.map(f => (
-                    <tr key={`${f.ano}-${f.mes}`} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-800">{MESES[f.mes - 1]} {f.ano}</td>
-                      <td className="px-4 py-3 text-right text-gray-600">
-                        R$ {f.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-4 py-3 text-right text-gray-600">
-                        R$ {f.ofertas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-4 py-3 text-right font-medium text-gray-800">
-                        R$ {f.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Baptismal Classes */}
-          <div className="card p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800">
-                <FiCheckCircle className="inline w-5 h-5 mr-1 text-green-500" />
-                Classes Batismais
-              </h2>
-            </div>
-            {classesBatismais.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Nenhuma classe batismal registrada</div>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3">Nome</th>
-                    <th className="px-4 py-3 text-center">Alunos</th>
-                    <th className="px-4 py-3 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {classesBatismais.map(c => (
-                    <tr key={c.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-800">{c.nome}</td>
-                      <td className="px-4 py-3 text-center text-gray-600">{c.alunos?.length || 0}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          c.status === 'ativa' ? 'bg-green-100 text-green-700' :
-                          c.status === 'concluida' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {c.status === 'ativa' ? 'Ativa' : c.status === 'concluida' ? 'Concluida' : 'Cancelada'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+          {/* Link to Relatório de Campo */}
+          <div className="card text-center py-6">
+            <FiFileText className="w-8 h-8 text-green-500 mx-auto mb-3" />
+            <p className="text-gray-600 mb-3">Veja os dados detalhados na aba <strong>Visão Geral</strong> ou acesse o relatório completo.</p>
+            <Link to="/missoes/relatorio-campo" className="btn-primary inline-flex items-center gap-2">
+              <FiFileText className="w-4 h-4" />
+              Abrir Relatório de Campo
+            </Link>
           </div>
         </div>
       )}
@@ -1064,22 +1357,22 @@ export default function DetalheMissionarioPage() {
         </div>
       )}
 
-      {/* TAB: Relatorios */}
+      {/* TAB: Relatórios */}
       {activeTab === 'relatorios' && (
         <div className="card p-0 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="text-lg font-semibold text-gray-800">
-              Relatorios Mensais ({relatorios.length})
+              Relatórios Mensais ({relatorios.length})
             </h2>
           </div>
           {relatorios.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">Nenhum relatorio encontrado</div>
+            <div className="p-8 text-center text-gray-500">Nenhum relatório encontrado</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3">Periodo</th>
+                    <th className="px-4 py-3">Período</th>
                     <th className="px-4 py-3">Membro</th>
                     <th className="px-4 py-3 text-center">Estudos</th>
                     <th className="px-4 py-3 text-center">Visitas</th>
@@ -1119,7 +1412,7 @@ export default function DetalheMissionarioPage() {
           {avaliacoes.length === 0 ? (
             <div className="card text-center py-12">
               <FiStar className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500">Nenhuma avaliacao registrada</p>
+              <p className="text-gray-500">Nenhuma avaliação registrada</p>
             </div>
           ) : (
             avaliacoes.map(av => (
@@ -1127,7 +1420,7 @@ export default function DetalheMissionarioPage() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="font-semibold text-gray-800">
-                      Avaliacao {av.tipo_periodo === 'mensal' ? `${MESES[(av.mes || 1) - 1]}` : av.tipo_periodo === 'trimestral' ? `${av.trimestre}o Trimestre` : av.tipo_periodo} {av.ano}
+                      Avaliação{av.tipo_periodo === 'mensal' ? `${MESES[(av.mes || 1) - 1]}` : av.tipo_periodo === 'trimestral' ? `${av.trimestre}o Trimestre` : av.tipo_periodo} {av.ano}
                     </h3>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       av.status === 'publicada' ? 'bg-green-100 text-green-700' :
@@ -1172,7 +1465,7 @@ export default function DetalheMissionarioPage() {
                 )}
                 {av.plano_acao && (
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-1">Plano de Acao</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase mb-1">Plano de Ação</p>
                     <p className="text-sm text-gray-700">{av.plano_acao}</p>
                   </div>
                 )}
@@ -1203,14 +1496,14 @@ export default function DetalheMissionarioPage() {
                       m.status === 'concluida' ? 'bg-blue-100 text-blue-700' :
                       'bg-gray-100 text-gray-600'
                     }`}>
-                      {m.status === 'ativa' ? 'Ativa' : m.status === 'concluida' ? 'Concluida' : 'Cancelada'}
+                      {m.status === 'ativa' ? 'Ativa' : m.status === 'concluida' ? 'Concluída' : 'Cancelada'}
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {[
-                    { label: 'Estudos Biblicos', value: m.meta_estudos_biblicos },
+                    { label: 'Estudos Bíblicos', value: m.meta_estudos_biblicos },
                     { label: 'Visitas', value: m.meta_visitas },
                     { label: 'Literatura', value: m.meta_literatura },
                     { label: 'Pessoas Contatadas', value: m.meta_pessoas_contatadas },
@@ -1244,7 +1537,7 @@ export default function DetalheMissionarioPage() {
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl my-8">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl flex items-center justify-between z-10">
-              <h2 className="text-lg font-bold text-gray-800">Editar Ficha Biografica</h2>
+              <h2 className="text-lg font-bold text-gray-800">Editar Ficha Biográfica</h2>
               <div className="flex gap-2">
                 <button onClick={() => setShowEditModal(false)} className="btn-secondary">Cancelar</button>
                 <button onClick={saveEditForm} disabled={savingEdit} className="btn-primary">
@@ -1270,7 +1563,7 @@ export default function DetalheMissionarioPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="label-field">Formacao Teologica</label>
+                    <label className="label-field">Formação Teológica</label>
                     <input className="input-field" value={editForm.formacao_teologica || ''} onChange={e => setEditForm(f => ({...f, formacao_teologica: e.target.value}))} />
                   </div>
                   <div>
@@ -1315,7 +1608,7 @@ export default function DetalheMissionarioPage() {
                     <input className="input-field" value={editForm.nacionalidade || ''} onChange={e => setEditForm(f => ({...f, nacionalidade: e.target.value || null}))} />
                   </div>
                   <div>
-                    <label className="label-field">Profissao</label>
+                    <label className="label-field">Profissão</label>
                     <input className="input-field" value={editForm.profissao || ''} onChange={e => setEditForm(f => ({...f, profissao: e.target.value || null}))} />
                   </div>
                   <div>
@@ -1358,7 +1651,7 @@ export default function DetalheMissionarioPage() {
                     ['pis_numero', 'PIS Numero'],
                     ['pis_orgao', 'PIS Orgao'],
                     ['nit_numero', 'NIT Numero'],
-                    ['titulo_eleitor', 'Titulo Eleitor'],
+                    ['titulo_eleitor', 'Título Eleitor'],
                     ['ctps_serie_uf', 'CTPS Serie/UF'],
                     ['cnh', 'CNH'],
                     ['passaporte', 'Passaporte'],
@@ -1374,10 +1667,10 @@ export default function DetalheMissionarioPage() {
 
               {/* Contato */}
               <fieldset className="border border-gray-200 rounded-lg p-4">
-                <legend className="text-sm font-semibold text-gray-700 px-2">Contato e Endereco</legend>
+                <legend className="text-sm font-semibold text-gray-700 px-2">Contato e Endereço</legend>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="sm:col-span-2 lg:col-span-3">
-                    <label className="label-field">Endereco</label>
+                    <label className="label-field">Endereço</label>
                     <input className="input-field" value={editForm.endereco || ''} onChange={e => setEditForm(f => ({...f, endereco: e.target.value || null}))} />
                   </div>
                   {[
@@ -1406,10 +1699,10 @@ export default function DetalheMissionarioPage() {
               {/* Dependentes */}
               <fieldset className="border border-gray-200 rounded-lg p-4">
                 <legend className="text-sm font-semibold text-gray-700 px-2">Dependentes</legend>
-                <p className="text-xs text-gray-500 mb-3 font-semibold uppercase">Conjuge</p>
+                <p className="text-xs text-gray-500 mb-3 font-semibold uppercase">Cônjuge</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   {[
-                    ['conjuge_nome', 'Nome do Conjuge'],
+                    ['conjuge_nome', 'Nome do(a) Cônjuge'],
                     ['conjuge_cidade', 'Cidade'],
                     ['conjuge_nacionalidade', 'Nacionalidade'],
                     ['conjuge_escolaridade', 'Escolaridade'],
@@ -1455,11 +1748,11 @@ export default function DetalheMissionarioPage() {
                 }}><FiPlus className="w-4 h-4" /> Adicionar Filho</button>
               </fieldset>
 
-              {/* Ordenacoes */}
+              {/* Ordenações */}
               <fieldset className="border border-gray-200 rounded-lg p-4">
-                <legend className="text-sm font-semibold text-gray-700 px-2">Ordenacoes e Marcos</legend>
+                <legend className="text-sm font-semibold text-gray-700 px-2">Ordenações e Marcos</legend>
                 <div className="mb-4">
-                  <label className="label-field">Religiao Anterior</label>
+                  <label className="label-field">Religião Anterior</label>
                   <input className="input-field" value={editForm.religiao_anterior || ''} onChange={e => setEditForm(f => ({...f, religiao_anterior: e.target.value || null}))} />
                 </div>
                 {ORDENACAO_MARCOS.map(marco => (
@@ -1490,9 +1783,9 @@ export default function DetalheMissionarioPage() {
                 ))}
               </fieldset>
 
-              {/* Historico */}
+              {/* Histórico */}
               <fieldset className="border border-gray-200 rounded-lg p-4">
-                <legend className="text-sm font-semibold text-gray-700 px-2">Historico Biografico</legend>
+                <legend className="text-sm font-semibold text-gray-700 px-2">Histórico Biográfico</legend>
                 {editHistorico.map((h, i) => (
                   <div key={i} className="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-2 items-end">
                     <div>
@@ -1512,7 +1805,7 @@ export default function DetalheMissionarioPage() {
                       }} />
                     </div>
                     <div>
-                      <label className="label-field">Funcao</label>
+                      <label className="label-field">Função</label>
                       <input className="input-field" value={h.funcao || ''} onChange={e => {
                         const arr = [...editHistorico]
                         arr[i] = { ...arr[i], funcao: e.target.value || null }
@@ -1520,7 +1813,7 @@ export default function DetalheMissionarioPage() {
                       }} />
                     </div>
                     <div>
-                      <label className="label-field">Decisao</label>
+                      <label className="label-field">Decisão</label>
                       <input className="input-field" value={h.decisao || ''} onChange={e => {
                         const arr = [...editHistorico]
                         arr[i] = { ...arr[i], decisao: e.target.value || null }
@@ -1540,6 +1833,219 @@ export default function DetalheMissionarioPage() {
           </div>
         </div>
       )}
+
+      {/* ── MODAL: Editar Parâmetros (Bancário + Reembolso) ── */}
+      {showParamModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-800">Dados Bancários e Parâmetros</h3>
+              <button onClick={() => setShowParamModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+
+            {/* Dados Bancários */}
+            <fieldset className="border rounded-lg p-4 mb-4">
+              <legend className="text-sm font-semibold text-gray-600 px-1">Dados Bancários</legend>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label-field text-xs">Banco</label>
+                  <input className="input-field" value={editParamForm.banco || ''} onChange={e => setEditParamForm(p => ({ ...p, banco: e.target.value }))} placeholder="Ex: Bradesco" />
+                </div>
+                <div>
+                  <label className="label-field text-xs">Agência</label>
+                  <input className="input-field" value={editParamForm.agencia || ''} onChange={e => setEditParamForm(p => ({ ...p, agencia: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label-field text-xs">Conta</label>
+                  <input className="input-field" value={editParamForm.conta || ''} onChange={e => setEditParamForm(p => ({ ...p, conta: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label-field text-xs">Tipo Conta</label>
+                  <select className="input-field" value={editParamForm.tipo_conta || 'Corrente'} onChange={e => setEditParamForm(p => ({ ...p, tipo_conta: e.target.value }))}>
+                    <option value="Corrente">Conta Corrente</option>
+                    <option value="Poupanca">Poupanca</option>
+                    <option value="Pagamento">Conta Pagamento</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label-field text-xs">Chave PIX</label>
+                  <input className="input-field" value={editParamForm.pix_chave || ''} onChange={e => setEditParamForm(p => ({ ...p, pix_chave: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="label-field text-xs">Tipo PIX</label>
+                  <select className="input-field" value={editParamForm.pix_tipo || ''} onChange={e => setEditParamForm(p => ({ ...p, pix_tipo: e.target.value }))}>
+                    <option value="">-- Selecione --</option>
+                    <option value="cpf">CPF</option>
+                    <option value="email">E-mail</option>
+                    <option value="telefone">Telefone</option>
+                    <option value="aleatoria">Chave Aleatória</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Parâmetros de Reembolso */}
+            <fieldset className="border rounded-lg p-4 mb-4">
+              <legend className="text-sm font-semibold text-gray-600 px-1">Parâmetros de Reembolso</legend>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: 'valor_gasolina', label: 'Valor Gasolina (R$/L)', step: '0.01' },
+                  { key: 'km_carro_rate', label: 'Rate Km Carro (R$/km)', step: '0.01' },
+                  { key: 'km_moto_rate', label: 'Rate Km Moto (R$/km)', step: '0.01' },
+                  { key: 'limite_passagens', label: 'Limite Passagens (R$)', step: '0.01' },
+                  { key: 'limite_alimentacao', label: 'Limite Alimentação (R$)', step: '0.01' },
+                  { key: 'limite_hotel', label: 'Limite Hotel (R$)', step: '0.01' },
+                  { key: 'limite_comunicacao', label: 'Limite Comunicação (R$)', step: '0.01' },
+                  { key: 'diaria_valor', label: 'Diária (R$)', step: '0.01' },
+                  { key: 'ajuda_custo', label: 'Ajuda de Custo (R$)', step: '0.01' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="label-field text-xs">{f.label}</label>
+                    <input
+                      type="number"
+                      step={f.step}
+                      min="0"
+                      className="input-field"
+                      value={editParamForm[f.key] ?? ''}
+                      onChange={e => setEditParamForm(p => ({ ...p, [f.key]: e.target.value ? Number(e.target.value) : null }))}
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={() => setShowParamModal(false)} className="btn-secondary">Cancelar</button>
+              <button onClick={saveParamForm} disabled={savingParam} className="btn-primary">
+                {savingParam ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Hidden PDF content (captured by html2canvas) ── */}
+      <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+        <div ref={pdfRef} style={{ width: '794px', padding: '40px', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif' }}>
+          {/* Header UNINORTE */}
+          <div style={{ borderBottom: '3px solid #006D43', paddingBottom: '16px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#006D43', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>
+                NNE
+              </div>
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#006D43', margin: 0 }}>UNIÃO NORTE NORDESTE BRASILEIRA</p>
+                <p style={{ fontSize: '12px', color: '#555', margin: '2px 0 0 0' }}>IGREJA ADVENTISTA DO SÉTIMO DIA — MOVIMENTO DE REFORMA</p>
+              </div>
+            </div>
+            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', marginTop: '12px', textAlign: 'center' }}>RELATÓRIO DO CAMPO MISSIONÁRIO</p>
+          </div>
+
+          {/* Missionary Data */}
+          {missionario && (
+            <div style={{ marginBottom: '20px' }}>
+              <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555', width: '120px' }}>Missionário:</td>
+                    <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario as any).usuario?.nome || missionario.nome || '-'}</td>
+                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555', width: '80px' }}>Cargo:</td>
+                    <td style={{ padding: '4px 8px', color: '#333' }}>{CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Associação:</td>
+                    <td style={{ padding: '4px 8px', color: '#333' }}>{(missionario.associacao as any)?.nome || 'ASPAR'}</td>
+                    <td style={{ padding: '4px 8px', fontWeight: 'bold', color: '#555' }}>Data:</td>
+                    <td style={{ padding: '4px 8px', color: '#333' }}>{new Date().toLocaleDateString('pt-BR')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Churches Table */}
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#006D43', marginBottom: '8px' }}>IGREJAS DO CAMPO</p>
+            <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f0f0f0' }}>
+                  <th style={{ padding: '6px 8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Igreja</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Cidade/UF</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'center', borderBottom: '1px solid #ddd' }}>Tipo</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'center', borderBottom: '1px solid #ddd' }}>Membros</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'center', borderBottom: '1px solid #ddd' }}>Interessados</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Receita</th>
+                </tr>
+              </thead>
+              <tbody>
+                {igrejas.map(ig => {
+                  const igFin = financeiroByIgreja[ig.id]
+                  return (
+                    <tr key={ig.id}>
+                      <td style={{ padding: '5px 8px', borderBottom: '1px solid #eee' }}>{ig.nome}</td>
+                      <td style={{ padding: '5px 8px', borderBottom: '1px solid #eee' }}>{[ig.endereco_cidade, ig.endereco_estado].filter(Boolean).join(' - ') || '-'}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'center', borderBottom: '1px solid #eee' }}>{ig.tipo || '-'}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'center', borderBottom: '1px solid #eee', fontWeight: 'bold' }}>{ig.membros_ativos || 0}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'center', borderBottom: '1px solid #eee' }}>{ig.interessados || 0}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{igFin ? `R$ ${igFin.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-'}</td>
+                    </tr>
+                  )
+                })}
+                <tr style={{ backgroundColor: '#f9f9f9', fontWeight: 'bold' }}>
+                  <td style={{ padding: '6px 8px' }} colSpan={3}>TOTAL</td>
+                  <td style={{ padding: '6px 8px', textAlign: 'center' }}>{totalMembros}</td>
+                  <td style={{ padding: '6px 8px', textAlign: 'center' }}>{totalInteressados}</td>
+                  <td style={{ padding: '6px 8px', textAlign: 'right' }}>R$ {Object.values(financeiroByIgreja).reduce((s, f) => s + f.total, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Financial Summary */}
+          {financeiro.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#006D43', marginBottom: '8px' }}>RESUMO FINANCEIRO</p>
+              <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f0f0f0' }}>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Período</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Dízimos</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Ofertas</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {financeiro.map(f => (
+                    <tr key={`pdf-${f.ano}-${f.mes}`}>
+                      <td style={{ padding: '5px 8px', borderBottom: '1px solid #eee' }}>{MESES[f.mes - 1]} {f.ano}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee' }}>R$ {f.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee' }}>R$ {f.ofertas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee', fontWeight: 'bold' }}>R$ {f.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Signatures */}
+          <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'space-between', gap: '40px' }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ borderTop: '1px solid #333', paddingTop: '8px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>{(missionario as any)?.usuario?.nome || missionario?.nome || 'Missionário'}</p>
+                <p style={{ fontSize: '10px', color: '#666', margin: '2px 0 0 0' }}>{missionario ? (CARGO_LABELS[missionario.cargo_ministerial] || 'Missionário') : 'Missionário'}</p>
+              </div>
+            </div>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ borderTop: '1px solid #333', paddingTop: '8px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#333', margin: 0 }}>Presidente da União</p>
+                <p style={{ fontSize: '10px', color: '#666', margin: '2px 0 0 0' }}>União Norte Nordeste Brasileira</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

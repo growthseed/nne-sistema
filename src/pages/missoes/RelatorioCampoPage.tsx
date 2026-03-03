@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Missionario, DadosFinanceiros, ClasseBatismal, RelatorioMissionario } from '@/types'
+import type { Missionario, DadosFinanceiros, ClasseBatismal } from '@/types'
 import { projectMembership, projectRevenue, calculateGrowthRate, analyzeAgeDistribution, formatMesAno } from '@/lib/projections'
 import { FiDownload, FiFileText, FiUsers, FiTrendingUp, FiTrendingDown, FiDollarSign, FiBarChart2 } from 'react-icons/fi'
 import jsPDF from 'jspdf'
@@ -62,8 +62,9 @@ export default function RelatorioCampoPage() {
   const [financeiro, setFinanceiro] = useState<DadosFinanceiros[]>([])
   const [classesBatismais, setClassesBatismais] = useState<ClasseBatismal[]>([])
   const [contagem, setContagem] = useState<{ mes: number; ano: number; total_membros: number }[]>([])
-  const [relatorios, setRelatorios] = useState<RelatorioMissionario[]>([])
-  const [uniaoRelatorios, setUniaoRelatorios] = useState<Pick<RelatorioMissionario, 'estudos_biblicos' | 'visitas_missionarias' | 'literatura_distribuida' | 'pessoas_contatadas' | 'convites_feitos' | 'pessoas_trazidas'>[]>([])
+  // Aggregated daily activity data (from relatorio_missionario_diario)
+  const [atividadesMissionario, setAtividadesMissionario] = useState<Record<string, number>>({})
+  const [atividadesUniao, setAtividadesUniao] = useState<Record<string, number>>({})
   const [reportReady, setReportReady] = useState(false)
 
   const currentYear = new Date().getFullYear()
@@ -149,8 +150,8 @@ export default function RelatorioCampoPage() {
         fetchFinanceiro(igrejasIds),
         fetchClasses(igrejasIds),
         fetchContagem(igrejasIds),
-        fetchRelatorios(igrejasIds),
-        fetchUniaoRelatorios(),
+        fetchAtividades(selected.id),
+        fetchAtividadesUniao(),
       ])
 
       setReportReady(true)
@@ -209,25 +210,63 @@ export default function RelatorioCampoPage() {
     setContagem(data || [])
   }
 
-  async function fetchRelatorios(igrejasIds: string[]) {
-    if (igrejasIds.length === 0) { setRelatorios([]); return }
-    const { data, error } = await supabase
+  const RADAR_FIELDS = [
+    'estudos_biblicos', 'familias_visitadas', 'membros_visitados',
+    'interessados_visitados', 'contatos_missionarios', 'sermoes_conferencias',
+    'pessoas_batizadas', 'classes_batismais_ativ', 'folhetos_distribuidos',
+  ]
+
+  async function fetchAtividades(missionarioId: string) {
+    // Get reports for this missionary in current year
+    const { data: reports } = await supabase
       .from('relatorios_missionarios')
-      .select('*')
-      .in('igreja_id', igrejasIds)
+      .select('id')
+      .eq('missionario_id', missionarioId)
       .eq('ano', currentYear)
-    if (error) throw error
-    setRelatorios(data || [])
+
+    if (!reports || reports.length === 0) { setAtividadesMissionario({}); return }
+
+    const reportIds = reports.map(r => r.id)
+    const { data: diarios } = await supabase
+      .from('relatorio_missionario_diario')
+      .select(RADAR_FIELDS.join(', '))
+      .in('relatorio_id', reportIds)
+
+    // Aggregate totals
+    const agg: Record<string, number> = {}
+    for (const f of RADAR_FIELDS) agg[f] = 0
+    for (const d of diarios || []) {
+      for (const f of RADAR_FIELDS) agg[f] += Number((d as any)[f]) || 0
+    }
+    setAtividadesMissionario(agg)
   }
 
-  async function fetchUniaoRelatorios() {
-    // Fetch union-wide data for comparison (radar chart)
-    const { data, error } = await supabase
+  async function fetchAtividadesUniao() {
+    // Fetch all reports for the current year (union-wide comparison)
+    const { data: reports } = await supabase
       .from('relatorios_missionarios')
-      .select('estudos_biblicos, visitas_missionarias, literatura_distribuida, pessoas_contatadas, convites_feitos, pessoas_trazidas')
+      .select('id')
       .eq('ano', currentYear)
-    if (error) { setUniaoRelatorios([]); return }
-    setUniaoRelatorios(data || [])
+
+    if (!reports || reports.length === 0) { setAtividadesUniao({}); return }
+
+    const reportIds = reports.map(r => r.id)
+    const { data: diarios } = await supabase
+      .from('relatorio_missionario_diario')
+      .select(RADAR_FIELDS.join(', '))
+      .in('relatorio_id', reportIds)
+
+    const agg: Record<string, number> = {}
+    for (const f of RADAR_FIELDS) agg[f] = 0
+    for (const d of diarios || []) {
+      for (const f of RADAR_FIELDS) agg[f] += Number((d as any)[f]) || 0
+    }
+    // Average per missionary (divide by distinct missionaries)
+    const uniqueMissionaries = new Set(reports.map(r => r.id)).size
+    if (uniqueMissionaries > 1) {
+      for (const f of RADAR_FIELDS) agg[f] = Math.round(agg[f] / uniqueMissionaries)
+    }
+    setAtividadesUniao(agg)
   }
 
   // Computed data
@@ -303,36 +342,23 @@ export default function RelatorioCampoPage() {
     }
   }, [financeiro])
 
-  // Missionary activity radar
+  // Missionary activity radar (from relatorio_missionario_diario aggregated)
+  const radarLabels = [
+    'Estudos Biblicos', 'Familias Visitadas', 'Membros Visitados',
+    'Interessados', 'Contatos', 'Sermoes',
+    'Batizados', 'Classes Batismais', 'Folhetos',
+  ]
+
   const radarData = useMemo(() => {
-    if (relatorios.length === 0) return null
-
-    const missionaryCount = relatorios.length || 1
-    const missionaryAvg = {
-      estudos: relatorios.reduce((s, r) => s + (r.estudos_biblicos || 0), 0) / missionaryCount,
-      visitas: relatorios.reduce((s, r) => s + (r.visitas_missionarias || 0), 0) / missionaryCount,
-      literatura: relatorios.reduce((s, r) => s + (r.literatura_distribuida || 0), 0) / missionaryCount,
-      contatos: relatorios.reduce((s, r) => s + (r.pessoas_contatadas || 0), 0) / missionaryCount,
-      convites: relatorios.reduce((s, r) => s + (r.convites_feitos || 0), 0) / missionaryCount,
-      trazidas: relatorios.reduce((s, r) => s + (r.pessoas_trazidas || 0), 0) / missionaryCount,
-    }
-
-    const uniaoCount = uniaoRelatorios.length || 1
-    const uniaoAvg = {
-      estudos: uniaoRelatorios.reduce((s, r) => s + (r.estudos_biblicos || 0), 0) / uniaoCount,
-      visitas: uniaoRelatorios.reduce((s, r) => s + (r.visitas_missionarias || 0), 0) / uniaoCount,
-      literatura: uniaoRelatorios.reduce((s, r) => s + (r.literatura_distribuida || 0), 0) / uniaoCount,
-      contatos: uniaoRelatorios.reduce((s, r) => s + (r.pessoas_contatadas || 0), 0) / uniaoCount,
-      convites: uniaoRelatorios.reduce((s, r) => s + (r.convites_feitos || 0), 0) / uniaoCount,
-      trazidas: uniaoRelatorios.reduce((s, r) => s + (r.pessoas_trazidas || 0), 0) / uniaoCount,
-    }
+    const hasData = Object.values(atividadesMissionario).some(v => v > 0)
+    if (!hasData) return null
 
     return {
-      labels: ['Estudos', 'Visitas', 'Literatura', 'Contatos', 'Convites', 'Pessoas Trazidas'],
+      labels: radarLabels,
       datasets: [
         {
           label: 'Missionario',
-          data: [missionaryAvg.estudos, missionaryAvg.visitas, missionaryAvg.literatura, missionaryAvg.contatos, missionaryAvg.convites, missionaryAvg.trazidas],
+          data: RADAR_FIELDS.map(f => atividadesMissionario[f] || 0),
           borderColor: '#006D43',
           backgroundColor: '#006D4340',
           borderWidth: 2,
@@ -340,7 +366,7 @@ export default function RelatorioCampoPage() {
         },
         {
           label: 'Media da Uniao',
-          data: [uniaoAvg.estudos, uniaoAvg.visitas, uniaoAvg.literatura, uniaoAvg.contatos, uniaoAvg.convites, uniaoAvg.trazidas],
+          data: RADAR_FIELDS.map(f => atividadesUniao[f] || 0),
           borderColor: '#3B82F6',
           backgroundColor: '#3B82F630',
           borderWidth: 2,
@@ -349,7 +375,7 @@ export default function RelatorioCampoPage() {
         },
       ],
     }
-  }, [relatorios, uniaoRelatorios])
+  }, [atividadesMissionario, atividadesUniao])
 
   // Membership projection
   const membershipProjection = useMemo(() => {
@@ -484,7 +510,7 @@ export default function RelatorioCampoPage() {
         heightLeft -= pdf.internal.pageSize.getHeight()
       }
 
-      const nome = missionario?.usuario?.nome || 'missionario'
+      const nome = missionario?.nome || missionario?.usuario?.nome || 'missionario'
       pdf.save(`relatorio-campo-${nome.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`)
     } catch (err) {
       console.error('Erro ao exportar PDF:', err)
@@ -500,7 +526,7 @@ export default function RelatorioCampoPage() {
 
       // Summary sheet
       const summaryData = [
-        ['Relatorio do Campo - ' + (missionario.usuario?.nome || '')],
+        ['Relatorio do Campo - ' + (missionario.nome || missionario.usuario?.nome || '')],
         ['Cargo', CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial],
         ['Igrejas', igrejasNomes.join(', ')],
         ['Total Membros', totalMembros],
@@ -539,18 +565,15 @@ export default function RelatorioCampoPage() {
         XLSX.utils.book_append_sheet(wb, wsCl, 'Classes Batismais')
       }
 
-      // Missionary reports sheet
-      if (relatorios.length > 0) {
-        const repHeaders = ['Mes', 'Estudos', 'Visitas', 'Literatura', 'Contatos', 'Convites', 'Trazidas', 'Horas']
-        const repData = relatorios.map(r => [
-          r.mes, r.estudos_biblicos, r.visitas_missionarias, r.literatura_distribuida,
-          r.pessoas_contatadas, r.convites_feitos, r.pessoas_trazidas, r.horas_trabalho,
-        ])
+      // Missionary activity sheet (aggregated from daily reports)
+      if (Object.values(atividadesMissionario).some(v => v > 0)) {
+        const repHeaders = ['Campo', 'Total']
+        const repData = RADAR_FIELDS.map((f, i) => [radarLabels[i], atividadesMissionario[f] || 0])
         const wsRep = XLSX.utils.aoa_to_sheet([repHeaders, ...repData])
         XLSX.utils.book_append_sheet(wb, wsRep, 'Atividade Missionaria')
       }
 
-      const nome = missionario.usuario?.nome || 'missionario'
+      const nome = missionario.nome || missionario.usuario?.nome || 'missionario'
       XLSX.writeFile(wb, `relatorio-campo-${nome.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.xlsx`)
     } catch (err) {
       console.error('Erro ao exportar Excel:', err)
@@ -595,7 +618,7 @@ export default function RelatorioCampoPage() {
               <option value="">-- Selecione um missionario --</option>
               {missionarios.map(m => (
                 <option key={m.id} value={m.id}>
-                  {m.usuario?.nome || m.id} - {CARGO_LABELS[m.cargo_ministerial] || m.cargo_ministerial}
+                  {m.nome || m.usuario?.nome || m.id} - {CARGO_LABELS[m.cargo_ministerial] || m.cargo_ministerial}
                 </option>
               ))}
             </select>
@@ -634,7 +657,7 @@ export default function RelatorioCampoPage() {
                 <FiUsers className="w-6 h-6 text-primary-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-800">{missionario.usuario?.nome || 'Missionario'}</h2>
+                <h2 className="text-xl font-bold text-gray-800">{missionario.nome || missionario.usuario?.nome || 'Missionario'}</h2>
                 <p className="text-sm text-gray-500">
                   {CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial}
                   {missionario.associacao && ` - ${missionario.associacao.sigla}`}

@@ -39,7 +39,6 @@ export default function MapasPage() {
 
   const [igrejas, setIgrejas] = useState<IgrejaComAssociacao[]>([])
   const [associacoes, setAssociacoes] = useState<Associacao[]>([])
-  const [membrosCount, setMembrosCount] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [filtroAssociacao, setFiltroAssociacao] = useState('')
 
@@ -52,7 +51,7 @@ export default function MapasPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      await Promise.all([fetchIgrejas(), fetchAssociacoes(), fetchMembrosCount()])
+      await Promise.all([fetchIgrejas(), fetchAssociacoes()])
     } finally {
       setLoading(false)
     }
@@ -62,7 +61,7 @@ export default function MapasPage() {
     if (!profile) return
     let query = supabase
       .from('igrejas')
-      .select('*, associacao:associacoes(nome, sigla)')
+      .select('*, membros_ativos, interessados, associacao:associacoes(nome, sigla)')
       .eq('ativo', true)
       .order('nome')
 
@@ -107,38 +106,6 @@ export default function MapasPage() {
     setAssociacoes(data || [])
   }
 
-  async function fetchMembrosCount() {
-    if (!profile) return
-    let query = supabase
-      .from('pessoas')
-      .select('igreja_id')
-      .eq('situacao', 'ativo')
-
-    // Filtro hierárquico
-    if (profile.papel === 'admin_uniao') {
-      query = query.eq('uniao_id', profile.uniao_id!)
-    } else if (profile.papel === 'admin_associacao') {
-      query = query.eq('associacao_id', profile.associacao_id!)
-    } else if (profile.papel !== 'admin') {
-      if (profile.igreja_id) {
-        query = query.eq('igreja_id', profile.igreja_id)
-      }
-    }
-
-    const { data, error } = await query
-    if (error) {
-      console.error('Erro ao buscar contagem de membros:', error)
-      return
-    }
-
-    const contagem: Record<string, number> = {}
-    for (const p of data || []) {
-      if (p.igreja_id) {
-        contagem[p.igreja_id] = (contagem[p.igreja_id] || 0) + 1
-      }
-    }
-    setMembrosCount(contagem)
-  }
 
   // Map associacao_id -> color index
   const coresMap = useMemo(() => {
@@ -168,10 +135,10 @@ export default function MapasPage() {
     [igrejasFiltradas]
   )
 
-  // Total members across filtered churches
+  // Total members across filtered churches (from igrejas.membros_ativos)
   const totalMembros = useMemo(() => {
-    return igrejasFiltradas.reduce((sum, ig) => sum + (membrosCount[ig.id] || 0), 0)
-  }, [igrejasFiltradas, membrosCount])
+    return igrejasFiltradas.reduce((sum, ig) => sum + ((ig as any).membros_ativos || 0), 0)
+  }, [igrejasFiltradas])
 
   if (loading) {
     return (
@@ -279,7 +246,7 @@ export default function MapasPage() {
             <CircleMarker
               key={ig.id}
               center={[ig.coordenadas_lat!, ig.coordenadas_lng!]}
-              radius={8}
+              radius={Math.max(6, Math.min(18, ((ig as any).membros_ativos || 0) / 3 + 6))}
               pathOptions={{
                 color: coresMap[ig.associacao_id] || '#999',
                 fillColor: coresMap[ig.associacao_id] || '#999',
@@ -316,8 +283,14 @@ export default function MapasPage() {
                     )}
                     <p className="text-gray-600">
                       <span className="font-medium">Membros:</span>{' '}
-                      {(membrosCount[ig.id] || 0).toLocaleString('pt-BR')}
+                      {((ig as any).membros_ativos || 0).toLocaleString('pt-BR')}
                     </p>
+                    {(ig as any).interessados > 0 && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">Interessados:</span>{' '}
+                        {((ig as any).interessados || 0).toLocaleString('pt-BR')}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Popup>

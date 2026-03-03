@@ -20,12 +20,13 @@ import {
 export const MISSOES_TABS = [
   { to: '/missoes', label: 'Dashboard' },
   { to: '/missoes/meu-painel', label: 'Meu Painel' },
-  { to: '/missoes/inventario', label: 'Inventario' },
+  { to: '/missoes/inventario', label: 'Ficha de Campo' },
   { to: '/missoes/metas', label: 'Metas e KPIs' },
   { to: '/missoes/planejador-visitas', label: 'Planejador' },
   { to: '/missoes/relatorio-campo', label: 'Relatorio Campo' },
   { to: '/missoes/relatorio', label: 'Novo Relatorio' },
   { to: '/missoes/diagnostico', label: 'Diagnostico' },
+  { to: '/missoes/painel-geral', label: 'Painel Geral' },
 ]
 
 // ========== CARGOS MINISTERIAIS ==========
@@ -177,3 +178,83 @@ export const MESES_NOMES = [
 ]
 
 export const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+// ========== CAMPOS DO RELATORIO DIARIO (4 blocos GS 4.1) ==========
+
+export const RELATORIO_ATIVIDADES_MISSIONARIAS = [
+  { key: 'familias_visitadas', label: 'Familias Visitadas' },
+  { key: 'membros_visitados', label: 'Membros Visitados' },
+  { key: 'interessados_visitados', label: 'Interessados Visitados' },
+  { key: 'estudos_biblicos', label: 'Estudos Biblicos' },
+  { key: 'folhetos_distribuidos', label: 'Folhetos Distribuidos' },
+  { key: 'contatos_missionarios', label: 'Contatos Missionarios' },
+  { key: 'cultos_residencias', label: 'Cultos em Residencias' },
+  { key: 'sermoes_conferencias', label: 'Sermoes / Conferencias' },
+  { key: 'seminarios_palestras', label: 'Seminarios / Palestras' },
+  { key: 'cartas_email', label: 'Cartas / E-mails' },
+  { key: 'classes_batismais_ativ', label: 'Classes Batismais' },
+  { key: 'funerais', label: 'Funerais' },
+] as const
+
+export const RELATORIO_HORAS = [
+  { key: 'horas_viagens', label: 'Viagens', decimal: true },
+  { key: 'horas_comissoes', label: 'Comissoes', decimal: true },
+  { key: 'horas_estudo_pessoal', label: 'Estudo Pessoal', decimal: true },
+  { key: 'horas_reunioes_igreja', label: 'Reunioes na Igreja', decimal: true },
+  { key: 'horas_escritorio', label: 'Escritorio / Sede', decimal: true },
+  { key: 'horas_diligencias', label: 'Diligencias da Obra', decimal: true },
+  { key: 'horas_aconselhamentos', label: 'Aconselhamentos', decimal: true },
+  { key: 'horas_recebendo_visitas', label: 'Recebendo Visitas', decimal: true },
+] as const
+
+export const RELATORIO_PASTORAIS = [
+  { key: 'organizacoes_igrejas', label: 'Organizacao de Igrejas' },
+  { key: 'santa_ceia', label: 'Santa Ceia' },
+  { key: 'cerimonias_batismais', label: 'Cerimonias Batismais' },
+  { key: 'pessoas_batizadas', label: 'Pessoas Batizadas' },
+  { key: 'pessoas_excluidas', label: 'Pessoas Excluidas' },
+  { key: 'casamentos', label: 'Casamentos' },
+  { key: 'apresentacao_criancas', label: 'Apresentacao de Criancas' },
+  { key: 'reunioes_membros', label: 'Reunioes de Membros' },
+] as const
+
+export const RELATORIO_DESPESAS = [
+  { key: 'passagens', label: 'Passagens (R$)', currency: true },
+  { key: 'alimentacao', label: 'Alimentacao (R$)', currency: true },
+  { key: 'hotel', label: 'Hotel (R$)', currency: true },
+  { key: 'comunicacao', label: 'Comunicacao (R$)', currency: true },
+  { key: 'km_carro', label: 'Km Carro' },
+  { key: 'km_moto', label: 'Km Moto' },
+] as const
+
+export const RELATORIO_TODOS_CAMPOS = [
+  ...RELATORIO_ATIVIDADES_MISSIONARIAS,
+  ...RELATORIO_HORAS,
+  ...RELATORIO_PASTORAIS,
+  ...RELATORIO_DESPESAS,
+] as const
+
+// ========== TIPO DE IGREJA ==========
+
+export const TIPO_IGREJA_OPTIONS = [
+  'Templo',
+  'Salao Alugado',
+  'Salao Proprio',
+  'Salao Cedido',
+  'Indefinido',
+]
+
+// ========== TIPO CONTA BANCARIA ==========
+
+export const TIPO_CONTA_OPTIONS = [
+  { value: 'Corrente', label: 'Conta Corrente' },
+  { value: 'Poupanca', label: 'Poupanca' },
+  { value: 'Pagamento', label: 'Conta Pagamento' },
+]
+
+export const PIX_TIPO_OPTIONS = [
+  { value: 'cpf', label: 'CPF' },
+  { value: 'email', label: 'E-mail' },
+  { value: 'telefone', label: 'Telefone' },
+  { value: 'aleatoria', label: 'Chave Aleatoria' },
+]

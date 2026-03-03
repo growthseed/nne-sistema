@@ -43,6 +43,20 @@ export interface Igreja {
   created_at: string
   associacao?: { nome: string; sigla: string } | null
   uniao?: { nome: string; sigla: string } | null
+  // Campos GS 4.1
+  gs_id?: number | null
+  tipo?: string | null
+  data_inauguracao?: string | null
+  escritura?: string | null
+  site?: string | null
+  relatorio_financeiro?: boolean
+  recibo_eletronico_desde?: string | null
+  membros_ativos?: number
+  membros_inativos?: number
+  membros_falecidos?: number
+  interessados?: number
+  pastor_id?: string | null
+  obreiro_id?: string | null
 }
 
 // ========== AUTENTICAÇÃO / RBAC ==========
@@ -476,6 +490,7 @@ export interface MissionarioFilho {
 
 export interface Missionario {
   id: string
+  nome: string | null
   usuario_id: string
   uniao_id: string | null
   associacao_id: string | null
@@ -691,4 +706,129 @@ export interface ProjecaoCrescimento {
   membros_projetado: number
   receita_real: number | null
   receita_projetada: number
+}
+
+// ============ CAMPO TERRITORIAL ============
+
+export interface MissionarioIgreja {
+  id: string
+  missionario_id: string
+  igreja_id: string
+  funcao: string
+  data_inicio: string
+  data_fim: string | null
+  principal: boolean
+  ativo: boolean
+  created_at: string
+  igreja?: {
+    id: string
+    nome: string
+    endereco_cidade: string | null
+    endereco_estado: string | null
+  }
+}
+
+export interface MissionarioSnapshot {
+  id: string
+  missionario_id: string
+  mes: number
+  ano: number
+  total_membros: number
+  total_batismos: number
+  total_interessados: number
+  total_dizimos: number
+  total_ofertas: number
+  total_primicias: number
+  total_igrejas: number
+  media_idade_membros: number | null
+  alunos_classe_biblica: number
+  presenca_media: number | null
+  created_at: string
+}
+
+// ============ RELATORIO DIARIO (GS 4.1) ============
+
+export interface RelatorioDiario {
+  id: string
+  relatorio_id: string
+  dia: number
+  lugar_atividade: string | null
+  observacao: string | null
+  // Bloco 1: Atividades Missionarias
+  familias_visitadas: number
+  membros_visitados: number
+  interessados_visitados: number
+  estudos_biblicos: number
+  folhetos_distribuidos: number
+  contatos_missionarios: number
+  cultos_residencias: number
+  sermoes_conferencias: number
+  seminarios_palestras: number
+  cartas_email: number
+  classes_batismais_ativ: number
+  funerais: number
+  // Bloco 2: Horas Empregadas
+  horas_viagens: number
+  horas_comissoes: number
+  horas_estudo_pessoal: number
+  horas_reunioes_igreja: number
+  horas_escritorio: number
+  horas_diligencias: number
+  horas_aconselhamentos: number
+  horas_recebendo_visitas: number
+  // Bloco 3: Atividades Pastorais
+  organizacoes_igrejas: number
+  santa_ceia: number
+  cerimonias_batismais: number
+  pessoas_batizadas: number
+  pessoas_excluidas: number
+  casamentos: number
+  apresentacao_criancas: number
+  reunioes_membros: number
+  // Bloco 4: Despesas
+  passagens: number
+  alimentacao: number
+  hotel: number
+  comunicacao: number
+  km_carro: number
+  km_moto: number
+  created_at: string
+}
+
+// ============ PARAMETROS DO MISSIONARIO ============
+
+export interface MissionarioParametros {
+  id: string
+  missionario_id: string
+  // Dados bancarios
+  banco: string | null
+  agencia: string | null
+  conta: string | null
+  tipo_conta: string | null
+  pix_chave: string | null
+  pix_tipo: string | null
+  // Parametros de reembolso
+  valor_gasolina: number | null
+  km_carro_rate: number | null
+  km_moto_rate: number | null
+  limite_passagens: number | null
+  limite_alimentacao: number | null
+  limite_hotel: number | null
+  limite_comunicacao: number | null
+  diaria_valor: number | null
+  ajuda_custo: number | null
+  created_at: string
+  updated_at: string
+}
+
+// ============ OFICIAIS DA IGREJA ============
+
+export interface IgrejaOficial {
+  id: string
+  igreja_id: string
+  departamento: string
+  responsavel_nome: string | null
+  responsavel_id: string | null
+  ano: number
+  created_at: string
 }

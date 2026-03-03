@@ -28,3 +28,14 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+.vercel
+
+# Temp files
+dist_old/
+dist_old2/
+*.zip
+vite.config.ts.timestamp-*
+ziSBT6Ge
+.vite_old/
+supabase/.temp/

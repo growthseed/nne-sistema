@@ -28,33 +28,39 @@ import {
 } from 'react-icons/hi'
 import type { IconType } from 'react-icons'
 
+const isMVP = import.meta.env.VITE_MVP_ONLY === 'true'
+
 interface MenuItem {
   to: string
   label: string
   icon: IconType
   roles: string[] | null
+  mvp?: boolean // true = show in MVP mode
 }
 
 interface MenuGroup {
   key: string
   label: string
   items: MenuItem[]
+  mvp?: boolean // true = show entire group in MVP mode
 }
 
 const menuGroups: MenuGroup[] = [
   {
     key: 'dashboard',
     label: 'Dashboard',
+    mvp: true,
     items: [
-      { to: '/', label: 'Painel Geral', icon: HiOutlineHome, roles: null },
+      { to: '/', label: 'Painel Geral', icon: HiOutlineHome, roles: null, mvp: true },
     ],
   },
   {
     key: 'cadastro',
-    label: 'Cadastro',
+    label: 'Censo / Pesquisa',
+    mvp: true,
     items: [
-      { to: '/cadastro', label: 'Novo Cadastro', icon: HiOutlineClipboardList, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja'] },
-      { to: '/cadastro/dashboard', label: 'Pesquisa Analytics', icon: HiOutlineChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja'] },
+      { to: '/cadastro', label: 'Novo Cadastro', icon: HiOutlineClipboardList, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja'], mvp: true },
+      { to: '/cadastro/dashboard', label: 'Pesquisa Analytics', icon: HiOutlineChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja'], mvp: true },
     ],
   },
   {
@@ -75,7 +81,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { to: '/financeiro', label: 'Dashboard', icon: HiOutlineCurrencyDollar, roles: ['admin', 'admin_uniao', 'admin_associacao', 'tesoureiro'] },
       { to: '/financeiro/lancamentos', label: 'Lancamentos', icon: HiOutlineDocumentText, roles: ['admin', 'admin_uniao', 'admin_associacao', 'tesoureiro'] },
-      { to: '/financeiro/receita-campo', label: 'Receita de Campo', icon: HiOutlinePresentationChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao', 'tesoureiro'] },
+      { to: '/financeiro/receita-campo', label: 'Contribuicoes', icon: HiOutlinePresentationChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao', 'tesoureiro'] },
     ],
   },
   {
@@ -90,14 +96,16 @@ const menuGroups: MenuGroup[] = [
   {
     key: 'missoes',
     label: 'Missoes',
+    mvp: true,
     items: [
-      { to: '/missoes', label: 'Dashboard', icon: HiOutlineLightBulb, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja', 'membro'] },
+      { to: '/missoes', label: 'Dashboard', icon: HiOutlineLightBulb, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja', 'membro'], mvp: true },
+      { to: '/missoes/inventario', label: 'Ficha de Campo', icon: HiOutlineClipboardCheck, roles: ['admin', 'admin_uniao', 'admin_associacao'], mvp: true },
       { to: '/missoes/meu-painel', label: 'Meu Painel', icon: HiOutlineBriefcase, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
-      { to: '/missoes/inventario', label: 'Inventario', icon: HiOutlineClipboardCheck, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
       { to: '/missoes/metas', label: 'Metas e KPIs', icon: HiOutlinePresentationChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
       { to: '/missoes/planejador-visitas', label: 'Planejador Visitas', icon: HiOutlineCalendar, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja'] },
       { to: '/missoes/relatorio-campo', label: 'Relatorio Campo', icon: HiOutlineDocumentReport, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
       { to: '/missoes/diagnostico', label: 'Diagnostico', icon: HiOutlineSearchCircle, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
+      { to: '/missoes/painel-geral', label: 'Painel Geral', icon: HiOutlineChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
     ],
   },
   {
@@ -114,7 +122,7 @@ const menuGroups: MenuGroup[] = [
     label: 'Inteligencia',
     items: [
       { to: '/mapas', label: 'Mapas', icon: HiOutlineMap, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja'] },
-      { to: '/ibge', label: 'Dados IBGE', icon: HiOutlineGlobe, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
+      { to: '/ibge', label: 'Dados Territoriais', icon: HiOutlineGlobe, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
       { to: '/relatorios', label: 'Relatorios', icon: HiOutlineDocumentReport, roles: ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja', 'tesoureiro'] },
       { to: '/analytics', label: 'Analises', icon: HiOutlineChartBar, roles: ['admin', 'admin_uniao', 'admin_associacao'] },
     ],
@@ -172,11 +180,14 @@ export default function Sidebar() {
     )
   }
 
-  // Filter groups by RBAC
+  // Filter groups by MVP mode + RBAC
   const visibleGroups = menuGroups
+    .filter(group => !isMVP || group.mvp) // In MVP mode, only show groups marked as mvp
     .map(group => ({
       ...group,
       items: group.items.filter(item => {
+        // In MVP mode, only show items marked as mvp
+        if (isMVP && !item.mvp) return false
         if (!item.roles) return true
         return hasRole(item.roles as any)
       }),
