@@ -158,12 +158,44 @@ interface ReportRow {
   observacoes: string | null
 }
 
+interface FinancialDetailRow {
+  igreja_id: string
+  igreja_nome: string
+  dizimo: number
+  primicias: number
+  assist_social: number
+  esc_sabatina: number
+  evangelismo: number
+  radio_curso_biblico: number
+  construcao: number
+  musica: number
+  gratidao_6pct: number
+  diverso_assoc: number
+  soma_assoc: number
+  missoes_estrang: number
+  total: number
+}
+
 interface FinancialSummary {
   mes: number
   ano: number
   dizimos: number
   ofertas: number
   total: number
+  // Detailed breakdown totals
+  dizimo: number
+  primicias: number
+  assist_social: number
+  esc_sabatina: number
+  evangelismo: number
+  radio_curso_biblico: number
+  construcao: number
+  musica: number
+  gratidao_6pct: number
+  diverso_assoc: number
+  missoes_estrang: number
+  // Per-church detail
+  churches: FinancialDetailRow[]
 }
 
 export default function DetalheMissionarioPage() {
@@ -224,6 +256,7 @@ export default function DetalheMissionarioPage() {
   const [savingFinanceiro, setSavingFinanceiro] = useState(false)
   const [financeiroMes, setFinanceiroMes] = useState(new Date().getMonth() + 1)
   const [financeiroAno, setFinanceiroAno] = useState(new Date().getFullYear())
+  const [expandedFinMonth, setExpandedFinMonth] = useState<string | null>(null)
 
   useEffect(() => {
     if (profile && id) fetchMissionario()
@@ -406,33 +439,94 @@ export default function DetalheMissionarioPage() {
       .order('mes', { ascending: false })
       .limit(50)
 
-    // Aggregate by month
+    // Build church name map
+    const igNameMap: Record<string, string> = {}
+    for (const ig of igrejas) igNameMap[ig.id] = ig.nome
+
+    // Aggregate by month with detailed breakdown
     const monthMap: Record<string, FinancialSummary> = {}
     const igrejaMap: Record<string, { dizimos: number; ofertas: number; total: number }> = {}
+    // Per-month per-church detail
+    const monthChurchMap: Record<string, Record<string, FinancialDetailRow>> = {}
+
     for (const f of data || []) {
       const d = f as any
       const key = `${d.ano}-${d.mes}`
       if (!monthMap[key]) {
-        monthMap[key] = { mes: d.mes, ano: d.ano, dizimos: 0, ofertas: 0, total: 0 }
+        monthMap[key] = { mes: d.mes, ano: d.ano, dizimos: 0, ofertas: 0, total: 0, dizimo: 0, primicias: 0, assist_social: 0, esc_sabatina: 0, evangelismo: 0, radio_curso_biblico: 0, construcao: 0, musica: 0, gratidao_6pct: 0, diverso_assoc: 0, missoes_estrang: 0, churches: [] }
       }
-      const diz = (d.receita_dizimos || 0) + (d.dizimo || 0) + (d.primicias || 0)
+      if (!monthChurchMap[key]) monthChurchMap[key] = {}
+
+      const dizimo_val = (d.receita_dizimos || 0) + (d.dizimo || 0)
+      const primicias_val = d.primicias || 0
+      const diz = dizimo_val + primicias_val
+      const assist_social = d.assist_social || 0
+      const esc_sabatina = d.esc_sabatina || 0
+      const evangelismo_val = d.evangelismo || 0
+      const radio_cb = d.radio_curso_biblico || 0
+      const construcao_val = d.construcao || 0
+      const musica_val = d.musica || 0
+      const gratidao = d.gratidao_6pct || 0
+      const diverso = d.diverso_assoc || 0
+      const missoes_m = d.missoes_mensais || 0
+      const missoes_a = d.missoes_anuais || 0
+      const missoes_estrang = missoes_m + missoes_a
+
+      const soma_assoc = dizimo_val + primicias_val + assist_social + esc_sabatina + evangelismo_val + radio_cb + construcao_val + musica_val + gratidao + diverso
       const ofe = (d.receita_oferta_regular || 0) + (d.receita_oferta_especial || 0)
-        + (d.assist_social || 0) + (d.esc_sabatina || 0) + (d.evangelismo || 0)
-        + (d.radio_curso_biblico || 0) + (d.construcao || 0) + (d.musica || 0)
-        + (d.gratidao_6pct || 0) + (d.diverso_assoc || 0) + (d.missoes_mensais || 0) + (d.missoes_anuais || 0)
+        + assist_social + esc_sabatina + evangelismo_val
+        + radio_cb + construcao_val + musica_val
+        + gratidao + diverso + missoes_m + missoes_a
         + (d.of_cultos_construcao || 0) + (d.of_missionaria || 0) + (d.of_juvenil || 0)
         + (d.of_gratidao_pobres || 0) + (d.diversos_local || 0) + (d.flores || 0)
+
       monthMap[key].dizimos += diz
       monthMap[key].ofertas += ofe
       monthMap[key].total += diz + ofe
+      monthMap[key].dizimo += dizimo_val
+      monthMap[key].primicias += primicias_val
+      monthMap[key].assist_social += assist_social
+      monthMap[key].esc_sabatina += esc_sabatina
+      monthMap[key].evangelismo += evangelismo_val
+      monthMap[key].radio_curso_biblico += radio_cb
+      monthMap[key].construcao += construcao_val
+      monthMap[key].musica += musica_val
+      monthMap[key].gratidao_6pct += gratidao
+      monthMap[key].diverso_assoc += diverso
+      monthMap[key].missoes_estrang += missoes_estrang
 
-      // Aggregate by church
+      // Per-church detail row
       const igId = d.igreja_id as string
+      monthChurchMap[key][igId] = {
+        igreja_id: igId,
+        igreja_nome: igNameMap[igId] || igId,
+        dizimo: dizimo_val,
+        primicias: primicias_val,
+        assist_social,
+        esc_sabatina,
+        evangelismo: evangelismo_val,
+        radio_curso_biblico: radio_cb,
+        construcao: construcao_val,
+        musica: musica_val,
+        gratidao_6pct: gratidao,
+        diverso_assoc: diverso,
+        soma_assoc,
+        missoes_estrang,
+        total: soma_assoc + missoes_estrang,
+      }
+
+      // Aggregate by church (yearly)
       if (!igrejaMap[igId]) igrejaMap[igId] = { dizimos: 0, ofertas: 0, total: 0 }
       igrejaMap[igId].dizimos += diz
       igrejaMap[igId].ofertas += ofe
       igrejaMap[igId].total += diz + ofe
     }
+
+    // Attach church rows to each month
+    for (const key of Object.keys(monthMap)) {
+      monthMap[key].churches = Object.values(monthChurchMap[key] || {}).sort((a, b) => a.igreja_nome.localeCompare(b.igreja_nome))
+    }
+
     const sorted = Object.values(monthMap).sort((a, b) =>
       a.ano !== b.ano ? a.ano - b.ano : a.mes - b.mes
     )
@@ -1458,12 +1552,12 @@ export default function DetalheMissionarioPage() {
             )}
           </div>
 
-          {/* Financial Summary */}
+          {/* Financial Summary - Detailed Breakdown */}
           <div className="card p-0 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-800">
                 <FiDollarSign className="inline w-5 h-5 mr-1" />
-                Resumo Financeiro
+                Caixa da Associação
               </h3>
               {isAdmin && (
                 <button onClick={() => openFinanceiroModal()} className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600" title="Editar dados financeiros">
@@ -1481,40 +1575,103 @@ export default function DetalheMissionarioPage() {
                 )}
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3">Período</th>
-                    <th className="px-4 py-3 text-right">Dízimo/Primícia</th>
-                    <th className="px-4 py-3 text-right">Ofertas</th>
-                    <th className="px-4 py-3 text-right">Total</th>
-                    {isAdmin && <th className="px-4 py-3 w-10"></th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {financeiro.map(f => (
-                    <tr key={`${f.ano}-${f.mes}`} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-800">{MESES[f.mes - 1]} {f.ano}</td>
-                      <td className="px-4 py-3 text-right text-gray-600">
-                        R$ {f.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-4 py-3 text-right text-gray-600">
-                        R$ {f.ofertas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-4 py-3 text-right font-medium text-gray-800">
-                        R$ {f.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </td>
-                      {isAdmin && (
-                        <td className="px-2 py-3">
-                          <button onClick={() => openFinanceiroModal(f.mes, f.ano)} className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-green-600" title="Editar este mês">
-                            <FiEdit2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
+              <div className="space-y-0 divide-y divide-gray-100">
+                {financeiro.map(f => {
+                  const monthKey = `${f.ano}-${f.mes}`
+                  const isExpanded = expandedFinMonth === monthKey
+                  const fmt = (v: number) => v ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'
+
+                  return (
+                    <div key={monthKey}>
+                      {/* Month header row - clickable */}
+                      <button
+                        onClick={() => setExpandedFinMonth(isExpanded ? null : monthKey)}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          {isExpanded ? <FiChevronUp className="w-4 h-4 text-gray-400" /> : <FiChevronDown className="w-4 h-4 text-gray-400" />}
+                          <span className="font-semibold text-gray-800">{MESES[f.mes - 1]} {f.ano}</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="text-green-700">Díz: R$ {fmt(f.dizimo)}</span>
+                          <span className="text-blue-600">Prim: R$ {fmt(f.primicias)}</span>
+                          <span className="font-bold text-gray-800">Total: R$ {fmt(f.total)}</span>
+                          {isAdmin && (
+                            <button onClick={(e) => { e.stopPropagation(); openFinanceiroModal(f.mes, f.ano) }} className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-green-600" title="Editar">
+                              <FiEdit2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Expanded detail: per-church breakdown table */}
+                      {isExpanded && (
+                        <div className="bg-gray-50 border-t border-gray-200 overflow-x-auto">
+                          <table className="w-full text-xs whitespace-nowrap">
+                            <thead>
+                              <tr className="bg-green-700 text-white text-center">
+                                <th className="px-2 py-2 text-left font-medium sticky left-0 bg-green-700 z-10">Igreja</th>
+                                <th className="px-2 py-2 font-medium">Díz.</th>
+                                <th className="px-2 py-2 font-medium">Prim.</th>
+                                <th className="px-2 py-2 font-medium">A.Soci</th>
+                                <th className="px-2 py-2 font-medium">E.Sab</th>
+                                <th className="px-2 py-2 font-medium">Evang</th>
+                                <th className="px-2 py-2 font-medium">Rd/CB</th>
+                                <th className="px-2 py-2 font-medium">Const.</th>
+                                <th className="px-2 py-2 font-medium">Mús.</th>
+                                <th className="px-2 py-2 font-medium">Grt6%</th>
+                                <th className="px-2 py-2 font-medium">Div.</th>
+                                <th className="px-2 py-2 font-medium bg-green-800">SOMA</th>
+                                <th className="px-2 py-2 font-medium">Miss.Estr</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                              {f.churches.map((ch, ci) => (
+                                <tr key={ch.igreja_id} className={ci % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  <td className="px-2 py-1.5 text-left font-medium text-gray-700 sticky left-0 z-10" style={{ backgroundColor: ci % 2 === 0 ? '#fff' : '#f9fafb' }}>
+                                    {ch.igreja_nome.replace('Igreja ', '').replace(' - ', ' ')}
+                                  </td>
+                                  <td className="px-2 py-1.5 text-right text-green-700 font-medium">{fmt(ch.dizimo)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.primicias)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.assist_social)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.esc_sabatina)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.evangelismo)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.radio_curso_biblico)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.construcao)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.musica)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.gratidao_6pct)}</td>
+                                  <td className="px-2 py-1.5 text-right">{fmt(ch.diverso_assoc)}</td>
+                                  <td className="px-2 py-1.5 text-right font-bold text-gray-800 bg-green-50">{fmt(ch.soma_assoc)}</td>
+                                  <td className="px-2 py-1.5 text-right text-blue-600">{fmt(ch.missoes_estrang)}</td>
+                                </tr>
+                              ))}
+                              {/* Total row */}
+                              <tr className="bg-green-50 font-bold border-t-2 border-green-300">
+                                <td className="px-2 py-2 text-left text-green-800 sticky left-0 bg-green-50 z-10">TOTAL</td>
+                                <td className="px-2 py-2 text-right text-green-800">{fmt(f.dizimo)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.primicias)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.assist_social)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.esc_sabatina)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.evangelismo)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.radio_curso_biblico)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.construcao)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.musica)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.gratidao_6pct)}</td>
+                                <td className="px-2 py-2 text-right">{fmt(f.diverso_assoc)}</td>
+                                <td className="px-2 py-2 text-right text-green-800 bg-green-100">{fmt(f.dizimo + f.primicias + f.assist_social + f.esc_sabatina + f.evangelismo + f.radio_curso_biblico + f.construcao + f.musica + f.gratidao_6pct + f.diverso_assoc)}</td>
+                                <td className="px-2 py-2 text-right text-blue-700">{fmt(f.missoes_estrang)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <div className="px-4 py-2 text-right text-sm font-bold text-green-800 border-t border-green-200 bg-green-50">
+                            Total Geral: R$ {fmt(f.total)}
+                          </div>
+                        </div>
                       )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
 
