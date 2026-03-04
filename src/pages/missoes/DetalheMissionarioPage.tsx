@@ -325,15 +325,17 @@ export default function DetalheMissionarioPage() {
 
       // 2. Igrejas (expandido com membros, endereco, tipo)
       const igrejasIds: string[] = mData.igrejas_responsavel || []
+      let igData: any[] = []
       if (igrejasIds.length > 0) {
-        const { data: igData } = await supabase
+        const { data: igResult } = await supabase
           .from('igrejas')
           .select('id, nome, endereco_cidade, endereco_estado, telefone, membros_ativos, interessados, tipo')
           .in('id', igrejasIds)
-        setIgrejas(igData || [])
+        igData = igResult || []
+        setIgrejas(igData)
         // Calcular totais de membros direto das igrejas (nao da tabela pessoas)
-        const totalM = (igData || []).reduce((sum: number, ig: any) => sum + (ig.membros_ativos || 0), 0)
-        const totalI = (igData || []).reduce((sum: number, ig: any) => sum + (ig.interessados || 0), 0)
+        const totalM = igData.reduce((sum: number, ig: any) => sum + (ig.membros_ativos || 0), 0)
+        const totalI = igData.reduce((sum: number, ig: any) => sum + (ig.interessados || 0), 0)
         setTotalMembros(totalM)
         setTotalInteressados(totalI)
       }
@@ -344,7 +346,7 @@ export default function DetalheMissionarioPage() {
         fetchActivities(),
         fetchGoals(),
         fetchEvaluations(),
-        fetchFinancial(igrejasIds),
+        fetchFinancial(igrejasIds, igData),
         fetchBaptismalClasses(igrejasIds),
         fetchHistorico(),
         fetchParametros(),
@@ -428,7 +430,7 @@ export default function DetalheMissionarioPage() {
 
   // fetchMemberCount removido — totais calculados direto do fetch de igrejas
 
-  async function fetchFinancial(igrejasIds: string[]) {
+  async function fetchFinancial(igrejasIds: string[], igrejasData?: { id: string; nome: string }[]) {
     if (igrejasIds.length === 0) return
 
     const { data } = await supabase
@@ -439,9 +441,9 @@ export default function DetalheMissionarioPage() {
       .order('mes', { ascending: false })
       .limit(50)
 
-    // Build church name map
+    // Build church name map (use passed data to avoid stale state)
     const igNameMap: Record<string, string> = {}
-    for (const ig of igrejas) igNameMap[ig.id] = ig.nome
+    for (const ig of (igrejasData || igrejas)) igNameMap[ig.id] = ig.nome
 
     // Aggregate by month with detailed breakdown
     const monthMap: Record<string, FinancialSummary> = {}
