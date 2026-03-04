@@ -2881,32 +2881,69 @@ export default function DetalheMissionarioPage() {
             </table>
           </div>
 
-          {/* Financial Summary */}
-          {financeiro.length > 0 && (
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#006D43', marginBottom: '8px' }}>RESUMO FINANCEIRO</p>
-              <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f0f0f0' }}>
-                    <th style={{ padding: '6px 8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Período</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Dízimos</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Ofertas</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #ddd' }}>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {financeiro.map(f => (
-                    <tr key={`pdf-${f.ano}-${f.mes}`}>
-                      <td style={{ padding: '5px 8px', borderBottom: '1px solid #eee' }}>{MESES[f.mes - 1]} {f.ano}</td>
-                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee' }}>R$ {f.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee' }}>R$ {f.ofertas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                      <td style={{ padding: '5px 8px', textAlign: 'right', borderBottom: '1px solid #eee', fontWeight: 'bold' }}>R$ {f.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+          {/* Financial Summary - Detailed by month */}
+          {financeiro.length > 0 && financeiro.map(f => {
+            const fmtPdf = (v: number) => v ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'
+            return (
+              <div key={`pdf-fin-${f.ano}-${f.mes}`} style={{ marginBottom: '16px' }}>
+                <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#006D43', marginBottom: '6px' }}>CAIXA DA ASSOCIAÇÃO — {MESES[f.mes - 1].toUpperCase()} {f.ano}</p>
+                <table style={{ width: '100%', fontSize: '9px', borderCollapse: 'collapse', border: '1px solid #ccc' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#006D43', color: '#fff' }}>
+                      <th style={{ padding: '4px 4px', textAlign: 'left', fontSize: '8px' }}>Igreja</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Díz.</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Prim.</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>A.Soci</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>E.Sab</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Evang</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Rd/CB</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Const.</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Mús.</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Grt6%</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Div.</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px', backgroundColor: '#005533' }}>SOMA</th>
+                      <th style={{ padding: '4px 3px', textAlign: 'right', fontSize: '8px' }}>Miss.Est</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {f.churches.map((ch, ci) => (
+                      <tr key={ch.igreja_id} style={{ backgroundColor: ci % 2 === 0 ? '#fff' : '#f7f7f7' }}>
+                        <td style={{ padding: '3px 4px', borderBottom: '1px solid #eee', fontSize: '8px', fontWeight: 500 }}>{ch.igreja_nome.replace('Igreja ', '').replace(' - ', ' ')}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.dizimo)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.primicias)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.assist_social)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.esc_sabatina)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.evangelismo)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.radio_curso_biblico)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.construcao)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.musica)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.gratidao_6pct)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee' }}>{fmtPdf(ch.diverso_assoc)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee', fontWeight: 'bold', backgroundColor: ci % 2 === 0 ? '#f0faf5' : '#e8f5ee' }}>{fmtPdf(ch.soma_assoc)}</td>
+                        <td style={{ padding: '3px 3px', textAlign: 'right', borderBottom: '1px solid #eee', color: '#1d4ed8' }}>{fmtPdf(ch.missoes_estrang)}</td>
+                      </tr>
+                    ))}
+                    <tr style={{ backgroundColor: '#e8f5ee', fontWeight: 'bold', borderTop: '2px solid #006D43' }}>
+                      <td style={{ padding: '4px 4px', fontSize: '9px' }}>TOTAL</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.dizimo)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.primicias)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.assist_social)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.esc_sabatina)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.evangelismo)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.radio_curso_biblico)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.construcao)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.musica)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.gratidao_6pct)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right' }}>{fmtPdf(f.diverso_assoc)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right', backgroundColor: '#d1fae5' }}>{fmtPdf(f.dizimo + f.primicias + f.assist_social + f.esc_sabatina + f.evangelismo + f.radio_curso_biblico + f.construcao + f.musica + f.gratidao_6pct + f.diverso_assoc)}</td>
+                      <td style={{ padding: '4px 3px', textAlign: 'right', color: '#1d4ed8' }}>{fmtPdf(f.missoes_estrang)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p style={{ textAlign: 'right', fontSize: '10px', fontWeight: 'bold', color: '#006D43', marginTop: '4px' }}>Total Geral: R$ {fmtPdf(f.total)}</p>
+              </div>
+            )
+          })}
 
           {/* ── TERMO DE COMPROMISSO MISSIONÁRIO (dinâmico do banco) ── */}
           <TermoCompromissoDisplay
