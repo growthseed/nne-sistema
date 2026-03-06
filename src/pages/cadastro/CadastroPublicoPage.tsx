@@ -218,16 +218,18 @@ export default function CadastroPublicoPage() {
           }))
         }
       } else {
-        // Subsequent saves - UPDATE
-        const { error: dbError } = await supabase
+        // Subsequent saves - DELETE + INSERT (RLS blocks UPDATE for anon)
+        await supabase.from('cadastro_respostas').delete().eq('id', responseId)
+        const { data, error: dbError } = await supabase
           .from('cadastro_respostas')
-          .update(payload)
-          .eq('id', responseId)
+          .insert({ ...payload, id: responseId })
+          .select('id')
+          .single()
 
         if (dbError) throw dbError
         // Update localStorage
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          responseId,
+          responseId: data?.id || responseId,
           form,
           step: targetStep,
           igrejaSearch,
@@ -263,11 +265,11 @@ export default function CadastroPublicoPage() {
       const payload = buildPayload(TOTAL_STEPS, true)
 
       if (responseId) {
-        // Update existing record as complete
+        // Complete existing record - DELETE + INSERT (RLS blocks UPDATE for anon)
+        await supabase.from('cadastro_respostas').delete().eq('id', responseId)
         const { error: dbError } = await supabase
           .from('cadastro_respostas')
-          .update(payload)
-          .eq('id', responseId)
+          .insert({ ...payload, id: responseId })
         if (dbError) throw dbError
       } else {
         // Fallback: insert as new complete record
