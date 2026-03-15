@@ -130,6 +130,12 @@ export default function CadastroPublicoPage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  function updateDateFromParts(dia?: string, mes?: string, ano?: string) {
+    if (dia && mes && ano) {
+      setForm(prev => ({ ...prev, dataNascimento: `${ano}-${mes}-${dia}` }))
+    }
+  }
+
   function toggle(field: string, value: string) {
     const arr: string[] = form[field] || []
     set(field, arr.includes(value) ? arr.filter((v: string) => v !== value) : [...arr, value])
@@ -686,7 +692,26 @@ export default function CadastroPublicoPage() {
               <StepHeader icon="🪪" title="I. Identificação" subtitle="Informações básicas sobre você" />
 
               <Field label="1. Data de Nascimento">
-                <input type="date" value={form.dataNascimento || ''} onChange={e => set('dataNascimento', e.target.value)} className="inp" />
+                <div className="grid grid-cols-3 gap-2">
+                  <select value={form._nascDia || ''} onChange={e => { set('_nascDia', e.target.value); updateDateFromParts(e.target.value, form._nascMes, form._nascAno) }} className="inp">
+                    <option value="">Dia</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={String(d).padStart(2, '0')}>{String(d).padStart(2, '0')}</option>
+                    ))}
+                  </select>
+                  <select value={form._nascMes || ''} onChange={e => { set('_nascMes', e.target.value); updateDateFromParts(form._nascDia, e.target.value, form._nascAno) }} className="inp">
+                    <option value="">Mês</option>
+                    {['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map((m, i) => (
+                      <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                    ))}
+                  </select>
+                  <select value={form._nascAno || ''} onChange={e => { set('_nascAno', e.target.value); updateDateFromParts(form._nascDia, form._nascMes, e.target.value) }} className="inp">
+                    <option value="">Ano</option>
+                    {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                      <option key={y} value={String(y)}>{y}</option>
+                    ))}
+                  </select>
+                </div>
               </Field>
 
               <Field label="2. Sexo" className="mt-4">
