@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { UserProfile, UserRole, TermoCompromissoContent } from '@/types'
-import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX, FiFileText } from 'react-icons/fi'
+import { UserProfile, UserRole, TermoCompromissoContent, CargoMinisterial } from '@/types'
+import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX, FiFileText, FiTag } from 'react-icons/fi'
 import { DEFAULT_TERMO, invalidateTermoCache } from '@/components/missoes/TermoCompromissoDisplay'
+import { CARGO_LABELS } from '@/lib/missoes-constants'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 // ========== CONSTANTS ==========
 
-type Tab = 'perfil' | 'usuarios' | 'documentos' | 'sobre'
+type Tab = 'perfil' | 'usuarios' | 'documentos' | 'categorias' | 'sobre'
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
@@ -54,6 +56,7 @@ export default function ConfiguracoesPage() {
     { key: 'perfil', label: 'Meu Perfil', icon: FiUser },
     { key: 'usuarios', label: 'Usuários', icon: FiUsers, adminOnly: true },
     { key: 'documentos', label: 'Documentos', icon: FiFileText, adminOnly: true },
+    { key: 'categorias', label: 'Categorias', icon: FiTag, adminOnly: true },
     { key: 'sobre', label: 'Sobre', icon: FiInfo },
   ]
 
@@ -61,7 +64,7 @@ export default function ConfiguracoesPage() {
 
   // Reset tab if admin-only tab is selected but user is not admin
   useEffect(() => {
-    if ((activeTab === 'usuarios' || activeTab === 'documentos') && !isAdmin) {
+    if ((activeTab === 'usuarios' || activeTab === 'documentos' || activeTab === 'categorias') && !isAdmin) {
       setActiveTab('perfil')
     }
   }, [isAdmin, activeTab])
@@ -107,6 +110,7 @@ export default function ConfiguracoesPage() {
       {activeTab === 'perfil' && <MeuPerfilSection />}
       {activeTab === 'usuarios' && isAdmin && <GerenciarUsuariosSection />}
       {activeTab === 'documentos' && isAdmin && <DocumentosSection />}
+      {activeTab === 'categorias' && isAdmin && <CategoriasSection />}
       {activeTab === 'sobre' && <SobreSection />}
     </div>
   )
@@ -901,6 +905,151 @@ function DocumentosSection() {
               {saving ? 'Salvando...' : 'Salvar Termo de Compromisso'}
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ========== CATEGORIAS (Cargos Ministeriais) ==========
+
+const CARGO_KEYS: CargoMinisterial[] = [
+  'ministro',
+  'pastor_ordenado',
+  'pastor_licenciado',
+  'obreiro_biblico',
+  'obreiro_aspirante',
+  'obreiro_pre_aspirante',
+  'colportor',
+  'diretor_colportagem',
+  'aux_diretor_colportagem',
+  'evangelista',
+  'contratado',
+  'missionario_voluntario',
+  'missionario_auxiliar',
+  'diretor_departamental',
+  'presidente',
+  'secretario',
+  'tesoureiro_campo',
+]
+
+function CategoriasSection() {
+  const { labels, loading, updateLabels } = useCargoLabels()
+  const [editedLabels, setEditedLabels] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  useEffect(() => {
+    if (!loading) {
+      setEditedLabels({ ...labels })
+    }
+  }, [loading, labels])
+
+  function handleChange(key: string, value: string) {
+    setEditedLabels((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function handleReset(key: CargoMinisterial) {
+    setEditedLabels((prev) => ({ ...prev, [key]: CARGO_LABELS[key] }))
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    setMessage(null)
+
+    const result = await updateLabels(editedLabels as Record<CargoMinisterial, string>)
+    if (result) {
+      setMessage({ type: 'success', text: 'Categorias salvas com sucesso!' })
+    } else {
+      setMessage({ type: 'error', text: 'Erro ao salvar. Tente novamente.' })
+    }
+    setSaving(false)
+  }
+
+  const hasChanges = CARGO_KEYS.some((key) => editedLabels[key] !== labels[key])
+
+  if (loading) {
+    return <div className="card text-center text-gray-400 py-8">Carregando categorias...</div>
+  }
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
+            <FiTag className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Cargos Ministeriais</h2>
+            <p className="text-sm text-gray-500">Edite os nomes de exibição dos cargos. Alterações aparecem em todo o sistema.</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Header */}
+          <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-3 px-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <span>Chave (interno)</span>
+            <span>Nome de Exibição</span>
+            <span className="w-16 text-center">Resetar</span>
+          </div>
+
+          {CARGO_KEYS.map((key) => {
+            const isModified = editedLabels[key] !== CARGO_LABELS[key]
+            return (
+              <div
+                key={key}
+                className={`grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 sm:gap-3 items-center p-3 rounded-lg border ${
+                  isModified ? 'border-amber-200 bg-amber-50/50' : 'border-gray-100 bg-gray-50/50'
+                }`}
+              >
+                <div className="text-sm text-gray-500 font-mono">{key}</div>
+                <input
+                  type="text"
+                  value={editedLabels[key] || ''}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  className="input-field text-sm"
+                  placeholder={CARGO_LABELS[key]}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleReset(key)}
+                  disabled={!isModified}
+                  className="w-16 text-xs text-gray-400 hover:text-amber-600 disabled:opacity-30 disabled:cursor-not-allowed text-center"
+                  title={`Restaurar: ${CARGO_LABELS[key]}`}
+                >
+                  Resetar
+                </button>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Message */}
+        {message && (
+          <div
+            className={`mt-4 text-sm px-4 py-2.5 rounded-lg ${
+              message.type === 'success'
+                ? 'bg-green-50 text-green-700 border border-green-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        {/* Save */}
+        <div className="pt-4 flex items-center gap-3">
+          <button
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
+            className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+          >
+            <FiSave className="w-4 h-4" />
+            {saving ? 'Salvando...' : 'Salvar Alterações'}
+          </button>
+          {hasChanges && (
+            <span className="text-xs text-amber-600">Alterações não salvas</span>
+          )}
         </div>
       </div>
     </div>

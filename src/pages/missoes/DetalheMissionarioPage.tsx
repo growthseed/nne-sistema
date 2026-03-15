@@ -231,6 +231,8 @@ export default function DetalheMissionarioPage() {
   const pdfRef = useRef<HTMLDivElement>(null)
   const fotoInputRef = useRef<HTMLInputElement>(null)
   const [uploadingFoto, setUploadingFoto] = useState(false)
+  const [showPdfMenu, setShowPdfMenu] = useState(false)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
 
   // Editable modals state
   const [showIgrejasModal, setShowIgrejasModal] = useState(false)
@@ -624,7 +626,7 @@ export default function DetalheMissionarioPage() {
   }
 
   // PDF generation
-  async function generatePDF() {
+  async function generatePDF(mode: 'digital' | 'print' = 'digital') {
     if (!pdfRef.current || !missionario) return
     try {
       const element = pdfRef.current
@@ -640,7 +642,6 @@ export default function DetalheMissionarioPage() {
               } else {
                 img.onload = () => resolve()
                 img.onerror = () => resolve()
-                // Force reload with crossOrigin
                 if (img.src && !img.crossOrigin) {
                   img.crossOrigin = 'anonymous'
                   const src = img.src
@@ -652,62 +653,129 @@ export default function DetalheMissionarioPage() {
         )
       )
 
-      // Small delay to ensure images are painted
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 300))
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        height: element.scrollHeight,
-        width: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-        windowWidth: element.scrollWidth,
-        onclone: (clonedDoc: Document) => {
-          // Ensure all images in clone have crossOrigin set
-          const imgs = clonedDoc.querySelectorAll('img')
-          imgs.forEach(img => {
-            img.crossOrigin = 'anonymous'
-          })
-        },
-      })
+      if (mode === 'print') {
+        // ── Print mode: open print dialog with clean content ──
+        const printWindow = window.open('', '_blank')
+        if (!printWindow) return
+        printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório - ${(missionario as any).usuario?.nome || missionario.nome || 'Missionário'}</title><style>
+          @page { size: A4; margin: 15mm; }
+          body { font-family: Arial, sans-serif; color: #333; font-size: 11px; line-height: 1.4; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 4px 6px; border: 1px solid #ccc; font-size: 10px; }
+          th { background-color: #f0f0f0; font-weight: bold; text-align: left; }
+          .section { page-break-inside: avoid; margin-bottom: 12px; }
+          .page-break { page-break-before: always; }
+          .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 16px; }
+          .signatures { page-break-inside: avoid; margin-top: 40px; }
+          .sig-line { border-top: 1px solid #333; padding-top: 6px; margin-top: 50px; text-align: center; }
+          h2 { font-size: 13px; margin: 0 0 6px 0; text-transform: uppercase; border-bottom: 1px solid #999; padding-bottom: 4px; }
+          .total-row { background-color: #f0f0f0; font-weight: bold; }
+          img { max-width: 60px; max-height: 60px; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style></head><body>`)
+        printWindow.document.write(element.innerHTML)
+        printWindow.document.write('</body></html>')
+        printWindow.document.close()
+        printWindow.onload = () => {
+          printWindow.print()
+        }
+        return
+      }
 
+      // ── Digital mode: section-aware PDF generation ──
+      // Find all sections in the PDF content
+      const sections = element.querySelectorAll('[data-pdf-section]')
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfPageHeight = pdf.internal.pageSize.getHeight()
-      const margin = 5
+      const margin = 8
       const usableWidth = pdfWidth - margin * 2
-      const imgTotalHeight = (canvas.height * usableWidth) / canvas.width
+      const usablePageHeight = pdfPageHeight - margin * 2
+      const scale = 2
 
-      if (imgTotalHeight <= pdfPageHeight - margin * 2) {
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableWidth, imgTotalHeight)
+      if (sections.length === 0) {
+        // Fallback: render entire element as before (section-unaware)
+        const canvas = await html2canvas(element, {
+          scale,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          height: element.scrollHeight,
+          width: element.scrollWidth,
+          windowHeight: element.scrollHeight,
+          windowWidth: element.scrollWidth,
+        })
+        const imgH = (canvas.height * usableWidth) / canvas.width
+        if (imgH <= usablePageHeight) {
+          pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableWidth, imgH)
+        } else {
+          const pixelsPerPage = (usablePageHeight / usableWidth) * canvas.width
+          let yOff = 0, pg = 0
+          while (yOff < canvas.height) {
+            if (pg > 0) pdf.addPage()
+            const sliceH = Math.min(canvas.height - yOff, pixelsPerPage)
+            const sc = document.createElement('canvas')
+            sc.width = canvas.width; sc.height = sliceH
+            const ctx = sc.getContext('2d')!
+            ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, sc.width, sc.height)
+            ctx.drawImage(canvas, 0, yOff, canvas.width, sliceH, 0, 0, canvas.width, sliceH)
+            pdf.addImage(sc.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableWidth, (sliceH * usableWidth) / canvas.width)
+            yOff += sliceH; pg++
+          }
+        }
       } else {
-        // Multi-page: slice the canvas into page-sized chunks
-        const usablePageHeight = pdfPageHeight - margin * 2
-        const pixelsPerPage = (usablePageHeight / usableWidth) * canvas.width
-        let yOffset = 0
+        // Section-aware: render each section individually and place with intelligent page breaks
+        let currentY = margin
         let pageNum = 0
 
-        while (yOffset < canvas.height) {
-          if (pageNum > 0) pdf.addPage()
+        for (let i = 0; i < sections.length; i++) {
+          const section = sections[i] as HTMLElement
+          const canvas = await html2canvas(section, {
+            scale,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: element.scrollWidth,
+            onclone: (clonedDoc: Document) => {
+              const imgs = clonedDoc.querySelectorAll('img')
+              imgs.forEach(img => { img.crossOrigin = 'anonymous' })
+            },
+          })
 
-          const sliceH = Math.min(canvas.height - yOffset, pixelsPerPage)
-          const sliceCanvas = document.createElement('canvas')
-          sliceCanvas.width = canvas.width
-          sliceCanvas.height = sliceH
+          const sectionImgHeight = (canvas.height * usableWidth) / canvas.width
 
-          const ctx = sliceCanvas.getContext('2d')!
-          ctx.fillStyle = '#ffffff'
-          ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height)
-          ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceH, 0, 0, canvas.width, sliceH)
+          // If section doesn't fit on current page, start a new page
+          if (currentY + sectionImgHeight > pdfPageHeight - margin && currentY > margin + 1) {
+            pdf.addPage()
+            pageNum++
+            currentY = margin
+          }
 
-          const sliceImgHeight = (sliceH * usableWidth) / canvas.width
-          pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, usableWidth, sliceImgHeight)
-
-          yOffset += sliceH
-          pageNum++
+          // If single section is taller than a full page, slice it
+          if (sectionImgHeight > usablePageHeight) {
+            const pixelsPerPage = (usablePageHeight / usableWidth) * canvas.width
+            let yOff = 0
+            while (yOff < canvas.height) {
+              if (yOff > 0) { pdf.addPage(); pageNum++; currentY = margin }
+              const sliceH = Math.min(canvas.height - yOff, pixelsPerPage)
+              const sc = document.createElement('canvas')
+              sc.width = canvas.width; sc.height = sliceH
+              const ctx = sc.getContext('2d')!
+              ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, sc.width, sc.height)
+              ctx.drawImage(canvas, 0, yOff, canvas.width, sliceH, 0, 0, canvas.width, sliceH)
+              const h = (sliceH * usableWidth) / canvas.width
+              pdf.addImage(sc.toDataURL('image/jpeg', 0.95), 'JPEG', margin, currentY, usableWidth, h)
+              currentY += h
+              yOff += sliceH
+            }
+          } else {
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, currentY, usableWidth, sectionImgHeight)
+            currentY += sectionImgHeight
+          }
         }
       }
 
@@ -1379,10 +1447,44 @@ export default function DetalheMissionarioPage() {
           {/* Header with PDF button */}
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800">Visão Geral do Campo</h2>
-            <button onClick={generatePDF} className="btn-primary flex items-center gap-2">
-              <FiDownload className="w-4 h-4" />
-              Gerar PDF
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowPdfMenu(!showPdfMenu)}
+                disabled={generatingPdf}
+                className="btn-primary flex items-center gap-2"
+              >
+                <FiDownload className="w-4 h-4" />
+                {generatingPdf ? 'Gerando...' : 'Gerar PDF'}
+                <FiChevronDown className="w-3 h-3" />
+              </button>
+              {showPdfMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowPdfMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 w-56">
+                    <button
+                      onClick={async () => { setShowPdfMenu(false); setGeneratingPdf(true); await generatePDF('digital'); setGeneratingPdf(false) }}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-3"
+                    >
+                      <FiDownload className="w-4 h-4 text-green-600" />
+                      <div>
+                        <p className="font-medium text-gray-800">PDF Digital</p>
+                        <p className="text-xs text-gray-500">Visual completo com cores</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => { setShowPdfMenu(false); generatePDF('print') }}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center gap-3"
+                    >
+                      <FiFile className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-800">PDF Impressão</p>
+                        <p className="text-xs text-gray-500">Otimizado para imprimir</p>
+                      </div>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* KPI Cards */}
@@ -2762,7 +2864,7 @@ export default function DetalheMissionarioPage() {
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <div ref={pdfRef} style={{ width: '794px', padding: '40px', backgroundColor: '#fff', fontFamily: 'Arial, sans-serif' }}>
           {/* Header UNINORTE com logo oficial */}
-          <div style={{ borderBottom: '3px solid #006D43', paddingBottom: '16px', marginBottom: '24px' }}>
+          <div data-pdf-section="header" style={{ borderBottom: '3px solid #006D43', paddingBottom: '16px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <img
                 src="/img/logo-nne.png"
@@ -2789,7 +2891,7 @@ export default function DetalheMissionarioPage() {
 
           {/* Missionary Data com foto */}
           {missionario && (
-            <div style={{ marginBottom: '20px' }}>
+            <div data-pdf-section="missionary-data" style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
                 {/* Foto do missionário */}
                 <div style={{ flexShrink: 0 }}>
@@ -2801,21 +2903,21 @@ export default function DetalheMissionarioPage() {
                       style={{
                         width: '80px',
                         height: '80px',
-                        borderRadius: '50%',
+                        borderRadius: '8px',
                         objectFit: 'cover',
-                        border: '3px solid #e0f2e9',
+                        border: '2px solid #e0f2e9',
                       }}
                     />
                   ) : (
                     <div style={{
                       width: '80px',
                       height: '80px',
-                      borderRadius: '50%',
+                      borderRadius: '8px',
                       backgroundColor: '#006D43',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      border: '3px solid #e0f2e9',
+                      border: '2px solid #e0f2e9',
                     }}>
                       <span style={{ color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>
                         {((missionario as any).usuario?.nome || missionario.nome || '??')
@@ -2846,7 +2948,7 @@ export default function DetalheMissionarioPage() {
           )}
 
           {/* Churches Table */}
-          <div style={{ marginBottom: '20px' }}>
+          <div data-pdf-section="churches" style={{ marginBottom: '20px' }}>
             <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#006D43', marginBottom: '8px' }}>IGREJAS DO CAMPO</p>
             <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', border: '1px solid #ddd' }}>
               <thead>
@@ -2887,7 +2989,7 @@ export default function DetalheMissionarioPage() {
           {financeiro.length > 0 && financeiro.map(f => {
             const fmtPdf = (v: number) => v ? v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'
             return (
-              <div key={`pdf-fin-${f.ano}-${f.mes}`} style={{ marginBottom: '16px' }}>
+              <div key={`pdf-fin-${f.ano}-${f.mes}`} data-pdf-section={`finance-${f.ano}-${f.mes}`} style={{ marginBottom: '16px' }}>
                 <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#006D43', marginBottom: '6px' }}>CAIXA DA ASSOCIAÇÃO — {MESES[f.mes - 1].toUpperCase()} {f.ano}</p>
                 <table style={{ width: '100%', fontSize: '9px', borderCollapse: 'collapse', border: '1px solid #ccc' }}>
                   <thead>
@@ -2948,12 +3050,15 @@ export default function DetalheMissionarioPage() {
           })}
 
           {/* ── TERMO DE COMPROMISSO MISSIONÁRIO (dinâmico do banco) ── */}
-          <TermoCompromissoDisplay
-            missionarioNome={(missionario as any)?.usuario?.nome || missionario?.nome || '_______________'}
-            forPdf={true}
-          />
+          <div data-pdf-section="termo">
+            <TermoCompromissoDisplay
+              missionarioNome={(missionario as any)?.usuario?.nome || missionario?.nome || '_______________'}
+              forPdf={true}
+            />
+          </div>
 
-          {/* Local e Data */}
+          {/* Local e Data + Signatures */}
+          <div data-pdf-section="signatures">
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '40px' }}>
             <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#333', whiteSpace: 'nowrap' }}>Local e Data:</span>
             <span style={{ flex: 1, borderBottom: '1px solid #333', minHeight: '18px' }}>&nbsp;</span>
@@ -2998,8 +3103,10 @@ export default function DetalheMissionarioPage() {
             </div>
           </div>
 
+          </div>
+
           {/* Rodapé institucional */}
-          <div style={{ marginTop: '30px', paddingTop: '10px', borderTop: '1px solid #ddd', display: 'flex', justifyContent: 'space-between' }}>
+          <div data-pdf-section="footer" style={{ marginTop: '30px', paddingTop: '10px', borderTop: '1px solid #ddd', display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <p style={{ fontSize: '9px', fontWeight: 'bold', color: '#666', margin: 0 }}>Igreja Adventista do Sétimo Dia — Movimento de Reforma</p>
               <p style={{ fontSize: '9px', color: '#999', margin: '2px 0 0 0' }}>União Norte Nordeste Brasileira · NNE Sistema</p>

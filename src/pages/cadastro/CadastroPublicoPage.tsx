@@ -249,8 +249,11 @@ export default function CadastroPublicoPage() {
     const nextStep = Math.min(step + 1, TOTAL_STEPS - 1)
     setStep(nextStep)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    // Auto-save on each step transition
-    await autoSave(nextStep)
+    // Only auto-save from step 2 onwards (after user fills identification data)
+    // Step 0→1 is just the welcome screen, no data to save yet
+    if (nextStep >= 2) {
+      await autoSave(nextStep)
+    }
   }
 
   function prev() {
