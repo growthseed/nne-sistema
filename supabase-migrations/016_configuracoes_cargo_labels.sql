@@ -22,17 +22,17 @@ CREATE POLICY "configuracoes_select" ON configuracoes
 -- Apenas admin pode inserir/atualizar/deletar
 CREATE POLICY "configuracoes_insert" ON configuracoes
   FOR INSERT WITH CHECK (
-    auth.uid() IN (SELECT id FROM profiles WHERE papel = 'admin')
+    auth.uid() IN (SELECT id FROM usuarios WHERE papel = 'admin')
   );
 
 CREATE POLICY "configuracoes_update" ON configuracoes
   FOR UPDATE USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE papel = 'admin')
+    auth.uid() IN (SELECT id FROM usuarios WHERE papel = 'admin')
   );
 
 CREATE POLICY "configuracoes_delete" ON configuracoes
   FOR DELETE USING (
-    auth.uid() IN (SELECT id FROM profiles WHERE papel = 'admin')
+    auth.uid() IN (SELECT id FROM usuarios WHERE papel = 'admin')
   );
 
 -- Seed: cargo_labels padrão
