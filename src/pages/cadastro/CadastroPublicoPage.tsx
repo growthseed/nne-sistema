@@ -130,6 +130,24 @@ export default function CadastroPublicoPage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  async function buscarCep(cepRaw: string) {
+    const cep = cepRaw.replace(/\D/g, '')
+    if (cep.length !== 8) return
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        setForm(prev => ({
+          ...prev,
+          endereco: data.logradouro || prev.endereco,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado,
+        }))
+      }
+    } catch { /* silently fail */ }
+  }
+
   function updateDateFromParts(dia?: string, mes?: string, ano?: string) {
     if (dia && mes && ano) {
       setForm(prev => ({ ...prev, dataNascimento: `${ano}-${mes}-${dia}` }))
@@ -662,7 +680,7 @@ export default function CadastroPublicoPage() {
               <div className="border-t-2 border-gray-100 my-5 pt-5">
                 <h5 className="font-bold text-gray-800 mb-3">Endereço</h5>
                 <div className="grid grid-cols-3 gap-3">
-                  <Field label="CEP"><input type="text" value={form.cep || ''} onChange={e => set('cep', e.target.value)} placeholder="00000-000" maxLength={9} className="inp" /></Field>
+                  <Field label="CEP"><input type="text" value={form.cep || ''} onChange={e => { const v = e.target.value; set('cep', v); if (v.replace(/\D/g, '').length === 8) buscarCep(v) }} placeholder="00000-000" maxLength={9} className="inp" /></Field>
                   <div className="col-span-2"><Field label="Logradouro"><input type="text" value={form.endereco || ''} onChange={e => set('endereco', e.target.value)} placeholder="Rua, Avenida..." className="inp" /></Field></div>
                 </div>
                 <div className="grid grid-cols-4 gap-3 mt-3">
