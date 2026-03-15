@@ -78,6 +78,7 @@ export default function CadastroPublicoPage() {
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
+  const [stepError, setStepError] = useState('')
   const savingRef = useRef(false)
 
   useEffect(() => {
@@ -183,6 +184,15 @@ export default function CadastroPublicoPage() {
       satisfacao,
       prioridades: form.enfases || [],
       participacao,
+      influencias: form.influencias || [],
+      tempo_deslocamento: form.tempoDeslocamento || null,
+      opiniao_estrutura: form.opiniaoEstrutura || null,
+      sugestoes: [form.sugestao1, form.sugestao2, form.sugestao3].filter(Boolean),
+      coisas_criar: [form.criar1, form.criar2, form.criar3].filter(Boolean),
+      coisas_alterar: [form.alterar1, form.alterar2, form.alterar3].filter(Boolean),
+      enfase_justificativa: form.enfaseJustificativa || null,
+      motivacao_contribuir: form.motivadoContribuir || null,
+      tipo_contribuinte: form.tipoContribuinte || null,
       opiniao_departamentos: form.observacoes || null,
       etapa_atual: targetStep,
       completo: complete,
@@ -209,7 +219,6 @@ export default function CadastroPublicoPage() {
         if (dbError) throw dbError
         if (data) {
           setResponseId(data.id)
-          // Save draft reference to localStorage
           localStorage.setItem(STORAGE_KEY, JSON.stringify({
             responseId: data.id,
             form,
@@ -218,18 +227,15 @@ export default function CadastroPublicoPage() {
           }))
         }
       } else {
-        // Subsequent saves - DELETE + INSERT (RLS blocks UPDATE for anon)
-        await supabase.from('cadastro_respostas').delete().eq('id', responseId)
-        const { data, error: dbError } = await supabase
+        // Subsequent saves - UPDATE (RLS allows update on completo=false)
+        const { error: dbError } = await supabase
           .from('cadastro_respostas')
-          .insert({ ...payload, id: responseId })
-          .select('id')
-          .single()
+          .update(payload)
+          .eq('id', responseId)
 
         if (dbError) throw dbError
-        // Update localStorage
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          responseId: data?.id || responseId,
+          responseId,
           form,
           step: targetStep,
           igrejaSearch,
@@ -246,11 +252,20 @@ export default function CadastroPublicoPage() {
   }
 
   async function next() {
+    // Validate current step before advancing (skip step 0 = welcome)
+    if (step >= 1) {
+      const validationMsg = validateStep(step)
+      if (validationMsg) {
+        setStepError(validationMsg)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+    }
+    setStepError('')
     const nextStep = Math.min(step + 1, TOTAL_STEPS - 1)
     setStep(nextStep)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    // Only auto-save from step 2 onwards (after user fills identification data)
-    // Step 0→1 is just the welcome screen, no data to save yet
+    // Auto-save from step 2 onwards
     if (nextStep >= 2) {
       await autoSave(nextStep)
     }
@@ -261,18 +276,88 @@ export default function CadastroPublicoPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Validation per step - returns error message or empty string
+  function validateStep(s: number): string {
+    switch (s) {
+      case 1:
+        if (!form.nome?.trim()) return 'Preencha seu nome completo'
+        if (!form.telefone?.trim()) return 'Preencha seu WhatsApp'
+        if (!form.email?.trim()) return 'Preencha seu e-mail'
+        return ''
+      case 2:
+        if (!form.dataNascimento) return 'Informe sua data de nascimento'
+        if (!form.sexo) return 'Selecione seu sexo'
+        return ''
+      case 3:
+        if (!form.estadoCivil) return 'Selecione seu estado civil'
+        if (!form.escolaridade) return 'Selecione sua escolaridade'
+        if (!form.profissao) return 'Selecione sua profissão'
+        return ''
+      case 4:
+        if (!form.tempoMembro) return 'Informe há quanto tempo é membro'
+        return ''
+      case 5:
+        if (!form.primeiroContato) return 'Selecione como foi seu primeiro contato'
+        if (!(form.influencias?.length > 0)) return 'Selecione pelo menos uma influência'
+        return ''
+      case 6:
+        if (!form.distanciaIgreja) return 'Selecione a distância até a igreja'
+        if (!form.transporte) return 'Selecione como chega à igreja'
+        if (!form.tempoDeslocamento) return 'Selecione o tempo de deslocamento'
+        if (!form.igrejaId) return 'Selecione sua igreja'
+        return ''
+      case 7:
+        if (!form.pontoForte1?.trim()) return 'Informe pelo menos um ponto forte'
+        if (!form.pontoFraco1?.trim()) return 'Informe pelo menos um ponto fraco'
+        return ''
+      case 8: {
+        const missing = SATISFACAO_ITENS.find(item => {
+          const key = `sat_${item.replace(/\s/g, '_').toLowerCase()}`
+          return !form[key]
+        })
+        if (missing) return `Avalie "${missing}"`
+        return ''
+      }
+      case 9:
+        if (!(form.enfases?.length >= 3)) return 'Selecione no mínimo 3 prioridades'
+        return ''
+      case 10: {
+        const missingFreq = FREQUENCIA_ITENS.find(item => {
+          const key = `freq_${item.replace(/\s/g, '_').toLowerCase()}`
+          return form[key] === undefined || form[key] === ''
+        })
+        if (missingFreq) return `Informe a frequência de "${missingFreq}"`
+        if (!form.motivadoContribuir) return 'Selecione seu nível de motivação'
+        if (!form.tipoContribuinte) return 'Selecione como tem contribuído'
+        return ''
+      }
+      case 11:
+        if (!form.opiniaoEstrutura) return 'Selecione sua opinião sobre a estrutura'
+        return ''
+      default:
+        return ''
+    }
+  }
+
   async function handleSubmit() {
+    // Final validation of step 11
+    const validationError = validateStep(11)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
     setSubmitting(true)
     setError('')
     try {
       const payload = buildPayload(TOTAL_STEPS, true)
 
       if (responseId) {
-        // Complete existing record - DELETE + INSERT (RLS blocks UPDATE for anon)
-        await supabase.from('cadastro_respostas').delete().eq('id', responseId)
+        // Complete existing record - UPDATE
         const { error: dbError } = await supabase
           .from('cadastro_respostas')
-          .insert({ ...payload, id: responseId })
+          .update(payload)
+          .eq('id', responseId)
         if (dbError) throw dbError
       } else {
         // Fallback: insert as new complete record
@@ -591,7 +676,7 @@ export default function CadastroPublicoPage() {
                 </div>
               </div>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -611,7 +696,7 @@ export default function CadastroPublicoPage() {
                 </div>
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -645,7 +730,7 @@ export default function CadastroPublicoPage() {
                 </select>
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -662,7 +747,7 @@ export default function CadastroPublicoPage() {
                 </div>
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -692,7 +777,7 @@ export default function CadastroPublicoPage() {
                 </div>
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -749,7 +834,7 @@ export default function CadastroPublicoPage() {
                 </div>
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -782,7 +867,7 @@ export default function CadastroPublicoPage() {
                 </div>
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -820,7 +905,7 @@ export default function CadastroPublicoPage() {
                 </table>
               </div>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -841,7 +926,7 @@ export default function CadastroPublicoPage() {
                 <textarea value={form.enfaseJustificativa || ''} onChange={e => set('enfaseJustificativa', e.target.value)} className="inp" rows={2} placeholder="Justifique suas escolhas" />
               </Field>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -896,7 +981,7 @@ export default function CadastroPublicoPage() {
                 </Field>
               </div>
 
-              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} />
+              <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
             </div>
           )}
 
@@ -1027,9 +1112,13 @@ function CheckCard({ checked, onClick, children }: { checked: boolean; onClick: 
   )
 }
 
-function Nav({ onPrev, onNext, onSave, saving }: { onPrev?: () => void; onNext?: () => void; onSave?: () => void; saving?: boolean }) {
+function Nav({ onPrev, onNext, onSave, saving, error }: { onPrev?: () => void; onNext?: () => void; onSave?: () => void; saving?: boolean; error?: string }) {
   return (
-    <div className="flex items-center justify-between mt-6 pt-5 border-t border-gray-100">
+    <div className="mt-6 pt-5 border-t border-gray-100">
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-700 font-medium">{error}</div>
+      )}
+    <div className="flex items-center justify-between">
       {onPrev ? (
         <button onClick={onPrev} className="px-6 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition-colors">
           Voltar
@@ -1047,6 +1136,7 @@ function Nav({ onPrev, onNext, onSave, saving }: { onPrev?: () => void; onNext?:
           </button>
         )}
       </div>
+    </div>
     </div>
   )
 }
