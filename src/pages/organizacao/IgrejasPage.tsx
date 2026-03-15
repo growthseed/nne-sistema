@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { Igreja, Associacao, Uniao } from '@/types'
-import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter, FiMapPin, FiPhone, FiMail } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter, FiMapPin, FiPhone, FiMail, FiUser, FiUsers } from 'react-icons/fi'
+
+type MissionarioOption = { id: string; nome: string; cargo_ministerial: string | null }
 
 type IgrejaComAssociacao = Igreja & {
   associacao: { nome: string; sigla: string } | null
+  pastor_ref?: { nome: string } | null
+  obreiro_ref?: { nome: string } | null
 }
 
 const FORM_VAZIO = {
@@ -21,8 +25,13 @@ const FORM_VAZIO = {
   coordenadas_lat: '' as string | number,
   coordenadas_lng: '' as string | number,
   pastor: '',
+  pastor_id: '' as string,
+  obreiro_id: '' as string,
   telefone: '',
   email: '',
+  tipo: 'Templo' as string,
+  membros_ativos: 0 as number,
+  interessados: 0 as number,
   ativo: true,
 }
 
@@ -42,6 +51,7 @@ export default function IgrejasPage() {
   const [erro, setErro] = useState('')
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
+  const [missionarios, setMissionarios] = useState<MissionarioOption[]>([])
   const PAGE_SIZE = 20
 
   const podeGerenciar = hasRole(['admin', 'admin_uniao', 'admin_associacao'])
@@ -51,6 +61,7 @@ export default function IgrejasPage() {
       fetchIgrejas()
       fetchAssociacoes()
       fetchUnioes()
+      fetchMissionarios()
     }
   }, [profile, filtroAtivo, page])
 
@@ -92,13 +103,26 @@ export default function IgrejasPage() {
     }
   }
 
+  async function fetchMissionarios() {
+    try {
+      const { data } = await supabase
+        .from('missionarios')
+        .select('id, nome, cargo_ministerial')
+        .eq('status', 'ativo')
+        .order('nome')
+      setMissionarios(data || [])
+    } catch (err) {
+      console.error('Erro ao buscar missionários:', err)
+    }
+  }
+
   async function fetchIgrejas() {
     if (!profile) return
     setLoading(true)
     try {
       let query = supabase
         .from('igrejas')
-        .select('*, associacao:associacoes(nome, sigla)', { count: 'exact' })
+        .select('*, associacao:associacoes(nome, sigla), pastor_ref:missionarios!igrejas_pastor_id_fkey(nome), obreiro_ref:missionarios!igrejas_obreiro_id_fkey(nome)', { count: 'exact' })
         .order('nome')
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
@@ -157,8 +181,13 @@ export default function IgrejasPage() {
       coordenadas_lat: igreja.coordenadas_lat ?? '',
       coordenadas_lng: igreja.coordenadas_lng ?? '',
       pastor: igreja.pastor || '',
+      pastor_id: igreja.pastor_id || '',
+      obreiro_id: igreja.obreiro_id || '',
       telefone: igreja.telefone || '',
       email: igreja.email || '',
+      tipo: igreja.tipo || 'Templo',
+      membros_ativos: igreja.membros_ativos || 0,
+      interessados: igreja.interessados || 0,
       ativo: igreja.ativo,
     })
     setEditandoId(igreja.id)
@@ -205,8 +234,13 @@ export default function IgrejasPage() {
         coordenadas_lat: form.coordenadas_lat !== '' ? Number(form.coordenadas_lat) : null,
         coordenadas_lng: form.coordenadas_lng !== '' ? Number(form.coordenadas_lng) : null,
         pastor: form.pastor?.trim() || null,
+        pastor_id: form.pastor_id || null,
+        obreiro_id: form.obreiro_id || null,
         telefone: form.telefone?.trim() || null,
         email: form.email?.trim() || null,
+        tipo: form.tipo || 'Templo',
+        membros_ativos: form.membros_ativos || 0,
+        interessados: form.interessados || 0,
         ativo: form.ativo,
       }
 
@@ -325,7 +359,8 @@ export default function IgrejasPage() {
                     <th className="px-4 py-3">Nome</th>
                     <th className="px-4 py-3">Associação</th>
                     <th className="px-4 py-3">Cidade/UF</th>
-                    <th className="px-4 py-3">Pastor</th>
+                    <th className="px-4 py-3">Pastor / Obreiro</th>
+                    <th className="px-4 py-3">Membros</th>
                     <th className="px-4 py-3">Contato</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Criado em</th>
@@ -344,7 +379,22 @@ export default function IgrejasPage() {
                           ? `${ig.endereco_cidade}/${ig.endereco_estado}`
                           : ig.endereco_estado || '-'}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{ig.pastor || '-'}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          {ig.pastor_ref ? (
+                            <span className="flex items-center gap-1"><FiUser className="w-3 h-3 text-blue-500" /> {ig.pastor_ref.nome}</span>
+                          ) : ig.pastor ? (
+                            <span>{ig.pastor}</span>
+                          ) : null}
+                          {ig.obreiro_ref && (
+                            <span className="flex items-center gap-1"><FiUsers className="w-3 h-3 text-purple-500" /> {ig.obreiro_ref.nome}</span>
+                          )}
+                          {!ig.pastor_ref && !ig.pastor && !ig.obreiro_ref && '-'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">
+                        {ig.membros_ativos || 0} / {ig.interessados || 0}
+                      </td>
                       <td className="px-4 py-3 text-gray-500">
                         <div className="flex flex-col gap-0.5">
                           {ig.telefone && (
@@ -624,19 +674,104 @@ export default function IgrejasPage() {
                 </div>
               </div>
 
-              {/* Contato */}
+              {/* Responsáveis */}
               <div className="border-t border-gray-100 pt-4">
-                <h3 className="text-sm font-semibold text-gray-600 mb-3">Informações de Contato</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                  <FiUser className="w-4 h-4" />
+                  Responsáveis
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="label-field">Pastor</label>
+                    <label className="label-field">Pastor Responsável</label>
+                    <select
+                      value={form.pastor_id}
+                      onChange={(e) => setForm({ ...form, pastor_id: e.target.value })}
+                      className="input-field"
+                    >
+                      <option value="">Nenhum</option>
+                      {missionarios.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.nome} {m.cargo_ministerial ? `(${m.cargo_ministerial.replace(/_/g, ' ')})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label-field">Obreiro Responsável</label>
+                    <select
+                      value={form.obreiro_id}
+                      onChange={(e) => setForm({ ...form, obreiro_id: e.target.value })}
+                      className="input-field"
+                    >
+                      <option value="">Nenhum</option>
+                      {missionarios.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.nome} {m.cargo_ministerial ? `(${m.cargo_ministerial.replace(/_/g, ' ')})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {form.pastor && (
+                  <div className="mt-2">
+                    <label className="label-field">Pastor (texto legado)</label>
                     <input
                       value={form.pastor}
                       onChange={(e) => setForm({ ...form, pastor: e.target.value })}
                       className="input-field"
-                      placeholder="Nome do pastor"
+                      placeholder="Nome do pastor (legado)"
                     />
                   </div>
+                )}
+              </div>
+
+              {/* Tipo e Membros */}
+              <div className="border-t border-gray-100 pt-4">
+                <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                  <FiUsers className="w-4 h-4" />
+                  Tipo e Membros
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="label-field">Tipo</label>
+                    <select
+                      value={form.tipo}
+                      onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                      className="input-field"
+                    >
+                      <option value="Templo">Templo</option>
+                      <option value="Congregacao">Congregação</option>
+                      <option value="Ponto de Pregacao">Ponto de Pregação</option>
+                      <option value="Grupo">Grupo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label-field">Membros Ativos</label>
+                    <input
+                      type="number"
+                      value={form.membros_ativos}
+                      onChange={(e) => setForm({ ...form, membros_ativos: parseInt(e.target.value) || 0 })}
+                      className="input-field"
+                      min={0}
+                    />
+                  </div>
+                  <div>
+                    <label className="label-field">Interessados</label>
+                    <input
+                      type="number"
+                      value={form.interessados}
+                      onChange={(e) => setForm({ ...form, interessados: parseInt(e.target.value) || 0 })}
+                      className="input-field"
+                      min={0}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contato */}
+              <div className="border-t border-gray-100 pt-4">
+                <h3 className="text-sm font-semibold text-gray-600 mb-3">Informações de Contato</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="label-field">Telefone</label>
                     <input

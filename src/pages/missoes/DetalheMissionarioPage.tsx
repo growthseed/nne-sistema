@@ -208,6 +208,7 @@ export default function DetalheMissionarioPage() {
   // Data
   const [missionario, setMissionario] = useState<Missionario | null>(null)
   const [igrejas, setIgrejas] = useState<{ id: string; nome: string; endereco_cidade: string | null; endereco_estado: string | null; telefone: string | null; membros_ativos: number | null; interessados: number | null; tipo: string | null }[]>([])
+  const [igrejaFuncaoMap, setIgrejaFuncaoMap] = useState<Record<string, string>>({})
   const [expandedIgreja, setExpandedIgreja] = useState<string | null>(null)
   const [financeiroByIgreja, setFinanceiroByIgreja] = useState<Record<string, { dizimos: number; ofertas: number; total: number }>>({})
   const [relatorios, setRelatorios] = useState<(RelatorioMissionario & { pessoa?: { nome: string } | null })[]>([])
@@ -238,6 +239,7 @@ export default function DetalheMissionarioPage() {
   const [showIgrejasModal, setShowIgrejasModal] = useState(false)
   const [allIgrejas, setAllIgrejas] = useState<{ id: string; nome: string }[]>([])
   const [selectedIgrejasIds, setSelectedIgrejasIds] = useState<string[]>([])
+  const [selectedIgrejasFuncao, setSelectedIgrejasFuncao] = useState<Record<string, string>>({})
   const [igrejasSearch, setIgrejasSearch] = useState('')
   const [savingIgrejas, setSavingIgrejas] = useState(false)
 
@@ -340,6 +342,17 @@ export default function DetalheMissionarioPage() {
         const totalI = igData.reduce((sum: number, ig: any) => sum + (ig.interessados || 0), 0)
         setTotalMembros(totalM)
         setTotalInteressados(totalI)
+
+        // Load funcao from junction table
+        const { data: juncData } = await supabase
+          .from('missionario_igrejas')
+          .select('igreja_id, funcao')
+          .eq('missionario_id', id!)
+        const funcMap: Record<string, string> = {}
+        for (const r of juncData || []) {
+          if (r.funcao) funcMap[r.igreja_id] = r.funcao
+        }
+        setIgrejaFuncaoMap(funcMap)
       }
 
       // Load all tab data in parallel
@@ -798,6 +811,20 @@ export default function DetalheMissionarioPage() {
       .order('nome')
     setAllIgrejas(data || [])
     setSelectedIgrejasIds(missionario?.igrejas_responsavel || [])
+
+    // Load existing funcao from missionario_igrejas junction table
+    if (missionario) {
+      const { data: juncData } = await supabase
+        .from('missionario_igrejas')
+        .select('igreja_id, funcao')
+        .eq('missionario_id', missionario.id)
+      const funcaoMap: Record<string, string> = {}
+      for (const row of juncData || []) {
+        if (row.funcao) funcaoMap[row.igreja_id] = row.funcao
+      }
+      setSelectedIgrejasFuncao(funcaoMap)
+    }
+
     setIgrejasSearch('')
     setShowIgrejasModal(true)
   }
@@ -806,11 +833,43 @@ export default function DetalheMissionarioPage() {
     if (!missionario) return
     setSavingIgrejas(true)
     try {
+      // 1. Update missionarios.igrejas_responsavel array
       const { error } = await supabase
         .from('missionarios')
         .update({ igrejas_responsavel: selectedIgrejasIds })
         .eq('id', missionario.id)
       if (error) throw error
+
+      // 2. Sync missionario_igrejas junction table
+      // Remove old entries
+      await supabase
+        .from('missionario_igrejas')
+        .delete()
+        .eq('missionario_id', missionario.id)
+
+      // Insert new entries with funcao
+      if (selectedIgrejasIds.length > 0) {
+        const rows = selectedIgrejasIds.map((igId, i) => ({
+          missionario_id: missionario.id,
+          igreja_id: igId,
+          funcao: selectedIgrejasFuncao[igId] || 'Pastor',
+          principal: i === 0,
+          ativo: true,
+        }))
+        await supabase.from('missionario_igrejas').insert(rows)
+      }
+
+      // 3. Update igrejas.pastor_id / obreiro_id based on funcao
+      for (const igId of selectedIgrejasIds) {
+        const funcao = (selectedIgrejasFuncao[igId] || 'Pastor').toLowerCase()
+        if (funcao.includes('pastor')) {
+          await supabase.from('igrejas').update({ pastor_id: missionario.id }).eq('id', igId)
+        }
+        if (funcao.includes('obreiro') || funcao.includes('auxiliar')) {
+          await supabase.from('igrejas').update({ obreiro_id: missionario.id }).eq('id', igId)
+        }
+      }
+
       setShowIgrejasModal(false)
       fetchMissionario()
     } catch (err) {
@@ -1590,6 +1649,11 @@ export default function DetalheMissionarioPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold text-gray-800">{ig.nome}</h4>
+                              {igrejaFuncaoMap[ig.id] && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                  {igrejaFuncaoMap[ig.id]}
+                                </span>
+                              )}
                               {ig.tipo && (
                                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                                   ig.tipo === 'Templo' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
@@ -2608,7 +2672,7 @@ export default function DetalheMissionarioPage() {
       {/* ── MODAL: Editar Igrejas (Multi-select) ── */}
       {showIgrejasModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-gray-800">Editar Igrejas do Campo</h3>
               <button onClick={() => setShowIgrejasModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
@@ -2625,11 +2689,42 @@ export default function DetalheMissionarioPage() {
               />
             </div>
 
-            {/* Selected count */}
-            <p className="text-xs text-gray-500 mb-2">{selectedIgrejasIds.length} igreja(s) selecionada(s)</p>
+            {/* Selected churches with funcao */}
+            {selectedIgrejasIds.length > 0 && (
+              <div className="mb-3 border rounded-lg p-3 bg-green-50">
+                <p className="text-xs font-semibold text-green-800 mb-2">{selectedIgrejasIds.length} igreja(s) selecionada(s)</p>
+                <div className="space-y-2">
+                  {selectedIgrejasIds.map(igId => {
+                    const ig = allIgrejas.find(i => i.id === igId)
+                    if (!ig) return null
+                    return (
+                      <div key={igId} className="flex items-center gap-2 bg-white rounded-lg p-2 border">
+                        <button
+                          onClick={() => {
+                            setSelectedIgrejasIds(prev => prev.filter(id => id !== igId))
+                            setSelectedIgrejasFuncao(prev => { const n = { ...prev }; delete n[igId]; return n })
+                          }}
+                          className="text-red-400 hover:text-red-600 shrink-0"
+                          title="Remover"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="text-sm text-gray-800 flex-1 truncate">{ig.nome}</span>
+                        <input
+                          className="input-field text-xs w-36"
+                          placeholder="Função (ex: Pastor)"
+                          value={selectedIgrejasFuncao[igId] || ''}
+                          onChange={e => setSelectedIgrejasFuncao(prev => ({ ...prev, [igId]: e.target.value }))}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
-            {/* Checkboxes */}
-            <div className="max-h-[50vh] overflow-y-auto space-y-1 border rounded-lg p-2">
+            {/* Checkboxes - unselected churches */}
+            <div className="max-h-[40vh] overflow-y-auto space-y-1 border rounded-lg p-2">
               {allIgrejas
                 .filter(ig => !igrejasSearch || ig.nome.toLowerCase().includes(igrejasSearch.toLowerCase()))
                 .map(ig => {
@@ -2640,9 +2735,13 @@ export default function DetalheMissionarioPage() {
                         type="checkbox"
                         checked={checked}
                         onChange={() => {
-                          setSelectedIgrejasIds(prev =>
-                            checked ? prev.filter(id => id !== ig.id) : [...prev, ig.id]
-                          )
+                          if (checked) {
+                            setSelectedIgrejasIds(prev => prev.filter(id => id !== ig.id))
+                            setSelectedIgrejasFuncao(prev => { const n = { ...prev }; delete n[ig.id]; return n })
+                          } else {
+                            setSelectedIgrejasIds(prev => [...prev, ig.id])
+                            setSelectedIgrejasFuncao(prev => ({ ...prev, [ig.id]: 'Pastor' }))
+                          }
                         }}
                         className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
                       />

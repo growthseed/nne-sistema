@@ -276,6 +276,7 @@ export default function InventarioMissionariosPage() {
           status: m.status,
           associacao_id: m.associacao_id,
           associacao_nome: assoc?.nome || null,
+          igrejas_ids: igrejaIds,
           total_igrejas: igrejaIds.length,
           total_membros: totalMembros,
           total_interessados: totalInteressados,
@@ -344,34 +345,42 @@ export default function InventarioMissionariosPage() {
           associacao_sigla: '',
           missionarios: [],
           totais: { membros: 0, igrejas: 0, dizimos: 0, por_cargo: {} },
+          _igrejaIds: new Set<string>(),
         })
       }
       const g = mapa.get(aId)!
       g.missionarios.push(d)
       g.totais.membros += d.total_membros
-      g.totais.igrejas += d.total_igrejas
+      for (const igId of d.igrejas_ids || []) (g as any)._igrejaIds.add(igId)
       g.totais.dizimos += d.dizimos_total
       const cargo = d.cargo_ministerial || 'sem_cargo'
       g.totais.por_cargo[cargo] = (g.totais.por_cargo[cargo] || 0) + 1
     }
-    // Fill sigla from associacoes list
+    // Fill sigla and deduplicated igrejas count
     for (const [aId, g] of mapa) {
       const found = associacoes.find(a => a.id === aId)
       if (found) g.associacao_sigla = found.sigla
+      g.totais.igrejas = (g as any)._igrejaIds?.size || 0
     }
     return Array.from(mapa.values()).sort((a, b) => a.associacao_nome.localeCompare(b.associacao_nome))
   }, [filteredData, associacoes])
 
-  // Summary stats
-  const summary = useMemo(() => ({
-    total: filteredData.length,
-    mediaKPI: filteredData.length > 0
-      ? Math.round(filteredData.reduce((s, d) => s + d.kpi_score, 0) / filteredData.length)
-      : 0,
-    totalIgrejas: filteredData.reduce((s, d) => s + d.total_igrejas, 0),
-    totalMembros: filteredData.reduce((s, d) => s + d.total_membros, 0),
-    totalDizimos: filteredData.reduce((s, d) => s + d.dizimos_total, 0),
-  }), [filteredData])
+  // Summary stats (deduplicado: igrejas compartilhadas não contam 2x)
+  const summary = useMemo(() => {
+    const uniqueIgrejas = new Set<string>()
+    for (const d of filteredData) {
+      for (const igId of d.igrejas_ids || []) uniqueIgrejas.add(igId)
+    }
+    return {
+      total: filteredData.length,
+      mediaKPI: filteredData.length > 0
+        ? Math.round(filteredData.reduce((s, d) => s + d.kpi_score, 0) / filteredData.length)
+        : 0,
+      totalIgrejas: uniqueIgrejas.size,
+      totalMembros: filteredData.reduce((s, d) => s + d.total_membros, 0),
+      totalDizimos: filteredData.reduce((s, d) => s + d.dizimos_total, 0),
+    }
+  }, [filteredData])
 
   const cargoDistribution = useMemo(() => {
     const dist: Record<string, number> = {}

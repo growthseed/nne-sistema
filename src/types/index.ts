@@ -686,6 +686,7 @@ export interface InventarioCampo {
   status: StatusMissionario
   associacao_id: string | null
   associacao_nome: string | null
+  igrejas_ids: string[]
   total_igrejas: number
   total_membros: number
   total_interessados: number
