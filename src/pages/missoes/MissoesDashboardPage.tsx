@@ -42,7 +42,8 @@ ChartJS.register(
   Filler
 )
 
-import { MISSOES_TABS, CARGO_LABELS, MESES_NOMES, MONTH_LABELS } from '@/lib/missoes-constants'
+import { MISSOES_TABS, MESES_NOMES, MONTH_LABELS } from '@/lib/missoes-constants'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 const COLORS = ['#006D43', '#0F3999', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
 const MESES = MESES_NOMES
@@ -95,6 +96,7 @@ interface TopPerformer {
 
 export default function MissoesDashboardPage() {
   const { profile } = useAuth()
+  const { labels: CARGO_LABELS } = useCargoLabels()
   const [loading, setLoading] = useState(true)
   const [kpi, setKpi] = useState<KPIData>({
     totalMembros: 0,

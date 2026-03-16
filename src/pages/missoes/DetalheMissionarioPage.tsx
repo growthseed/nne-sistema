@@ -61,7 +61,8 @@ ChartJS.register(
 
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
-import { MISSOES_TABS, CARGO_LABELS, STATUS_LABELS, STATUS_COLORS, TIPO_ATIVIDADE_ICONS, TIPO_ATIVIDADE_LABELS, MESES_NOMES, MONTH_LABELS, ORDENACAO_MARCOS, ESCOLARIDADE_OPTIONS, ESTADO_CIVIL_OPTIONS, UF_OPTIONS, SEXO_OPTIONS } from '@/lib/missoes-constants'
+import { MISSOES_TABS, STATUS_COLORS, TIPO_ATIVIDADE_ICONS, TIPO_ATIVIDADE_LABELS, MESES_NOMES, MONTH_LABELS, ORDENACAO_MARCOS, ESCOLARIDADE_OPTIONS, ESTADO_CIVIL_OPTIONS, UF_OPTIONS, SEXO_OPTIONS } from '@/lib/missoes-constants'
+import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
 import TermoCompromissoDisplay from '@/components/missoes/TermoCompromissoDisplay'
 
 // ── MoneyInput: handles Brazilian decimal format properly ──
@@ -201,6 +202,8 @@ interface FinancialSummary {
 export default function DetalheMissionarioPage() {
   const { id } = useParams<{ id: string }>()
   const { profile } = useAuth()
+  const { labels: CARGO_LABELS } = useCargoLabels()
+  const { labels: STATUS_LABELS } = useStatusLabels()
 
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabKey>('visao_geral')

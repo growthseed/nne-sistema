@@ -24,7 +24,8 @@ import {
   FiExternalLink,
 } from 'react-icons/fi'
 
-import { MISSOES_TABS, CARGO_LABELS, TIPO_ATIVIDADE_LABELS, TIPO_ATIVIDADE_ICONS, MESES_NOMES } from '@/lib/missoes-constants'
+import { MISSOES_TABS, TIPO_ATIVIDADE_LABELS, TIPO_ATIVIDADE_ICONS, MESES_NOMES } from '@/lib/missoes-constants'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 function MissoesSubNav() {
   return (
@@ -59,6 +60,7 @@ const emptyActivityForm = {
 
 export default function MeuPainelMissionarioPage() {
   const { profile } = useAuth()
+  const { labels: CARGO_LABELS } = useCargoLabels()
 
   const [missionario, setMissionario] = useState<Missionario | null>(null)
   const [metas, setMetas] = useState<MetaMissionario | null>(null)

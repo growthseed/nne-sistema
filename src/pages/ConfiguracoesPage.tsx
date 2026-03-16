@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { UserProfile, UserRole, TermoCompromissoContent, CargoMinisterial } from '@/types'
-import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX, FiFileText, FiTag } from 'react-icons/fi'
+import { UserProfile, UserRole, TermoCompromissoContent } from '@/types'
+import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX, FiFileText, FiTag, FiPlus, FiTrash2 } from 'react-icons/fi'
 import { DEFAULT_TERMO, invalidateTermoCache } from '@/components/missoes/TermoCompromissoDisplay'
-import { CARGO_LABELS } from '@/lib/missoes-constants'
-import { useCargoLabels } from '@/hooks/useCargoLabels'
+import { CARGO_LABELS, STATUS_LABELS } from '@/lib/missoes-constants'
+import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
 
 // ========== CONSTANTS ==========
 
@@ -911,147 +911,226 @@ function DocumentosSection() {
   )
 }
 
-// ========== CATEGORIAS (Cargos Ministeriais) ==========
+// ========== CATEGORIAS (Cargos + Status Dinâmicos) ==========
 
-const CARGO_KEYS: CargoMinisterial[] = [
-  'ministro',
-  'pastor_ordenado',
-  'pastor_licenciado',
-  'obreiro_biblico',
-  'obreiro_aspirante',
-  'obreiro_pre_aspirante',
-  'colportor',
-  'diretor_colportagem',
-  'aux_diretor_colportagem',
-  'evangelista',
-  'contratado',
-  'missionario_voluntario',
-  'missionario_auxiliar',
-  'diretor_departamental',
-  'presidente',
-  'secretario',
-  'tesoureiro_campo',
-]
-
-function CategoriasSection() {
-  const { labels, loading, updateLabels } = useCargoLabels()
-  const [editedLabels, setEditedLabels] = useState<Record<string, string>>({})
+function DynamicLabelsEditor({
+  title,
+  description,
+  iconColor,
+  labels,
+  defaults,
+  loading,
+  onSave,
+}: {
+  title: string
+  description: string
+  iconColor: string
+  labels: Record<string, string>
+  defaults: Record<string, string>
+  loading: boolean
+  onSave: (newLabels: Record<string, string>) => Promise<boolean>
+}) {
+  const [edited, setEdited] = useState<Record<string, string>>({})
+  const [newKey, setNewKey] = useState('')
+  const [newLabel, setNewLabel] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    if (!loading) {
-      setEditedLabels({ ...labels })
-    }
+    if (!loading) setEdited({ ...labels })
   }, [loading, labels])
 
+  const keys = Object.keys(edited)
+
   function handleChange(key: string, value: string) {
-    setEditedLabels((prev) => ({ ...prev, [key]: value }))
+    setEdited(prev => ({ ...prev, [key]: value }))
   }
 
-  function handleReset(key: CargoMinisterial) {
-    setEditedLabels((prev) => ({ ...prev, [key]: CARGO_LABELS[key] }))
+  function handleRemove(key: string) {
+    if (!confirm(`Remover "${edited[key]}"?`)) return
+    setEdited(prev => {
+      const copy = { ...prev }
+      delete copy[key]
+      return copy
+    })
+  }
+
+  function handleAdd() {
+    const key = newKey.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+    const label = newLabel.trim()
+    if (!key || !label) return
+    if (edited[key]) {
+      setMessage({ type: 'error', text: `A chave "${key}" já existe.` })
+      return
+    }
+    setEdited(prev => ({ ...prev, [key]: label }))
+    setNewKey('')
+    setNewLabel('')
+    setMessage(null)
   }
 
   async function handleSave() {
     setSaving(true)
     setMessage(null)
-
-    const result = await updateLabels(editedLabels as Record<CargoMinisterial, string>)
-    if (result) {
-      setMessage({ type: 'success', text: 'Categorias salvas com sucesso!' })
-    } else {
-      setMessage({ type: 'error', text: 'Erro ao salvar. Tente novamente.' })
-    }
+    const ok = await onSave(edited)
+    setMessage(ok
+      ? { type: 'success', text: 'Salvo com sucesso!' }
+      : { type: 'error', text: 'Erro ao salvar. Tente novamente.' }
+    )
     setSaving(false)
   }
 
-  const hasChanges = CARGO_KEYS.some((key) => editedLabels[key] !== labels[key])
+  const hasChanges = JSON.stringify(edited) !== JSON.stringify(labels)
 
-  if (loading) {
-    return <div className="card text-center text-gray-400 py-8">Carregando categorias...</div>
-  }
+  if (loading) return <div className="card text-center text-gray-400 py-8">Carregando...</div>
+
+  return (
+    <div className="card">
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`w-12 h-12 rounded-full ${iconColor} flex items-center justify-center text-lg`}>
+          <FiTag className="w-6 h-6" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+          <p className="text-sm text-gray-500">{description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {/* Header */}
+        <div className="hidden sm:grid grid-cols-[1fr_1fr_auto_auto] gap-3 px-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <span>Chave (interno)</span>
+          <span>Nome de Exibição</span>
+          <span className="w-16 text-center">Resetar</span>
+          <span className="w-10 text-center">Ação</span>
+        </div>
+
+        {keys.map(key => {
+          const isDefault = key in defaults
+          const isModified = isDefault && edited[key] !== defaults[key]
+          const isNew = !isDefault
+          return (
+            <div
+              key={key}
+              className={`grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto_auto] gap-2 sm:gap-3 items-center p-3 rounded-lg border ${
+                isNew ? 'border-green-200 bg-green-50/50' : isModified ? 'border-amber-200 bg-amber-50/50' : 'border-gray-100 bg-gray-50/50'
+              }`}
+            >
+              <div className="text-sm text-gray-500 font-mono">{key}</div>
+              <input
+                type="text"
+                value={edited[key] || ''}
+                onChange={e => handleChange(key, e.target.value)}
+                className="input-field text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => isDefault && setEdited(prev => ({ ...prev, [key]: defaults[key] }))}
+                disabled={!isModified}
+                className="w-16 text-xs text-gray-400 hover:text-amber-600 disabled:opacity-30 disabled:cursor-not-allowed text-center"
+              >
+                Resetar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRemove(key)}
+                className="w-10 flex items-center justify-center text-gray-400 hover:text-red-600"
+                title="Remover"
+              >
+                <FiTrash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Add new */}
+      <div className="mt-4 p-4 border-2 border-dashed border-gray-200 rounded-lg">
+        <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Adicionar Novo</p>
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+          <div>
+            <label className="label-field">Chave (ex: novo_cargo)</label>
+            <input
+              type="text"
+              value={newKey}
+              onChange={e => setNewKey(e.target.value)}
+              className="input-field text-sm"
+              placeholder="chave_interna"
+            />
+          </div>
+          <div>
+            <label className="label-field">Nome de Exibição</label>
+            <input
+              type="text"
+              value={newLabel}
+              onChange={e => setNewLabel(e.target.value)}
+              className="input-field text-sm"
+              placeholder="Nome Bonito"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!newKey.trim() || !newLabel.trim()}
+            className="btn-primary inline-flex items-center gap-2 disabled:opacity-50 h-10"
+          >
+            <FiPlus className="w-4 h-4" />
+            Adicionar
+          </button>
+        </div>
+      </div>
+
+      {/* Message */}
+      {message && (
+        <div className={`mt-4 text-sm px-4 py-2.5 rounded-lg ${
+          message.type === 'success'
+            ? 'bg-green-50 text-green-700 border border-green-200'
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          {message.text}
+        </div>
+      )}
+
+      {/* Save */}
+      <div className="pt-4 flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving || !hasChanges}
+          className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+        >
+          <FiSave className="w-4 h-4" />
+          {saving ? 'Salvando...' : 'Salvar Alterações'}
+        </button>
+        {hasChanges && <span className="text-xs text-amber-600">Alterações não salvas</span>}
+      </div>
+    </div>
+  )
+}
+
+function CategoriasSection() {
+  const cargo = useCargoLabels()
+  const status = useStatusLabels()
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="card">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
-            <FiTag className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800">Cargos Ministeriais</h2>
-            <p className="text-sm text-gray-500">Edite os nomes de exibição dos cargos. Alterações aparecem em todo o sistema.</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {/* Header */}
-          <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] gap-3 px-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <span>Chave (interno)</span>
-            <span>Nome de Exibição</span>
-            <span className="w-16 text-center">Resetar</span>
-          </div>
-
-          {CARGO_KEYS.map((key) => {
-            const isModified = editedLabels[key] !== CARGO_LABELS[key]
-            return (
-              <div
-                key={key}
-                className={`grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 sm:gap-3 items-center p-3 rounded-lg border ${
-                  isModified ? 'border-amber-200 bg-amber-50/50' : 'border-gray-100 bg-gray-50/50'
-                }`}
-              >
-                <div className="text-sm text-gray-500 font-mono">{key}</div>
-                <input
-                  type="text"
-                  value={editedLabels[key] || ''}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  className="input-field text-sm"
-                  placeholder={CARGO_LABELS[key]}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleReset(key)}
-                  disabled={!isModified}
-                  className="w-16 text-xs text-gray-400 hover:text-amber-600 disabled:opacity-30 disabled:cursor-not-allowed text-center"
-                  title={`Restaurar: ${CARGO_LABELS[key]}`}
-                >
-                  Resetar
-                </button>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Message */}
-        {message && (
-          <div
-            className={`mt-4 text-sm px-4 py-2.5 rounded-lg ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        {/* Save */}
-        <div className="pt-4 flex items-center gap-3">
-          <button
-            onClick={handleSave}
-            disabled={saving || !hasChanges}
-            className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
-          >
-            <FiSave className="w-4 h-4" />
-            {saving ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
-          {hasChanges && (
-            <span className="text-xs text-amber-600">Alterações não salvas</span>
-          )}
-        </div>
-      </div>
+      <DynamicLabelsEditor
+        title="Cargos Ministeriais"
+        description="Adicione, edite ou remova cargos. Alterações aparecem nos dropdowns de todo o sistema."
+        iconColor="bg-amber-100 text-amber-700"
+        labels={cargo.labels}
+        defaults={CARGO_LABELS}
+        loading={cargo.loading}
+        onSave={cargo.updateLabels}
+      />
+      <DynamicLabelsEditor
+        title="Status de Missionário"
+        description="Adicione, edite ou remova status. Alterações aparecem nos dropdowns de todo o sistema."
+        iconColor="bg-blue-100 text-blue-700"
+        labels={status.labels}
+        defaults={STATUS_LABELS}
+        loading={status.loading}
+        onSave={status.updateLabels}
+      />
     </div>
   )
 }

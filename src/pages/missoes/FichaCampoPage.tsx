@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { CARGO_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/missoes-constants'
+import { STATUS_COLORS } from '@/lib/missoes-constants'
+import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
 import type { CargoMinisterial, StatusMissionario } from '@/types'
 import TermoCompromissoDisplay from '@/components/missoes/TermoCompromissoDisplay'
 import {
@@ -98,6 +99,8 @@ interface DadosFicha {
 export default function FichaCampoPage() {
   const { id } = useParams<{ id: string }>()
   const { profile } = useAuth()
+  const { labels: CARGO_LABELS } = useCargoLabels()
+  const { labels: STATUS_LABELS } = useStatusLabels()
   const fichaRef = useRef<HTMLDivElement>(null)
   const [dados, setDados] = useState<DadosFicha | null>(null)
   const [loading, setLoading] = useState(true)

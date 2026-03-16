@@ -24,7 +24,8 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import * as XLSX from 'xlsx'
 
-import { MISSOES_TABS, CARGO_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/missoes-constants'
+import { MISSOES_TABS, STATUS_COLORS } from '@/lib/missoes-constants'
+import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
 
 type SortField = 'nome' | 'cargo_ministerial' | 'total_igrejas' | 'total_membros' | 'dizimos_total' | 'kpi_score'
 type SortDir = 'asc' | 'desc'
@@ -45,6 +46,8 @@ interface GrupoAssociacao {
 export default function InventarioMissionariosPage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
+  const { labels: CARGO_LABELS } = useCargoLabels()
+  const { labels: STATUS_LABELS } = useStatusLabels()
   const tableRef = useRef<HTMLDivElement>(null)
 
   const [loading, setLoading] = useState(true)
