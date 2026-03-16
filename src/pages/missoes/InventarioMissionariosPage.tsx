@@ -53,6 +53,7 @@ export default function InventarioMissionariosPage() {
   const [loading, setLoading] = useState(true)
   const [inventario, setInventario] = useState<InventarioCampo[]>([])
   const [associacoes, setAssociacoes] = useState<{ id: string; nome: string; sigla: string }[]>([])
+  const [membrosPorIgreja, setMembrosPorIgreja] = useState<Record<string, number>>({})
 
   // Filters
   const [filtroAssociacao, setFiltroAssociacao] = useState('')
@@ -296,6 +297,7 @@ export default function InventarioMissionariosPage() {
       })
 
       setInventario(result)
+      setMembrosPorIgreja(memberCounts)
 
       // Expand all association groups by default
       const expand: Record<string, boolean> = {}
@@ -337,7 +339,7 @@ export default function InventarioMissionariosPage() {
 
   // Group by association
   const grupos = useMemo<GrupoAssociacao[]>(() => {
-    const mapa = new Map<string, GrupoAssociacao>()
+    const mapa = new Map<string, GrupoAssociacao & { _igrejaIds: Set<string> }>()
     for (const d of filteredData) {
       const aId = d.associacao_id || 'sem-associacao'
       const aNome = d.associacao_nome || 'Sem Associacao'
@@ -353,20 +355,25 @@ export default function InventarioMissionariosPage() {
       }
       const g = mapa.get(aId)!
       g.missionarios.push(d)
-      g.totais.membros += d.total_membros
-      for (const igId of d.igrejas_ids || []) (g as any)._igrejaIds.add(igId)
+      // Collect unique church IDs (don't sum members yet - avoids double-counting)
+      for (const igId of d.igrejas_ids || []) g._igrejaIds.add(igId)
       g.totais.dizimos += d.dizimos_total
       const cargo = d.cargo_ministerial || 'sem_cargo'
       g.totais.por_cargo[cargo] = (g.totais.por_cargo[cargo] || 0) + 1
     }
-    // Fill sigla and deduplicated igrejas count
-    for (const [aId, g] of mapa) {
-      const found = associacoes.find(a => a.id === aId)
+    // Fill sigla, deduplicated igrejas count, and CORRECT member totals
+    for (const [, g] of mapa) {
+      const found = associacoes.find(a => a.id === g.associacao_id)
       if (found) g.associacao_sigla = found.sigla
-      g.totais.igrejas = (g as any)._igrejaIds?.size || 0
+      g.totais.igrejas = g._igrejaIds.size
+      // Sum members only once per unique church
+      g.totais.membros = 0
+      for (const igId of g._igrejaIds) {
+        g.totais.membros += membrosPorIgreja[igId] || 0
+      }
     }
     return Array.from(mapa.values()).sort((a, b) => a.associacao_nome.localeCompare(b.associacao_nome))
-  }, [filteredData, associacoes])
+  }, [filteredData, associacoes, membrosPorIgreja])
 
   // Summary stats (deduplicado: igrejas compartilhadas não contam 2x)
   const summary = useMemo(() => {
@@ -374,16 +381,21 @@ export default function InventarioMissionariosPage() {
     for (const d of filteredData) {
       for (const igId of d.igrejas_ids || []) uniqueIgrejas.add(igId)
     }
+    // Sum members only once per unique church (fixes double-counting)
+    let totalMembrosDedup = 0
+    for (const igId of uniqueIgrejas) {
+      totalMembrosDedup += membrosPorIgreja[igId] || 0
+    }
     return {
       total: filteredData.length,
       mediaKPI: filteredData.length > 0
         ? Math.round(filteredData.reduce((s, d) => s + d.kpi_score, 0) / filteredData.length)
         : 0,
       totalIgrejas: uniqueIgrejas.size,
-      totalMembros: filteredData.reduce((s, d) => s + d.total_membros, 0),
+      totalMembros: totalMembrosDedup,
       totalDizimos: filteredData.reduce((s, d) => s + d.dizimos_total, 0),
     }
-  }, [filteredData])
+  }, [filteredData, membrosPorIgreja])
 
   const cargoDistribution = useMemo(() => {
     const dist: Record<string, number> = {}
