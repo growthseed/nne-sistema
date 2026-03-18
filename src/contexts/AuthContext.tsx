@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { UserProfile, UserRole } from '@/types'
@@ -21,24 +21,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const currentUserIdRef = useRef<string | null>(null)
+  const sessionRef = useRef<Session | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      sessionRef.current = session
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
+        currentUserIdRef.current = session.user.id
         fetchProfile(session.user.id)
       } else {
         setLoading(false)
       }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Always keep the latest session in ref (for signOut/signIn checks)
+      sessionRef.current = session
+
+      // Token refresh: silently update ref, no re-render needed
+      if (event === 'TOKEN_REFRESHED') {
+        return
+      }
+
       setSession(session)
       setUser(session?.user ?? null)
+
       if (session?.user) {
-        fetchProfile(session.user.id)
+        if (currentUserIdRef.current !== session.user.id) {
+          currentUserIdRef.current = session.user.id
+          fetchProfile(session.user.id)
+        }
       } else {
+        currentUserIdRef.current = null
         setProfile(null)
         setLoading(false)
       }
