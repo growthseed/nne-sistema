@@ -44,8 +44,6 @@ import ConfiguracoesPage from '@/pages/ConfiguracoesPage'
 import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
 import DiretorioIgrejasPage from '@/pages/DiretorioIgrejasPage'
 
-const isMVP = import.meta.env.VITE_MVP_ONLY === 'true'
-
 export default function App() {
   return (
     <Routes>
@@ -59,23 +57,22 @@ export default function App() {
         <Route path="cadastro" element={<CadastroPage />} />
         <Route path="cadastro/dashboard" element={<CadastroDashboardPage />} />
 
-        {/* Missões MVP - Ficha de Campo */}
+        {/* Missões */}
         <Route path="missoes">
           <Route index element={<MissoesDashboardPage />} />
           <Route path="inventario" element={<InventarioMissionariosPage />} />
           <Route path="missionario/:id" element={<DetalheMissionarioPage />} />
           <Route path="obreiro/:id" element={<FichaCampoPage />} />
-          {!isMVP && <Route path="relatorio" element={<RelatorioMissionarioPage />} />}
-          {!isMVP && <Route path="meu-painel" element={<MeuPainelMissionarioPage />} />}
-          {!isMVP && <Route path="metas" element={<MetasKPIsPage />} />}
-          {!isMVP && <Route path="planejador-visitas" element={<PlanejadorVisitasPage />} />}
-          {!isMVP && <Route path="relatorio-campo" element={<RelatorioCampoPage />} />}
-          {!isMVP && <Route path="diagnostico" element={<DiagnosticoPage />} />}
-          {!isMVP && <Route path="painel-geral" element={<PainelGeralMissionariosPage />} />}
+          <Route path="relatorio" element={<RelatorioMissionarioPage />} />
+          <Route path="meu-painel" element={<MeuPainelMissionarioPage />} />
+          <Route path="metas" element={<MetasKPIsPage />} />
+          <Route path="planejador-visitas" element={<PlanejadorVisitasPage />} />
+          <Route path="relatorio-campo" element={<RelatorioCampoPage />} />
+          <Route path="diagnostico" element={<DiagnosticoPage />} />
+          <Route path="painel-geral" element={<PainelGeralMissionariosPage />} />
         </Route>
 
-        {/* Non-MVP routes - hidden in production */}
-        {/* Secretaria & Membros - always visible */}
+        {/* Secretaria & Membros */}
         <Route path="membros" element={<MembrosPage />} />
         <Route path="membros/:id" element={<MembroDetalhePage />} />
         <Route path="membros/cartao" element={<CartaoMembroPage />} />
@@ -90,30 +87,35 @@ export default function App() {
           <Route path="classes-biblicas" element={<ClassesBiblicasPage />} />
         </Route>
 
-        {!isMVP && (
-          <>
-            <Route path="organizacao">
-              <Route path="unioes" element={<UnioesPage />} />
-              <Route path="associacoes" element={<AssociacoesPage />} />
-              <Route path="igrejas" element={<IgrejasPage />} />
-            </Route>
-            <Route path="financeiro">
-              <Route index element={<FinanceiroPage />} />
-              <Route path="lancamentos" element={<LancamentosPage />} />
-              <Route path="receita-campo" element={<ReceitaCampoPage />} />
-            </Route>
-            <Route path="escola-sabatina">
-              <Route index element={<ClassesPage />} />
-              <Route path="batismais" element={<ClassesBatismaisPage />} />
-              <Route path="presenca" element={<PresencaPage />} />
-            </Route>
-            <Route path="mapas" element={<MapasPage />} />
-            <Route path="ibge" element={<IBGEPage />} />
-            <Route path="relatorios" element={<RelatoriosPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="configuracoes" element={<ConfiguracoesPage />} />
-          </>
-        )}
+        {/* Organizacao */}
+        <Route path="organizacao">
+          <Route path="unioes" element={<UnioesPage />} />
+          <Route path="associacoes" element={<AssociacoesPage />} />
+          <Route path="igrejas" element={<IgrejasPage />} />
+        </Route>
+
+        {/* Financeiro */}
+        <Route path="financeiro">
+          <Route index element={<FinanceiroPage />} />
+          <Route path="lancamentos" element={<LancamentosPage />} />
+          <Route path="receita-campo" element={<ReceitaCampoPage />} />
+        </Route>
+
+        {/* Escola Sabatina */}
+        <Route path="escola-sabatina">
+          <Route index element={<ClassesPage />} />
+          <Route path="batismais" element={<ClassesBatismaisPage />} />
+          <Route path="presenca" element={<PresencaPage />} />
+        </Route>
+
+        {/* Inteligencia */}
+        <Route path="mapas" element={<MapasPage />} />
+        <Route path="ibge" element={<IBGEPage />} />
+        <Route path="relatorios" element={<RelatoriosPage />} />
+        <Route path="analytics" element={<AnalyticsPage />} />
+
+        {/* Admin */}
+        <Route path="configuracoes" element={<ConfiguracoesPage />} />
       </Route>
     </Routes>
   )
