@@ -49,7 +49,7 @@ interface CidadeResumo {
   cidade: string
   membros: number
   populacao: number | null
-  penetracao: number | null
+  alcance: number | null
 }
 
 // ---------- Component ----------
@@ -239,7 +239,7 @@ export default function IBGEPage() {
         cidade,
         membros,
         populacao: null,
-        penetracao: null,
+        alcance: null,
       }))
       .sort((a, b) => b.membros - a.membros)
 
@@ -250,7 +250,7 @@ export default function IBGEPage() {
 
   const totalMembros = membrosCidade.length
   const densidade = populacao && populacao > 0 ? (totalMembros / populacao) * 1000 : null
-  const penetracao = populacao && populacao > 0 ? (totalMembros / populacao) * 100 : null
+  const alcance = populacao && populacao > 0 ? (totalMembros / populacao) * 100 : null
 
   // ---------- Age chart data ----------
 
@@ -267,9 +267,9 @@ export default function IBGEPage() {
     ],
   }
 
-  // ---------- Penetration badge ----------
+  // ---------- Alcance badge ----------
 
-  function penetrationBadge(pct: number | null) {
+  function alcanceBadge(pct: number | null) {
     if (pct === null) {
       return (
         <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
@@ -436,13 +436,13 @@ export default function IBGEPage() {
             <p className="mt-1 text-xs text-gray-400">Membros por 1.000 habitantes</p>
           </div>
 
-          {/* Penetracao */}
+          {/* Alcance */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Penetracao
+              Alcance
             </p>
             <p className="mt-2 text-2xl font-bold text-purple-700">
-              {penetracao !== null ? `${penetracao.toFixed(4)}%` : '--'}
+              {alcance !== null ? `${alcance.toFixed(4)}%` : '--'}
             </p>
             <p className="mt-1 text-xs text-gray-400">% membros / populacao</p>
           </div>
@@ -498,7 +498,7 @@ export default function IBGEPage() {
                     Populacao (IBGE)
                   </th>
                   <th className="px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Penetracao
+                    Alcance
                   </th>
                 </tr>
               </thead>
@@ -520,7 +520,7 @@ export default function IBGEPage() {
                         {row.populacao !== null ? numberFmt.format(row.populacao) : '--'}
                       </td>
                       <td className="whitespace-nowrap px-5 py-3 text-center">
-                        {penetrationBadge(pen)}
+                        {alcanceBadge(pen)}
                       </td>
                     </tr>
                   )

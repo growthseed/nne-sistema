@@ -61,7 +61,7 @@ interface CidadeIBGE {
   interessados: number
   igrejas: number
   populacao: number | null
-  penetracao: number | null
+  alcance: number | null
 }
 
 interface AssociacaoSummary {
@@ -210,7 +210,7 @@ export default function PainelGeralMissionariosPage() {
       if (!cidade || !estado) continue
       const key = `${cidade}|${estado}`
       if (!cityMap.has(key)) {
-        cityMap.set(key, { cidade, estado, membros: 0, interessados: 0, igrejas: 0, populacao: null, penetracao: null })
+        cityMap.set(key, { cidade, estado, membros: 0, interessados: 0, igrejas: 0, populacao: null, alcance: null })
       }
       const c = cityMap.get(key)!
       c.membros += ig.membros_ativos || 0
@@ -263,7 +263,7 @@ export default function PainelGeralMissionariosPage() {
             const valor = popData?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021']
             if (valor) {
               c.populacao = parseInt(valor, 10)
-              c.penetracao = c.populacao > 0 ? (c.membros / c.populacao) * 100 : null
+              c.alcance = c.populacao > 0 ? (c.membros / c.populacao) * 100 : null
             }
           } catch { /* skip */ }
         }
@@ -578,7 +578,7 @@ export default function PainelGeralMissionariosPage() {
 
   // ========== PENETRATION BADGE ==========
 
-  function penetrationBadge(pct: number | null) {
+  function alcanceBadge(pct: number | null) {
     if (pct === null) return <span className="text-xs text-gray-400">—</span>
     if (pct >= 0.1) return <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">{pct.toFixed(3)}%</span>
     if (pct >= 0.01) return <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-700">{pct.toFixed(3)}%</span>
@@ -789,7 +789,7 @@ export default function PainelGeralMissionariosPage() {
                       <th className="px-4 py-3 text-center">Membros</th>
                       <th className="px-4 py-3 text-center">Interessados</th>
                       <th className="px-4 py-3 text-right">População (IBGE)</th>
-                      <th className="px-4 py-3 text-center">Penetração</th>
+                      <th className="px-4 py-3 text-center">Alcance</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -806,7 +806,7 @@ export default function PainelGeralMissionariosPage() {
                             loadingIBGE ? <span className="text-xs text-gray-400 animate-pulse">Carregando...</span> : '—'
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center">{penetrationBadge(c.penetracao)}</td>
+                        <td className="px-4 py-3 text-center">{alcanceBadge(c.alcance)}</td>
                       </tr>
                     ))}
                   </tbody>

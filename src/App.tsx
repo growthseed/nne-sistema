@@ -6,11 +6,16 @@ import CadastroPage from '@/pages/cadastro/CadastroPage'
 import CadastroPublicoPage from '@/pages/cadastro/CadastroPublicoPage'
 import CadastroDashboardPage from '@/pages/cadastro/CadastroDashboardPage'
 import MembrosPage from '@/pages/membros/MembrosPage'
+import MembroDetalhePage from '@/pages/membros/MembroDetalhePage'
 import CartaoMembroPage from '@/pages/membros/CartaoMembroPage'
 import FamiliasPage from '@/pages/membros/FamiliasPage'
 import SecretariaPage from '@/pages/secretaria/SecretariaPage'
 import ContagemMensalPage from '@/pages/secretaria/ContagemMensalPage'
 import TransferenciasPage from '@/pages/secretaria/TransferenciasPage'
+import AniversariantesPage from '@/pages/secretaria/AniversariantesPage'
+import FunilConversaoPage from '@/pages/secretaria/FunilConversaoPage'
+import SaudeMembrosPage from '@/pages/secretaria/SaudeMembrosPage'
+import ClassesBiblicasPage from '@/pages/secretaria/ClassesBiblicasPage'
 import UnioesPage from '@/pages/organizacao/UnioesPage'
 import AssociacoesPage from '@/pages/organizacao/AssociacoesPage'
 import IgrejasPage from '@/pages/organizacao/IgrejasPage'
@@ -70,16 +75,23 @@ export default function App() {
         </Route>
 
         {/* Non-MVP routes - hidden in production */}
+        {/* Secretaria & Membros - always visible */}
+        <Route path="membros" element={<MembrosPage />} />
+        <Route path="membros/:id" element={<MembroDetalhePage />} />
+        <Route path="membros/cartao" element={<CartaoMembroPage />} />
+        <Route path="membros/familias" element={<FamiliasPage />} />
+        <Route path="secretaria">
+          <Route index element={<SecretariaPage />} />
+          <Route path="contagem" element={<ContagemMensalPage />} />
+          <Route path="transferencias" element={<TransferenciasPage />} />
+          <Route path="aniversariantes" element={<AniversariantesPage />} />
+          <Route path="funil" element={<FunilConversaoPage />} />
+          <Route path="saude" element={<SaudeMembrosPage />} />
+          <Route path="classes-biblicas" element={<ClassesBiblicasPage />} />
+        </Route>
+
         {!isMVP && (
           <>
-            <Route path="membros" element={<MembrosPage />} />
-            <Route path="membros/cartao" element={<CartaoMembroPage />} />
-            <Route path="membros/familias" element={<FamiliasPage />} />
-            <Route path="secretaria">
-              <Route index element={<SecretariaPage />} />
-              <Route path="contagem" element={<ContagemMensalPage />} />
-              <Route path="transferencias" element={<TransferenciasPage />} />
-            </Route>
             <Route path="organizacao">
               <Route path="unioes" element={<UnioesPage />} />
               <Route path="associacoes" element={<AssociacoesPage />} />

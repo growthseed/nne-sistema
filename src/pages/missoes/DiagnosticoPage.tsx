@@ -78,7 +78,7 @@ interface CityInfo {
   estado: string
   membros: number
   populacao: number | null
-  penetracao: number | null
+  alcance: number | null
   loadingPop: boolean
 }
 
@@ -461,7 +461,7 @@ export default function DiagnosticoPage() {
     const results: CityInfo[] = cities.map(c => ({
       ...c,
       populacao: null,
-      penetracao: null,
+      alcance: null,
       loadingPop: true,
     }))
     setCityData([...results])
@@ -500,7 +500,7 @@ export default function DiagnosticoPage() {
                 const popValue = serie ? parseInt(Object.values(serie)[0] as string, 10) : null
                 if (popValue && !isNaN(popValue)) {
                   results[i].populacao = popValue
-                  results[i].penetracao = (city.membros / popValue) * 100
+                  results[i].alcance = (city.membros / popValue) * 100
                 }
               } catch {
                 // Population parsing failed, leave as null
@@ -526,14 +526,14 @@ export default function DiagnosticoPage() {
     }
   }, [loading, citiesFromPessoas, fetchPopulation])
 
-  // Sort cities by penetration ascending (lowest first = biggest opportunity)
+  // Sort cities by alcance ascending (lowest first = biggest opportunity)
   const sortedCities = useMemo(() => {
     return [...cityData].sort((a, b) => {
       // Cities without population data go last
-      if (a.penetracao === null && b.penetracao === null) return b.membros - a.membros
-      if (a.penetracao === null) return 1
-      if (b.penetracao === null) return -1
-      return a.penetracao - b.penetracao
+      if (a.alcance === null && b.alcance === null) return b.membros - a.membros
+      if (a.alcance === null) return 1
+      if (b.alcance === null) return -1
+      return a.alcance - b.alcance
     })
   }, [cityData])
 
@@ -563,11 +563,11 @@ export default function DiagnosticoPage() {
     return <FiCheckCircle className="w-5 h-5" />
   }
 
-  function penetrationBadge(penetracao: number | null) {
-    if (penetracao === null) return <span className="text-gray-400 text-xs">-</span>
-    if (penetracao < 0.01) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Baixissima</span>
-    if (penetracao < 0.1) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Baixa</span>
-    if (penetracao < 1) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Moderada</span>
+  function alcanceBadge(alcance: number | null) {
+    if (alcance === null) return <span className="text-gray-400 text-xs">-</span>
+    if (alcance < 0.01) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Baixissima</span>
+    if (alcance < 0.1) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Baixa</span>
+    if (alcance < 1) return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Moderada</span>
     return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Alta</span>
   }
 
@@ -880,7 +880,7 @@ export default function DiagnosticoPage() {
           <FiMapPin className="w-5 h-5 text-gray-400" />
           <h3 className="text-lg font-semibold text-gray-800">Mapa de Oportunidades</h3>
         </div>
-        <p className="text-sm text-gray-500 mb-4">Cidades com presenca da igreja e penetracao populacional (IBGE)</p>
+        <p className="text-sm text-gray-500 mb-4">Cidades com presenca da igreja e alcance populacional (IBGE)</p>
 
         {citiesFromPessoas.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
@@ -896,7 +896,7 @@ export default function DiagnosticoPage() {
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3 text-right">Membros</th>
                   <th className="px-4 py-3 text-right">Populacao</th>
-                  <th className="px-4 py-3 text-right">Penetracao</th>
+                  <th className="px-4 py-3 text-right">Alcance</th>
                   <th className="px-4 py-3 text-center">Status</th>
                 </tr>
               </thead>
@@ -921,8 +921,8 @@ export default function DiagnosticoPage() {
                     <td className="px-4 py-3 text-right text-gray-600">
                       {city.loadingPop ? (
                         <span className="text-gray-400">-</span>
-                      ) : city.penetracao !== null ? (
-                        `${city.penetracao < 0.01 ? city.penetracao.toExponential(1) : city.penetracao.toFixed(4)}%`
+                      ) : city.alcance !== null ? (
+                        `${city.alcance < 0.01 ? city.alcance.toExponential(1) : city.alcance.toFixed(4)}%`
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
@@ -931,7 +931,7 @@ export default function DiagnosticoPage() {
                       {city.loadingPop ? (
                         <span className="text-gray-400 text-xs">...</span>
                       ) : (
-                        penetrationBadge(city.penetracao)
+                        alcanceBadge(city.alcance)
                       )}
                     </td>
                   </tr>
