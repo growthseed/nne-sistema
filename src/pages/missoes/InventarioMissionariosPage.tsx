@@ -74,8 +74,10 @@ export default function InventarioMissionariosPage() {
   useEffect(() => {
     const urlCargo = searchParams.get('cargo')
     const urlStatus = searchParams.get('status')
+    const urlAssoc = searchParams.get('associacao')
     if (urlCargo) setFiltroCargo(urlCargo)
     if (urlStatus) setFiltroStatus(urlStatus)
+    if (urlAssoc) setFiltroAssociacao(urlAssoc)
   }, [])
 
   function scopeFilter(query: any) {
@@ -540,7 +542,7 @@ export default function InventarioMissionariosPage() {
             <div>
               <p className="text-2xl font-bold text-gray-800">
                 {summary.totalDizimos > 0
-                  ? `R$ ${(summary.totalDizimos / 1000).toFixed(0)}k`
+                  ? `R$ ${(summary.totalDizimos / 1000).toFixed(1)}k`
                   : 'R$ 0'}
               </p>
               <p className="text-xs text-gray-500">Dizimos ({new Date().getFullYear()})</p>
@@ -603,7 +605,13 @@ export default function InventarioMissionariosPage() {
             </label>
             <select
               value={filtroAssociacao}
-              onChange={(e) => setFiltroAssociacao(e.target.value)}
+              onChange={(e) => {
+                setFiltroAssociacao(e.target.value)
+                const params = new URLSearchParams(window.location.search)
+                if (e.target.value) params.set('associacao', e.target.value)
+                else params.delete('associacao')
+                window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`)
+              }}
               className="input-field"
             >
               <option value="">Todas</option>
@@ -678,7 +686,7 @@ export default function InventarioMissionariosPage() {
                       {grupo.totais.membros} membros
                     </span>
                     <span className="text-green-100">
-                      R$ {grupo.totais.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                      R$ {grupo.totais.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                     {isExpanded ? <FiChevronUp size={20} /> : <FiChevronDown size={20} />}
                   </div>
@@ -748,7 +756,7 @@ export default function InventarioMissionariosPage() {
                               <td className="px-4 py-3 text-center text-gray-700">{d.total_igrejas}</td>
                               <td className="px-4 py-3 text-center font-semibold text-gray-900">{d.total_membros}</td>
                               <td className="px-4 py-3 text-right text-gray-600">
-                                R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                                R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </td>
                               <td className="px-4 py-3 text-center">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${kpiColor(d.kpi_score)}`}>

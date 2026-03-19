@@ -25,7 +25,7 @@ const COLORS = ['#006D43', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'
 
 // ========== Formatters ==========
 
-const currencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 })
+const currencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 })
 const numberFmt = new Intl.NumberFormat('pt-BR')
 
 // ========== Types ==========

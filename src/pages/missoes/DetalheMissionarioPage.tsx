@@ -1551,7 +1551,7 @@ export default function DetalheMissionarioPage() {
                 <div>
                   <p className="text-2xl font-bold text-gray-800">
                     {financeiro.length > 0
-                      ? `R$ ${financeiro.reduce((s, f) => s + f.total, 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                      ? `R$ ${financeiro.reduce((s, f) => s + f.total, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       : 'R$ 0'}
                   </p>
                   <p className="text-xs text-gray-500">Receita {new Date().getFullYear()}</p>
