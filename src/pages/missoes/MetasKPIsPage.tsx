@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from 'react'
-import { NavLink } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatMesAno } from '@/lib/projections'
@@ -31,20 +30,6 @@ const chartOptions = (titleText?: string): any => ({
     ...(titleText ? { title: { display: true, text: titleText, font: { size: 14, weight: '600' } } } : {}),
   },
 })
-
-import { MISSOES_TABS } from '@/lib/missoes-constants'
-
-function MissoesSubNav() {
-  return (
-    <div className="flex gap-1 overflow-x-auto pb-1">
-      {MISSOES_TABS.map(tab => (
-        <NavLink key={tab.to} to={tab.to} end className={({ isActive }) =>
-          `px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${isActive ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`
-        }>{tab.label}</NavLink>
-      ))}
-    </div>
-  )
-}
 
 // ========== Constants ==========
 
@@ -494,7 +479,6 @@ export default function MetasKPIsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <MissoesSubNav />
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
           <span className="ml-3 text-gray-500">Carregando...</span>
@@ -506,7 +490,6 @@ export default function MetasKPIsPage() {
   if (missionarios.length === 0) {
     return (
       <div className="space-y-6">
-        <MissoesSubNav />
         <div className="card text-center py-12">
           <FiTarget className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-gray-600">Nenhum missionario encontrado</h2>
@@ -518,8 +501,6 @@ export default function MetasKPIsPage() {
 
   return (
     <div className="space-y-6">
-      <MissoesSubNav />
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

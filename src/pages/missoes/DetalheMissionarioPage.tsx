@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams, Link, NavLink } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type {
@@ -61,7 +61,7 @@ ChartJS.register(
 
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
-import { MISSOES_TABS, STATUS_COLORS, TIPO_ATIVIDADE_ICONS, TIPO_ATIVIDADE_LABELS, MESES_NOMES, MONTH_LABELS, ORDENACAO_MARCOS, ESCOLARIDADE_OPTIONS, ESTADO_CIVIL_OPTIONS, UF_OPTIONS, SEXO_OPTIONS } from '@/lib/missoes-constants'
+import { STATUS_COLORS, TIPO_ATIVIDADE_ICONS, TIPO_ATIVIDADE_LABELS, MESES_NOMES, MONTH_LABELS, ORDENACAO_MARCOS, ESCOLARIDADE_OPTIONS, ESTADO_CIVIL_OPTIONS, UF_OPTIONS, SEXO_OPTIONS } from '@/lib/missoes-constants'
 import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
 import TermoCompromissoDisplay from '@/components/missoes/TermoCompromissoDisplay'
 
@@ -1074,24 +1074,6 @@ export default function DetalheMissionarioPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-px">
-          {MISSOES_TABS.map(tab => (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              end={tab.to === '/missoes'}
-              className={({ isActive }) =>
-                `px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                  isActive
-                    ? 'text-green-700 border-b-2 border-green-600 bg-green-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
           <span className="ml-3 text-gray-500">Carregando...</span>
@@ -1103,24 +1085,6 @@ export default function DetalheMissionarioPage() {
   if (!missionario) {
     return (
       <div className="space-y-6">
-        <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-px">
-          {MISSOES_TABS.map(tab => (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              end={tab.to === '/missoes'}
-              className={({ isActive }) =>
-                `px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                  isActive
-                    ? 'text-green-700 border-b-2 border-green-600 bg-green-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
         <div className="card text-center py-12">
           <p className="text-gray-500">Missionário não encontrado</p>
           <Link to="/missoes/inventario" className="text-green-600 hover:underline text-sm mt-2 inline-block">
@@ -1136,26 +1100,6 @@ export default function DetalheMissionarioPage() {
 
   return (
     <div className="space-y-6">
-      {/* Sub-nav tabs */}
-      <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-px">
-        {MISSOES_TABS.map(tab => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.to === '/missoes'}
-            className={({ isActive }) =>
-              `px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                isActive
-                  ? 'text-green-700 border-b-2 border-green-600 bg-green-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`
-            }
-          >
-            {tab.label}
-          </NavLink>
-        ))}
-      </nav>
-
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <Link to="/missoes/inventario" className="hover:text-green-600 flex items-center gap-1">

@@ -24,20 +24,8 @@ import {
   FiExternalLink,
 } from 'react-icons/fi'
 
-import { MISSOES_TABS, TIPO_ATIVIDADE_LABELS, TIPO_ATIVIDADE_ICONS, MESES_NOMES } from '@/lib/missoes-constants'
+import { TIPO_ATIVIDADE_LABELS, TIPO_ATIVIDADE_ICONS, MESES_NOMES } from '@/lib/missoes-constants'
 import { useCargoLabels } from '@/hooks/useCargoLabels'
-
-function MissoesSubNav() {
-  return (
-    <div className="flex gap-1 overflow-x-auto pb-1">
-      {MISSOES_TABS.map(tab => (
-        <NavLink key={tab.to} to={tab.to} end className={({ isActive }) =>
-          `px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${isActive ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`
-        }>{tab.label}</NavLink>
-      ))}
-    </div>
-  )
-}
 
 const MESES = MESES_NOMES
 
@@ -319,7 +307,6 @@ export default function MeuPainelMissionarioPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <MissoesSubNav />
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
           <span className="ml-3 text-gray-500">Carregando...</span>
@@ -331,7 +318,6 @@ export default function MeuPainelMissionarioPage() {
   if (!missionario) {
     return (
       <div className="space-y-6">
-        <MissoesSubNav />
         <div className="card text-center py-12">
           <FiUser className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-gray-600">Perfil de Missionário não encontrado</h2>
@@ -354,8 +340,6 @@ export default function MeuPainelMissionarioPage() {
 
   return (
     <div className="space-y-6">
-      <MissoesSubNav />
-
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Meu Painel</h1>

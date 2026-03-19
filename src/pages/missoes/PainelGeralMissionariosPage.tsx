@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { NavLink } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Missionario, CargoMinisterial } from '@/types'
@@ -27,7 +26,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Doughnut, Bar } from 'react-chartjs-2'
-import { MISSOES_TABS, CARGO_LABELS } from '@/lib/missoes-constants'
+import { CARGO_LABELS } from '@/lib/missoes-constants'
 
 ChartJS.register(
   CategoryScale,
@@ -620,26 +619,6 @@ export default function PainelGeralMissionariosPage() {
 
   return (
     <div className="space-y-6">
-      {/* MISSOES TABS Navigation */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6 overflow-x-auto">
-        {MISSOES_TABS.map(tab => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.to === '/missoes'}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-                isActive
-                  ? 'bg-white text-green-700 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`
-            }
-          >
-            {tab.label}
-          </NavLink>
-        ))}
-      </div>
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

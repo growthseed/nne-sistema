@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
-import { NavLink } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Missionario, RelatorioDiario } from '@/types'
@@ -11,22 +10,10 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
 import {
-  MISSOES_TABS, CARGO_LABELS, MESES_NOMES,
+  CARGO_LABELS, MESES_NOMES,
   RELATORIO_ATIVIDADES_MISSIONARIAS, RELATORIO_HORAS,
   RELATORIO_PASTORAIS, RELATORIO_DESPESAS, RELATORIO_TODOS_CAMPOS,
 } from '@/lib/missoes-constants'
-
-function MissoesSubNav() {
-  return (
-    <div className="flex gap-1 overflow-x-auto pb-1">
-      {MISSOES_TABS.map(tab => (
-        <NavLink key={tab.to} to={tab.to} end className={({ isActive }) =>
-          `px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${isActive ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`
-        }>{tab.label}</NavLink>
-      ))}
-    </div>
-  )
-}
 
 // Helper: number of days in a month
 function daysInMonth(mes: number, ano: number) {
@@ -442,8 +429,6 @@ export default function RelatorioMissionarioPage() {
 
   return (
     <div className="space-y-4">
-      <MissoesSubNav />
-
       {/* ── HEADER BAR ── */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px]">

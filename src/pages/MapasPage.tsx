@@ -351,6 +351,16 @@ export default function MapasPage() {
                       </p>
                     )}
                     {ig.pastor && <p className="text-gray-600"><span className="font-medium">Pastor:</span> {ig.pastor}</p>}
+                    <div className="flex gap-2 mt-2 pt-2 border-t border-gray-100">
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${ig.coordenadas_lat},${ig.coordenadas_lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
+                      >
+                        Ir com Google Maps
+                      </a>
+                    </div>
                     {ig.telefone && <p className="text-gray-600"><span className="font-medium">Telefone:</span> {ig.telefone}</p>}
                     <p className="text-gray-600"><span className="font-medium">Membros:</span> {((ig as any).membros_ativos || 0).toLocaleString('pt-BR')}</p>
                     {(ig as any).interessados > 0 && (

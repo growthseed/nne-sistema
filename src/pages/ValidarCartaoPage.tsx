@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { FiSearch, FiCreditCard, FiCheckCircle, FiXCircle, FiAlertTriangle } from 'react-icons/fi'
+import { QRCodeSVG } from 'qrcode.react'
 
 // ========== TYPES ==========
 interface MembroCartao {
@@ -16,64 +17,6 @@ interface MembroCartao {
   igreja: { nome: string } | null
 }
 
-// ========== QR CODE PLACEHOLDER ==========
-function QRCodePlaceholder({ value, size = 120 }: { value: string; size?: number }) {
-  // Generate a deterministic pattern from the value string
-  const hash = (str: string) => {
-    let h = 0
-    for (let i = 0; i < str.length; i++) {
-      h = ((h << 5) - h + str.charCodeAt(i)) | 0
-    }
-    return Math.abs(h)
-  }
-
-  const seed = hash(value)
-  const gridSize = 21
-  const cellSize = size / gridSize
-  const cells: boolean[][] = []
-
-  for (let row = 0; row < gridSize; row++) {
-    cells[row] = []
-    for (let col = 0; col < gridSize; col++) {
-      // Finder patterns (3 corners)
-      const isFinderTL = row < 7 && col < 7
-      const isFinderTR = row < 7 && col >= gridSize - 7
-      const isFinderBL = row >= gridSize - 7 && col < 7
-
-      if (isFinderTL || isFinderTR || isFinderBL) {
-        const localR = isFinderTL ? row : isFinderBL ? row - (gridSize - 7) : row
-        const localC = isFinderTL ? col : isFinderTR ? col - (gridSize - 7) : col
-        const isBorder = localR === 0 || localR === 6 || localC === 0 || localC === 6
-        const isInner = localR >= 2 && localR <= 4 && localC >= 2 && localC <= 4
-        cells[row][col] = isBorder || isInner
-      } else {
-        // Pseudo-random data pattern
-        const n = hash(`${seed}-${row}-${col}`)
-        cells[row][col] = n % 3 !== 0
-      }
-    }
-  }
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
-      <rect width={size} height={size} fill="white" />
-      {cells.map((row, ri) =>
-        row.map((cell, ci) =>
-          cell ? (
-            <rect
-              key={`${ri}-${ci}`}
-              x={ci * cellSize}
-              y={ri * cellSize}
-              width={cellSize}
-              height={cellSize}
-              fill="#1a1a1a"
-            />
-          ) : null
-        )
-      )}
-    </svg>
-  )
-}
 
 // ========== STATUS HELPERS ==========
 const situacaoConfig: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -352,7 +295,7 @@ export default function ValidarCartaoPage() {
                 {/* QR Code Section */}
                 <div className="mt-5 pt-5 border-t border-gray-100 flex items-center gap-4">
                   <div className="bg-white p-2 rounded-lg border border-gray-200 shadow-sm shrink-0">
-                    <QRCodePlaceholder value={validationUrl} size={90} />
+                    <QRCodeSVG value={validationUrl} size={90} />
                   </div>
                   <div className="text-xs text-gray-400 leading-relaxed">
                     <p className="font-medium text-gray-500 mb-1">Verificacao Digital</p>

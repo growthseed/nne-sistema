@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
-import { NavLink, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type {
@@ -24,7 +24,7 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import * as XLSX from 'xlsx'
 
-import { MISSOES_TABS, STATUS_COLORS } from '@/lib/missoes-constants'
+import { STATUS_COLORS } from '@/lib/missoes-constants'
 import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
 
 type SortField = 'nome' | 'cargo_ministerial' | 'total_igrejas' | 'total_membros' | 'dizimos_total' | 'kpi_score'
@@ -474,26 +474,6 @@ export default function InventarioMissionariosPage() {
 
   return (
     <div className="space-y-6">
-      {/* Sub-nav tabs */}
-      <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-px">
-        {MISSOES_TABS.map(tab => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.to === '/missoes'}
-            className={({ isActive }) =>
-              `px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                isActive
-                  ? 'text-green-700 border-b-2 border-green-600 bg-green-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`
-            }
-          >
-            {tab.label}
-          </NavLink>
-        ))}
-      </nav>
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

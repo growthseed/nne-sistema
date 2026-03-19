@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import {
@@ -42,7 +42,7 @@ ChartJS.register(
   Filler
 )
 
-import { MISSOES_TABS, MESES_NOMES, MONTH_LABELS } from '@/lib/missoes-constants'
+import { MESES_NOMES, MONTH_LABELS } from '@/lib/missoes-constants'
 import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 const COLORS = ['#006D43', '#0F3999', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
@@ -531,25 +531,6 @@ export default function MissoesDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {/* Sub-nav */}
-        <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-px">
-          {MISSOES_TABS.map(tab => (
-            <NavLink
-              key={tab.to}
-              to={tab.to}
-              end={tab.to === '/missoes'}
-              className={({ isActive }) =>
-                `px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                  isActive
-                    ? 'text-green-700 border-b-2 border-green-600 bg-green-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
           <span className="ml-3 text-gray-500">Carregando...</span>
@@ -560,32 +541,12 @@ export default function MissoesDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Sub-nav tabs */}
-      <nav className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-px">
-        {MISSOES_TABS.map(tab => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.to === '/missoes'}
-            className={({ isActive }) =>
-              `px-4 py-2 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors ${
-                isActive
-                  ? 'text-green-700 border-b-2 border-green-600 bg-green-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`
-            }
-          >
-            {tab.label}
-          </NavLink>
-        ))}
-      </nav>
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard Missionario</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Dashboard Missionário</h1>
           <p className="text-gray-500 mt-1">
-            Visao geral - {MESES[mesAtual - 1]} {anoAtual}
+            Visão geral - {MESES[mesAtual - 1]} {anoAtual}
           </p>
         </div>
       </div>

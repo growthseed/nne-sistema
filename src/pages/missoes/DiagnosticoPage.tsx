@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { NavLink } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { calculateGrowthRate, MESES_LABELS } from '@/lib/projections'
@@ -23,8 +22,6 @@ import { Radar, Bar } from 'react-chartjs-2'
 ChartJS.register(CategoryScale, LinearScale, BarElement, RadialLinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend)
 
 const COLORS = ['#006D43', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4']
-
-import { MISSOES_TABS } from '@/lib/missoes-constants'
 
 // ========== Formatters ==========
 
@@ -610,14 +607,6 @@ export default function DiagnosticoPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 overflow-x-auto">
-          {MISSOES_TABS.map(t => (
-            <NavLink key={t.to} to={t.to} end={t.to === '/missoes'}
-              className={({ isActive }) => `px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-              {t.label}
-            </NavLink>
-          ))}
-        </div>
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
           <span className="ml-3 text-gray-500">Carregando diagnostico...</span>
@@ -628,16 +617,6 @@ export default function DiagnosticoPage() {
 
   return (
     <div className="space-y-6">
-      {/* Sub-navigation */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 overflow-x-auto">
-        {MISSOES_TABS.map(t => (
-          <NavLink key={t.to} to={t.to} end={t.to === '/missoes'}
-            className={({ isActive }) => `px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-            {t.label}
-          </NavLink>
-        ))}
-      </div>
-
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Diagnóstico de Campo</h1>
