@@ -146,7 +146,7 @@ export default function DuplicadosPage() {
               placeholder="Buscar nome..."
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
-              className="input text-sm py-1 w-full"
+              className="input-field text-sm py-1"
             />
           </div>
         </div>

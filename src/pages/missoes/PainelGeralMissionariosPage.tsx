@@ -647,7 +647,7 @@ export default function PainelGeralMissionariosPage() {
           <select
             value={filtroAssociacao}
             onChange={(e) => setFiltroAssociacao(e.target.value)}
-            className="input text-sm py-2 w-48"
+            className="input-field text-sm py-2 w-48"
           >
             <option value="">Todas as Associações</option>
             {associacoes.map(a => (

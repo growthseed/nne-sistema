@@ -184,13 +184,13 @@ export default function QualidadeDadosPage() {
             placeholder="Buscar por nome ou igreja..."
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
-            className="input pl-10 w-full"
+            className="input-field pl-10"
           />
         </div>
         <select
           value={filtroCampo}
           onChange={(e) => setFiltroCampo(e.target.value)}
-          className="input w-full sm:w-56"
+          className="input-field sm:w-56"
         >
           <option value="">Todos os campos faltantes</option>
           {CAMPOS_OBRIGATORIOS.map(c => (
