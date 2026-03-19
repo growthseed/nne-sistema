@@ -351,14 +351,26 @@ export default function MapasPage() {
                       </p>
                     )}
                     {ig.pastor && <p className="text-gray-600"><span className="font-medium">Pastor:</span> {ig.pastor}</p>}
-                    <div className="flex gap-2 mt-2 pt-2 border-t border-gray-100">
+                    <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-100">
+                      <a
+                        href={`/membros?igreja=${ig.id}`}
+                        className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded hover:bg-green-100"
+                      >
+                        Ver Membros
+                      </a>
+                      <a
+                        href={`/organizacao/igrejas?id=${ig.id}`}
+                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
+                      >
+                        Ver Igreja
+                      </a>
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${ig.coordenadas_lat},${ig.coordenadas_lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
+                        className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
                       >
-                        Ir com Google Maps
+                        Rotas ↗
                       </a>
                     </div>
                     {ig.telefone && <p className="text-gray-600"><span className="font-medium">Telefone:</span> {ig.telefone}</p>}

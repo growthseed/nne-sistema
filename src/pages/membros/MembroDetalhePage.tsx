@@ -7,7 +7,7 @@ import {
   HiOutlineArrowLeft, HiOutlineUser, HiOutlinePhone, HiOutlineMail,
   HiOutlineLocationMarker, HiOutlineOfficeBuilding, HiOutlineCalendar,
   HiOutlineAcademicCap, HiOutlineBriefcase, HiOutlineClipboardList,
-  HiOutlineHeart, HiOutlinePencil
+  HiOutlineHeart, HiOutlinePencil, HiOutlineIdentification
 } from 'react-icons/hi'
 
 interface PessoaDetalhe {
@@ -212,6 +212,13 @@ export default function MembroDetalhePage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-xl font-bold text-gray-800">{pessoa.nome}</h1>
+              <Link
+                to={`/membros/cartao?id=${pessoa.id}`}
+                className="inline-flex items-center gap-1.5 text-xs bg-primary-50 text-primary-700 px-2.5 py-1 rounded-lg hover:bg-primary-100 transition-colors"
+              >
+                <HiOutlineIdentification className="w-4 h-4" />
+                Carteirinha
+              </Link>
               <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${SITUACAO_COLORS[pessoa.situacao] || 'bg-gray-100 text-gray-600'}`}>
                 {SITUACAO_LABELS[pessoa.situacao] || pessoa.situacao}
               </span>
