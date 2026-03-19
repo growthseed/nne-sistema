@@ -334,8 +334,19 @@ export default function MeuPainelMissionarioPage() {
         <MissoesSubNav />
         <div className="card text-center py-12">
           <FiUser className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-600">Perfil de Missionario nao encontrado</h2>
-          <p className="text-gray-400 mt-2">Seu usuario nao esta vinculado a um registro de missionario no sistema.</p>
+          <h2 className="text-lg font-semibold text-gray-600">Perfil de Missionário não encontrado</h2>
+          <p className="text-gray-400 mt-2">Seu usuário não está vinculado a um registro de missionário no sistema.</p>
+          <div className="mt-6 flex gap-3 justify-center">
+            <NavLink to="/missoes" className="btn-primary inline-flex items-center gap-2 text-sm">
+              Dashboard Missões
+            </NavLink>
+            <NavLink to="/missoes/inventario" className="btn-secondary inline-flex items-center gap-2 text-sm">
+              Ficha de Campo
+            </NavLink>
+          </div>
+          <p className="text-xs text-gray-400 mt-4">
+            Para vincular seu perfil, acesse a Ficha de Campo e associe seu usuário a um missionário.
+          </p>
         </div>
       </div>
     )

@@ -45,6 +45,92 @@ function emptyDay(): Partial<RelatorioDiario> {
   return d
 }
 
+// ── Local da Atividade com autocomplete de igrejas ──
+function LocalAtividadeInput({ value, onChange, disabled, igrejas: igrejasIds, missionarios, selectedId }: {
+  value: string
+  onChange: (v: string) => void
+  disabled: boolean
+  igrejas: string[]
+  missionarios: Missionario[]
+  selectedId: string
+}) {
+  const [sugestoes, setSugestoes] = useState<string[]>([])
+  const [showSugestoes, setShowSugestoes] = useState(false)
+  const [igrejasNomes, setIgrejasNomes] = useState<string[]>([])
+
+  // Buscar nomes das igrejas do missionário
+  useEffect(() => {
+    if (!selectedId) return
+    const miss = missionarios.find(m => m.id === selectedId)
+    const ids = miss?.igrejas_responsavel || []
+    if (ids.length === 0) return
+
+    supabase
+      .from('igrejas')
+      .select('nome, endereco_cidade, endereco_estado')
+      .in('id', ids)
+      .then(({ data }) => {
+        if (!data) return
+        const nomes = data.map(ig => {
+          const cidade = ig.endereco_cidade ? ` - ${ig.endereco_cidade}/${ig.endereco_estado || ''}` : ''
+          return `${ig.nome}${cidade}`
+        })
+        setIgrejasNomes(nomes)
+      })
+  }, [selectedId, missionarios])
+
+  function handleChange(v: string) {
+    onChange(v)
+    if (v.length >= 2) {
+      const q = v.toLowerCase()
+      const matches = igrejasNomes.filter(n => n.toLowerCase().includes(q))
+      setSugestoes(matches.slice(0, 6))
+      setShowSugestoes(matches.length > 0)
+    } else {
+      setShowSugestoes(false)
+    }
+  }
+
+  return (
+    <div className="mb-3 relative">
+      <label className="label-field text-xs">Local da Atividade</label>
+      <input
+        type="text"
+        className="input-field"
+        value={value}
+        onChange={e => handleChange(e.target.value)}
+        onFocus={() => {
+          if (value.length >= 2 && sugestoes.length > 0) setShowSugestoes(true)
+          else if (!value && igrejasNomes.length > 0) {
+            setSugestoes(igrejasNomes.slice(0, 6))
+            setShowSugestoes(true)
+          }
+        }}
+        onBlur={() => setTimeout(() => setShowSugestoes(false), 200)}
+        disabled={disabled}
+        placeholder="Digite o nome da igreja ou cidade..."
+      />
+      {showSugestoes && sugestoes.length > 0 && (
+        <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {sugestoes.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 text-gray-700 border-b border-gray-50 last:border-0"
+              onMouseDown={() => {
+                onChange(s)
+                setShowSugestoes(false)
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function RelatorioMissionarioPage() {
   const { profile } = useAuth()
   const reportRef = useRef<HTMLDivElement>(null)
@@ -65,6 +151,9 @@ export default function RelatorioMissionarioPage() {
 
   // Daily data: keyed by day number (1-31)
   const [dailyData, setDailyData] = useState<Record<number, Partial<RelatorioDiario>>>({})
+
+  // Previous month totals for comparison
+  const [prevTotals, setPrevTotals] = useState<Record<string, number>>({})
 
   // UI state
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
@@ -154,6 +243,32 @@ export default function RelatorioMissionarioPage() {
         setDailyData({})
       }
       setSelectedDay(null)
+
+      // Fetch previous month totals for comparison
+      const prevMes = mes === 1 ? 12 : mes - 1
+      const prevAno = mes === 1 ? ano - 1 : ano
+      const { data: prevHeader } = await supabase
+        .from('relatorios_missionarios')
+        .select('id')
+        .eq('missionario_id', selectedId)
+        .eq('mes', prevMes)
+        .eq('ano', prevAno)
+        .maybeSingle()
+
+      if (prevHeader) {
+        const { data: prevDias } = await supabase
+          .from('relatorio_missionario_diario')
+          .select('*')
+          .eq('relatorio_id', prevHeader.id)
+
+        const pt: Record<string, number> = {}
+        for (const f of RELATORIO_TODOS_CAMPOS) {
+          pt[f.key] = (prevDias || []).reduce((s, d) => s + (Number((d as any)[f.key]) || 0), 0)
+        }
+        setPrevTotals(pt)
+      } else {
+        setPrevTotals({})
+      }
     } catch (err) {
       console.error('Erro ao buscar relatorio:', err)
     } finally {
@@ -366,7 +481,7 @@ export default function RelatorioMissionarioPage() {
                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
                 : 'bg-red-100 text-red-700 hover:bg-red-200'
             }`}
-            title={status === 'aberto' ? 'Fechar relatorio' : 'Reabrir relatorio'}
+            title={status === 'aberto' ? 'Relatório aberto para edição. Clique para fechar.' : 'Relatório fechado. Clique para reabrir para edição.'}
           >
             {status === 'aberto' ? <FiUnlock size={14} /> : <FiLock size={14} />}
             {status === 'aberto' ? 'Aberto' : 'Fechado'}
@@ -392,7 +507,7 @@ export default function RelatorioMissionarioPage() {
       {!selectedId ? (
         <div className="card text-center py-16 text-gray-400">
           <FiClipboard className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Selecione um missionario para abrir o relatorio mensal</p>
+          <p>Selecione um missionário para abrir o relatório mensal</p>
         </div>
       ) : (
         <div className="flex gap-4">
@@ -446,15 +561,27 @@ export default function RelatorioMissionarioPage() {
 
             {/* Summary Totals */}
             <div className="card">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Resumo do Mes</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Resumo do Mês</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {RELATORIO_TODOS_CAMPOS.map(f => {
                   const val = totals[f.key] || 0
-                  if (val === 0) return null
+                  const prev = prevTotals[f.key] || 0
+                  if (val === 0 && prev === 0) return null
+                  const diff = val - prev
                   return (
-                    <div key={f.key} className="flex justify-between items-center px-3 py-2 bg-gray-50 rounded-lg">
-                      <span className="text-xs text-gray-600 truncate mr-2">{f.label}</span>
-                      <span className="text-sm font-bold text-gray-900">{val}</span>
+                    <div key={f.key} className="px-3 py-2 bg-gray-50 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-600 truncate mr-2">{f.label}</span>
+                        <span className="text-sm font-bold text-gray-900">{val}</span>
+                      </div>
+                      {prev > 0 && (
+                        <div className="flex items-center justify-end gap-1 mt-0.5">
+                          <span className={`text-[10px] font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                            {diff > 0 ? `+${diff}` : diff === 0 ? '=' : diff}
+                          </span>
+                          <span className="text-[10px] text-gray-400">vs ant.</span>
+                        </div>
+                      )}
                     </div>
                   )
                 }).filter(Boolean)}
@@ -466,14 +593,14 @@ export default function RelatorioMissionarioPage() {
 
             {/* Observacoes */}
             <div className="card">
-              <label className="label-field text-xs">Observacoes do Mes</label>
+              <label className="label-field text-xs">Observações do Mês</label>
               <textarea
                 value={observacoes}
                 onChange={e => setObservacoes(e.target.value)}
                 className="input-field"
                 rows={2}
                 disabled={isReadOnly}
-                placeholder="Observacoes gerais do relatorio..."
+                placeholder="Observações gerais do relatório..."
               />
             </div>
           </div>
@@ -507,18 +634,15 @@ export default function RelatorioMissionarioPage() {
                   </button>
                 </div>
 
-                {/* Lugar de atividade */}
-                <div className="mb-3">
-                  <label className="label-field text-xs">Local da Atividade</label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    value={(dailyData[selectedDay]?.lugar_atividade as string) || ''}
-                    onChange={e => updateDayField(selectedDay, 'lugar_atividade', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="Ex: Belem, Parauapebas..."
-                  />
-                </div>
+                {/* Lugar de atividade com autocomplete */}
+                <LocalAtividadeInput
+                  value={(dailyData[selectedDay]?.lugar_atividade as string) || ''}
+                  onChange={v => updateDayField(selectedDay, 'lugar_atividade', v)}
+                  disabled={isReadOnly}
+                  igrejas={selectedMiss?.igrejas_responsavel || []}
+                  missionarios={missionarios}
+                  selectedId={selectedId}
+                />
 
                 {/* Block tabs */}
                 <div className="flex gap-1 mb-3 overflow-x-auto">
@@ -579,11 +703,11 @@ export default function RelatorioMissionarioPage() {
           {/* Header */}
           <div className="text-center border-b pb-3">
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#006D43' }}>
-              Igreja Adventista do Setimo Dia — Movimento de Reforma
+              Igreja Adventista do Sétimo Dia — Movimento de Reforma
             </p>
-            <p className="text-sm font-semibold text-gray-700">Uniao Norte Nordeste Brasileira</p>
+            <p className="text-sm font-semibold text-gray-700">União Norte Nordeste Brasileira</p>
             <p className="text-base font-bold text-gray-900 mt-1">
-              RELATORIO DE ATIVIDADES - {MESES_NOMES[mes - 1].toUpperCase()} {ano}
+              RELATÓRIO DE ATIVIDADES - {MESES_NOMES[mes - 1].toUpperCase()} {ano}
             </p>
             <p className="text-sm text-gray-600 mt-1">
               {selectedMiss?.nome} — {CARGO_LABELS[selectedMiss?.cargo_ministerial as keyof typeof CARGO_LABELS] || ''}

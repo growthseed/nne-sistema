@@ -160,14 +160,17 @@ export default function CadastroPage() {
           )}
 
           <div className="flex justify-between mt-8 pt-5 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={isFirst}
-              className="btn-secondary disabled:opacity-40"
-            >
-              Voltar
-            </button>
+            {!isFirst ? (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="btn-secondary"
+              >
+                Voltar
+              </button>
+            ) : (
+              <div />
+            )}
             <button
               type="button"
               onClick={handleNext}

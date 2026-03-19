@@ -526,14 +526,14 @@ export default function RelatorioCampoPage() {
 
       // Summary sheet
       const summaryData = [
-        ['Relatorio do Campo - ' + (missionario.nome || missionario.usuario?.nome || '')],
+        ['Relatório do Campo - ' + (missionario.nome || missionario.usuario?.nome || '')],
         ['Cargo', CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial],
         ['Igrejas', igrejasNomes.join(', ')],
         ['Total Membros', totalMembros],
         ['Total Interessados', totalInteressados],
         ['Total Igrejas', igrejasNomes.length],
         [],
-        ['Distribuicao Etaria'],
+        ['Distribuição Etária'],
         ['Faixa', 'Quantidade', 'Percentual'],
         ...ageDistribution.map(d => [d.faixa, d.count, `${d.percentage}%`]),
       ]
@@ -600,8 +600,8 @@ export default function RelatorioCampoPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Relatorio do Campo</h1>
-          <p className="text-gray-500 mt-1">Relatorio visual com graficos e projecoes</p>
+          <h1 className="text-2xl font-bold text-gray-800">Relatório do Campo</h1>
+          <p className="text-gray-500 mt-1">Relatório visual com gráficos e projeções</p>
         </div>
       </div>
 
@@ -615,7 +615,7 @@ export default function RelatorioCampoPage() {
               onChange={e => setSelectedMissionarioId(e.target.value)}
               className="input-field"
             >
-              <option value="">-- Selecione um missionario --</option>
+              <option value="">-- Selecione um missionário --</option>
               {missionarios.map(m => (
                 <option key={m.id} value={m.id}>
                   {m.nome || m.usuario?.nome || m.id} - {CARGO_LABELS[m.cargo_ministerial] || m.cargo_ministerial}
@@ -882,7 +882,7 @@ export default function RelatorioCampoPage() {
       {!generating && !reportReady && selectedMissionarioId === '' && (
         <div className="card text-center py-12">
           <FiFileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Selecione um missionario para gerar o relatorio do campo.</p>
+          <p className="text-gray-500">Selecione um missionário para gerar o relatório do campo.</p>
         </div>
       )}
     </div>

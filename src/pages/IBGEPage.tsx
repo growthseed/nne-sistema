@@ -318,7 +318,7 @@ export default function IBGEPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dados Territoriais</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Analise demografica cruzando dados territoriais e do censo com dados de membresia da igreja.
+          Análise demográfica cruzando dados territoriais e do censo com dados de membresia da igreja.
         </p>
       </div>
 
@@ -361,7 +361,7 @@ export default function IBGEPage() {
         {/* Municipio */}
         <div>
           <label htmlFor="municipio" className="block text-sm font-medium text-gray-700 mb-1">
-            Municipio
+            Município
           </label>
           <select
             id="municipio"
@@ -406,7 +406,7 @@ export default function IBGEPage() {
           {/* Populacao */}
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Populacao do Municipio
+              População do Município
             </p>
             <p className="mt-2 text-2xl font-bold text-gray-900">
               {populacao !== null ? numberFmt.format(populacao) : '--'}
@@ -455,7 +455,7 @@ export default function IBGEPage() {
           <div className="h-72">
             <Bar
               data={ageChartData}
-              options={chartOptions('Distribuicao Etaria dos Membros')}
+              options={chartOptions('Distribuição Etária dos Membros')}
             />
           </div>
         </div>

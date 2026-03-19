@@ -513,14 +513,14 @@ export default function MissoesDashboardPage() {
       iconBg: 'bg-blue-100',
     },
     {
-      label: 'Dizimos (Mes)',
+      label: 'Dízimos (Mês)',
       value: currencyFmt.format(kpi.dizimosMes),
       icon: FiDollarSign,
       color: 'text-emerald-600',
       iconBg: 'bg-emerald-100',
     },
     {
-      label: 'Primicias (Mes)',
+      label: 'Primícias (Mês)',
       value: currencyFmt.format(kpi.primiciasMes),
       icon: FiTrendingUp,
       color: 'text-amber-600',
@@ -610,7 +610,7 @@ export default function MissoesDashboardPage() {
       {/* Distribuicao por Cargo */}
       {cargoDistribution.length > 0 && (
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Distribuicao por Cargo</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Distribuição por Cargo</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {cargoDistribution.map(({ cargo, count }) => (
               <Link
@@ -630,7 +630,7 @@ export default function MissoesDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Line Chart: Monthly Trends */}
         <div className="lg:col-span-2 card">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Tendencia Mensal - Membros e Financeiro</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Tendência Mensal - Membros e Financeiro</h2>
           <div className="h-72">
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
@@ -650,12 +650,12 @@ export default function MissoesDashboardPage() {
         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800">
             <FiAward className="inline w-5 h-5 mr-2 text-amber-500" />
-            Top 10 Missionarios - {MESES[mesAtual - 1]}
+            Top 10 Missionários - {MESES[mesAtual - 1]}
           </h2>
         </div>
         {topPerformers.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            Nenhum relatorio registrado neste mes
+            Nenhum relatório registrado neste mês
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -497,9 +497,9 @@ export default function InventarioMissionariosPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Ficha de Campo - Inventario</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Ficha de Campo - Inventário</h1>
           <p className="text-gray-500 mt-1">
-            Visao consolidada da Uniao Norte Nordeste · Agrupado por Associacao
+            Visão consolidada da União Norte Nordeste · Agrupado por Associação
           </p>
         </div>
         <div className="flex gap-2">

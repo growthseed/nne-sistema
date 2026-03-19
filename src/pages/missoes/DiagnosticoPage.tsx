@@ -314,7 +314,7 @@ export default function DiagnosticoPage() {
   }, [totalMembros, membrosAtivos, batismosYTD, totalInteressados, alunosClassesBatismais, dizimoPerCapita, novosInteressadosYTD])
 
   const radarData = useMemo(() => ({
-    labels: ['Retencao', 'Evangelismo', 'Formacao', 'Financeiro', 'Expansao'],
+    labels: ['Retenção', 'Evangelismo', 'Formação', 'Financeiro', 'Expansão'],
     datasets: [{
       label: 'Score',
       data: [radarScores.retencao, radarScores.evangelismo, radarScores.formacao, radarScores.financeiro, radarScores.expansao],
@@ -640,8 +640,8 @@ export default function DiagnosticoPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Diagnostico de Campo</h1>
-        <p className="text-gray-500 mt-1">Visao estrategica da saude do campo em 4 dimensoes</p>
+        <h1 className="text-2xl font-bold text-gray-800">Diagnóstico de Campo</h1>
+        <p className="text-gray-500 mt-1">Visão estratégica da saúde do campo em 4 dimensões</p>
       </div>
 
       {/* ========== Section 1: Scorecard (2x2 grid) ========== */}
@@ -651,7 +651,7 @@ export default function DiagnosticoPage() {
         <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-5">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <h3 className="text-sm font-semibold text-blue-800 uppercase tracking-wider">Base Existente (Retencao)</h3>
+            <h3 className="text-sm font-semibold text-blue-800 uppercase tracking-wider">Base Existente (Retenção)</h3>
           </div>
           <div className="space-y-4">
             {/* Metric 1: % membros ativos */}
@@ -672,7 +672,7 @@ export default function DiagnosticoPage() {
             </div>
             {/* Metric 3: Taxa presenca media */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Presenca Media</span>
+              <span className="text-sm text-gray-600">Presença Média</span>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-gray-900">{mediaPresenca}%</span>
                 {trendArrow(mediaPresenca >= 60 ? 1 : mediaPresenca >= 40 ? 0 : -1)}
@@ -685,7 +685,7 @@ export default function DiagnosticoPage() {
         <div className="bg-white rounded-xl shadow-sm border border-green-100 p-5">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-3 h-3 rounded-full bg-green-500" />
-            <h3 className="text-sm font-semibold text-green-800 uppercase tracking-wider">Crescimento (Aquisicao)</h3>
+            <h3 className="text-sm font-semibold text-green-800 uppercase tracking-wider">Crescimento (Aquisição)</h3>
           </div>
           <div className="space-y-4">
             {/* Metric 1: Batismos YTD */}
@@ -788,7 +788,7 @@ export default function DiagnosticoPage() {
 
       {/* ========== Section 2: Radar Chart ========== */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Radar de Saude do Campo</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Radar de Saúde do Campo</h3>
         <p className="text-sm text-gray-500 mb-6">Cada eixo pontuado de 0 a 100 com base nos indicadores-chave</p>
         <div className="flex flex-col lg:flex-row items-center gap-8">
           <div className="w-full lg:w-2/3" style={{ height: 380 }}>
@@ -796,11 +796,11 @@ export default function DiagnosticoPage() {
           </div>
           <div className="w-full lg:w-1/3 space-y-3">
             {[
-              { label: 'Retencao', value: radarScores.retencao, color: '#006D43', desc: 'Membros ativos / total' },
+              { label: 'Retenção', value: radarScores.retencao, color: '#006D43', desc: 'Membros ativos / total' },
               { label: 'Evangelismo', value: radarScores.evangelismo, color: '#10B981', desc: 'Batismos / membros' },
-              { label: 'Formacao', value: radarScores.formacao, color: '#F59E0B', desc: 'Alunos classe / interessados' },
+              { label: 'Formação', value: radarScores.formacao, color: '#F59E0B', desc: 'Alunos classe / interessados' },
               { label: 'Financeiro', value: radarScores.financeiro, color: '#8B5CF6', desc: 'Dizimo per capita' },
-              { label: 'Expansao', value: radarScores.expansao, color: '#06B6D4', desc: 'Novos interessados / membros' },
+              { label: 'Expansão', value: radarScores.expansao, color: '#06B6D4', desc: 'Novos interessados / membros' },
             ].map(item => (
               <div key={item.label} className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: item.color }}>

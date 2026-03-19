@@ -41,8 +41,11 @@ import MapasPage from '@/pages/MapasPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import RelatoriosPage from '@/pages/RelatoriosPage'
 import ConfiguracoesPage from '@/pages/ConfiguracoesPage'
+import QualidadeDadosPage from '@/pages/secretaria/QualidadeDadosPage'
+import DuplicadosPage from '@/pages/secretaria/DuplicadosPage'
 import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
 import DiretorioIgrejasPage from '@/pages/DiretorioIgrejasPage'
+import NotFoundPage from '@/pages/NotFoundPage'
 
 export default function App() {
   return (
@@ -85,6 +88,8 @@ export default function App() {
           <Route path="funil" element={<FunilConversaoPage />} />
           <Route path="saude" element={<SaudeMembrosPage />} />
           <Route path="classes-biblicas" element={<ClassesBiblicasPage />} />
+          <Route path="qualidade-dados" element={<QualidadeDadosPage />} />
+          <Route path="duplicados" element={<DuplicadosPage />} />
         </Route>
 
         {/* Organizacao */}
@@ -116,6 +121,9 @@ export default function App() {
 
         {/* Admin */}
         <Route path="configuracoes" element={<ConfiguracoesPage />} />
+
+        {/* 404 */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   )

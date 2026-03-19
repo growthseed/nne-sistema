@@ -144,6 +144,8 @@ export default function PainelGeralMissionariosPage() {
   const [igrejas, setIgrejas] = useState<IgrejaResumo[]>([])
   const [cidadesIBGE, setCidadesIBGE] = useState<CidadeIBGE[]>([])
   const [loadingIBGE, setLoadingIBGE] = useState(false)
+  const [filtroAssociacao, setFiltroAssociacao] = useState('')
+  const [associacoes, setAssociacoes] = useState<{ id: string; sigla: string; nome: string }[]>([])
 
   function scopeFilter(query: any) {
     if (!profile) return query
@@ -162,6 +164,10 @@ export default function PainelGeralMissionariosPage() {
   async function fetchAll() {
     setLoading(true)
     try {
+      // Fetch associações for filter dropdown
+      const { data: assocData } = await supabase.from('associacoes').select('id, sigla, nome').order('sigla')
+      setAssociacoes(assocData || [])
+
       await Promise.all([fetchMissionarios(), fetchIgrejas()])
     } finally {
       setLoading(false)
@@ -275,47 +281,67 @@ export default function PainelGeralMissionariosPage() {
 
   // ========== KPI CALCULATIONS ==========
 
-  const totalMissionarios = missionarios.length
-  const totalMembros = useMemo(() => igrejas.reduce((s, ig) => s + (ig.membros_ativos || 0), 0), [igrejas])
-  const totalInteressados = useMemo(() => igrejas.reduce((s, ig) => s + (ig.interessados || 0), 0), [igrejas])
-  const totalIgrejas = igrejas.length
+  // Filtered data by selected associação
+  const missionariosFiltrados = useMemo(() => {
+    if (!filtroAssociacao) return missionarios
+    return missionarios.filter(m => m.associacao_id === filtroAssociacao)
+  }, [missionarios, filtroAssociacao])
+
+  const igrejasFiltradas = useMemo(() => {
+    if (!filtroAssociacao) return igrejas
+    return igrejas.filter(ig => ig.associacao_id === filtroAssociacao)
+  }, [igrejas, filtroAssociacao])
+
+  // Rebuild IBGE when filter changes
+  useEffect(() => {
+    if (igrejasFiltradas.length > 0) {
+      buildCidadesAndFetchIBGE(igrejasFiltradas)
+    } else {
+      setCidadesIBGE([])
+    }
+  }, [filtroAssociacao]) // eslint-disable-line
+
+  const totalMissionarios = missionariosFiltrados.length
+  const totalMembros = useMemo(() => igrejasFiltradas.reduce((s, ig) => s + (ig.membros_ativos || 0), 0), [igrejasFiltradas])
+  const totalInteressados = useMemo(() => igrejasFiltradas.reduce((s, ig) => s + (ig.interessados || 0), 0), [igrejasFiltradas])
+  const totalIgrejas = igrejasFiltradas.length
 
   const idadeMedia = useMemo(() => {
-    if (missionarios.length === 0) return 0
-    const idades = missionarios.map(m => calculateAge(m.data_nascimento)).filter(age => age > 0)
+    if (missionariosFiltrados.length === 0) return 0
+    const idades = missionariosFiltrados.map(m => calculateAge(m.data_nascimento)).filter(age => age > 0)
     return idades.length > 0 ? Math.round(idades.reduce((a, b) => a + b, 0) / idades.length) : 0
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const formacaoTeologicaTotal = useMemo(() => {
-    return missionarios.filter(m => m.formacao_teologica && m.formacao_teologica.trim()).length
-  }, [missionarios])
+    return missionariosFiltrados.filter(m => m.formacao_teologica && m.formacao_teologica.trim()).length
+  }, [missionariosFiltrados])
 
   const missionariosAtivos = useMemo(() => {
-    return missionarios.filter(m => m.status === 'ativo').length
-  }, [missionarios])
+    return missionariosFiltrados.filter(m => m.status === 'ativo').length
+  }, [missionariosFiltrados])
 
   const associacoesRepresentadas = useMemo(() => {
-    const ids = new Set(missionarios.map(m => m.associacao_id).filter(Boolean))
+    const ids = new Set(missionariosFiltrados.map(m => m.associacao_id).filter(Boolean))
     return ids.size
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const cidadesComPresenca = useMemo(() => {
-    const cidades = new Set(igrejas.filter(ig => ig.endereco_cidade).map(ig => `${ig.endereco_cidade}|${ig.endereco_estado}`))
+    const cidades = new Set(igrejasFiltradas.filter(ig => ig.endereco_cidade).map(ig => `${ig.endereco_cidade}|${ig.endereco_estado}`))
     return cidades.size
-  }, [igrejas])
+  }, [igrejasFiltradas])
 
   // ========== CHART DATA ==========
 
   // Distribuição por Cargo → Bar horizontal
   const cargoDist = useMemo(() => {
     const dist: Record<string, number> = {}
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       if (m.cargo_ministerial) {
         dist[m.cargo_ministerial] = (dist[m.cargo_ministerial] || 0) + 1
       }
     })
     return Object.entries(dist).sort((a, b) => b[1] - a[1])
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const cargoChartData = useMemo(() => ({
     labels: cargoDist.map(([cargo]) => CARGO_LABELS[cargo as CargoMinisterial] || cargo),
@@ -332,12 +358,12 @@ export default function PainelGeralMissionariosPage() {
   // Distribuição por Associação → Doughnut
   const associacaoDist = useMemo(() => {
     const dist: Record<string, number> = {}
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       const sigla = m.associacao?.sigla || 'Sem Associação'
       dist[sigla] = (dist[sigla] || 0) + 1
     })
     return Object.entries(dist).sort((a, b) => b[1] - a[1])
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const associacaoChartData = useMemo(() => ({
     labels: associacaoDist.map(([sigla]) => sigla),
@@ -353,13 +379,13 @@ export default function PainelGeralMissionariosPage() {
   // Distribuição por Escolaridade → Bar horizontal
   const escolaridadeDist = useMemo(() => {
     const dist: Record<string, number> = {}
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       if (m.escolaridade) {
         dist[m.escolaridade] = (dist[m.escolaridade] || 0) + 1
       }
     })
     return Object.entries(dist).sort((a, b) => b[1] - a[1])
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const escolaridadeChartData = useMemo(() => ({
     labels: escolaridadeDist.map(([e]) => e),
@@ -378,7 +404,7 @@ export default function PainelGeralMissionariosPage() {
     const ranges = ['18-29', '30-39', '40-49', '50-59', '60+']
     const dist: Record<string, number> = {}
     ranges.forEach(r => (dist[r] = 0))
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       const age = calculateAge(m.data_nascimento)
       if (age >= 18) {
         const range = getAgeRange(age)
@@ -386,7 +412,7 @@ export default function PainelGeralMissionariosPage() {
       }
     })
     return ranges.map(r => ({ range: r, count: dist[r] }))
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const faixaEtariaChartData = useMemo(() => ({
     labels: faixaEtariaDist.map(d => d.range),
@@ -403,13 +429,13 @@ export default function PainelGeralMissionariosPage() {
   // Estado Civil → Doughnut
   const estadoCivilDist = useMemo(() => {
     const dist: Record<string, number> = {}
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       if (m.estado_civil) {
         dist[m.estado_civil] = (dist[m.estado_civil] || 0) + 1
       }
     })
     return Object.entries(dist).sort((a, b) => b[1] - a[1])
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const estadoCivilLabels: Record<string, string> = {
     solteiro: 'Solteiro(a)',
@@ -436,13 +462,13 @@ export default function PainelGeralMissionariosPage() {
     const ranges = ['0-5', '6-10', '11-20', '21-30', '30+']
     const dist: Record<string, number> = {}
     ranges.forEach(r => (dist[r] = 0))
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       const years = calculateYearsOfMinistry(m.data_inicio_ministerio)
       const range = getMinistryRange(years)
       dist[range] = (dist[range] || 0) + 1
     })
     return ranges.map(r => ({ range: r, count: dist[r] }))
-  }, [missionarios])
+  }, [missionariosFiltrados])
 
   const tempoMinisterioChartData = useMemo(() => ({
     labels: tempoMinisterioDist.map(d => `${d.range} anos`),
@@ -460,7 +486,7 @@ export default function PainelGeralMissionariosPage() {
 
   const associacaoSummaries = useMemo<AssociacaoSummary[]>(() => {
     const mapa = new Map<string, MissionarioComAssociacao[]>()
-    missionarios.forEach(m => {
+    missionariosFiltrados.forEach(m => {
       const sigla = m.associacao?.sigla || 'Sem Associação'
       if (!mapa.has(sigla)) mapa.set(sigla, [])
       mapa.get(sigla)!.push(m)
@@ -617,13 +643,25 @@ export default function PainelGeralMissionariosPage() {
             Visão estratégica completa: missionários, igrejas e inteligência territorial
           </p>
         </div>
-        <button
-          onClick={exportPDF}
-          className="btn-secondary inline-flex items-center gap-2 text-sm"
-        >
-          <FiDownload className="w-4 h-4" />
-          Exportar PDF
-        </button>
+        <div className="flex items-center gap-3">
+          <select
+            value={filtroAssociacao}
+            onChange={(e) => setFiltroAssociacao(e.target.value)}
+            className="input text-sm py-2 w-48"
+          >
+            <option value="">Todas as Associações</option>
+            {associacoes.map(a => (
+              <option key={a.id} value={a.id}>{a.sigla} — {a.nome}</option>
+            ))}
+          </select>
+          <button
+            onClick={exportPDF}
+            className="btn-secondary inline-flex items-center gap-2 text-sm"
+          >
+            <FiDownload className="w-4 h-4" />
+            Exportar PDF
+          </button>
+        </div>
       </div>
 
       {loading ? (
