@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { Igreja, Associacao, Uniao } from '@/types'
@@ -37,6 +38,8 @@ const FORM_VAZIO = {
 
 export default function IgrejasPage() {
   const { profile, hasRole } = useAuth()
+  const [searchParams] = useSearchParams()
+  const highlightId = searchParams.get('id')
 
   const [igrejas, setIgrejas] = useState<IgrejaComAssociacao[]>([])
   const [associacoes, setAssociacoes] = useState<Associacao[]>([])
@@ -53,6 +56,19 @@ export default function IgrejasPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [missionarios, setMissionarios] = useState<MissionarioOption[]>([])
   const PAGE_SIZE = 20
+
+  // Se veio com ?id=xxx, buscar e destacar essa igreja
+  useEffect(() => {
+    if (highlightId && igrejas.length > 0) {
+      const idx = igrejas.findIndex(ig => ig.id === highlightId)
+      if (idx >= 0) {
+        setPage(Math.floor(idx / PAGE_SIZE))
+        setTimeout(() => {
+          document.getElementById(`igreja-${highlightId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }, 300)
+      }
+    }
+  }, [highlightId, igrejas])
 
   const podeGerenciar = hasRole(['admin', 'admin_uniao', 'admin_associacao'])
 
@@ -369,7 +385,7 @@ export default function IgrejasPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {igrejas.map((ig) => (
-                    <tr key={ig.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={ig.id} id={`igreja-${ig.id}`} className={`hover:bg-gray-50 transition-colors ${highlightId === ig.id ? 'bg-primary-50 ring-2 ring-primary-300' : ''}`}>
                       <td className="px-4 py-3 font-medium text-gray-800">{ig.nome}</td>
                       <td className="px-4 py-3 text-gray-500 text-xs">
                         {ig.associacao ? `${ig.associacao.nome} (${ig.associacao.sigla})` : '-'}
