@@ -313,7 +313,14 @@ export default function PainelGeralMissionariosPage() {
   }, [missionariosFiltrados])
 
   const formacaoTeologicaTotal = useMemo(() => {
-    return missionariosFiltrados.filter(m => m.formacao_teologica && m.formacao_teologica.trim()).length
+    return missionariosFiltrados.filter(m =>
+      (m.formacao_teologica && m.formacao_teologica.trim()) ||
+      (m.escolaridade && m.escolaridade.toLowerCase().includes('teologia'))
+    ).length
+  }, [missionariosFiltrados])
+
+  const comEscolaridade = useMemo(() => {
+    return missionariosFiltrados.filter(m => m.escolaridade && m.escolaridade.trim()).length
   }, [missionariosFiltrados])
 
   const missionariosAtivos = useMemo(() => {
@@ -680,7 +687,7 @@ export default function PainelGeralMissionariosPage() {
               <KPICard icon={<FiUsers className="w-5 h-5 text-green-600" />} bg="bg-green-100" value={totalMissionarios} label="Missionários" />
               <KPICard icon={<FiTrendingUp className="w-5 h-5 text-emerald-600" />} bg="bg-emerald-100" value={missionariosAtivos} label="Ativos" sub={totalMissionarios > 0 ? `${Math.round((missionariosAtivos / totalMissionarios) * 100)}%` : ''} />
               <KPICard icon={<FiCalendar className="w-5 h-5 text-blue-600" />} bg="bg-blue-100" value={`${idadeMedia} anos`} label="Idade Média" />
-              <KPICard icon={<FiAward className="w-5 h-5 text-amber-600" />} bg="bg-amber-100" value={formacaoTeologicaTotal} label="Formação Teológica" />
+              <KPICard icon={<FiAward className="w-5 h-5 text-amber-600" />} bg="bg-amber-100" value={comEscolaridade} label="Com Escolaridade" sub={formacaoTeologicaTotal > 0 ? `${formacaoTeologicaTotal} teologia` : ''} />
               <KPICard icon={<FiHome className="w-5 h-5 text-purple-600" />} bg="bg-purple-100" value={associacoesRepresentadas} label="Associações" />
             </div>
           </div>
