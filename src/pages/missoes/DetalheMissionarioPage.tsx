@@ -1795,7 +1795,7 @@ export default function DetalheMissionarioPage() {
             <div className="px-4 py-3 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800">
                 <FiCheckCircle className="inline w-5 h-5 mr-1 text-green-500" />
-                Classes Batismais
+                Classes Bíblicas
                 {classesBatismais.length > 0 && (
                   <span className="ml-2 text-sm font-normal text-gray-500">
                     ({classesBatismais.reduce((s, c) => s + (c.alunos?.length || 0), 0)} alunos total)
@@ -1804,7 +1804,7 @@ export default function DetalheMissionarioPage() {
               </h3>
             </div>
             {classesBatismais.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Nenhuma classe batismal registrada</div>
+              <div className="p-8 text-center text-gray-500">Nenhuma classe bíblica registrada</div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -2202,7 +2202,7 @@ export default function DetalheMissionarioPage() {
                     { label: 'Pessoas Trazidas', value: m.meta_pessoas_trazidas },
                     { label: 'Horas Trabalho', value: m.meta_horas_trabalho },
                     { label: 'Batismos', value: m.meta_batismos },
-                    { label: 'Classes Batismais', value: m.meta_classes_batismais },
+                    { label: 'Classes Bíblicas', value: m.meta_classes_batismais },
                     { label: 'Crescimento Membros', value: m.meta_crescimento_membros },
                   ].filter(item => item.value > 0).map(item => (
                     <div key={item.label} className="p-3 bg-gray-50 rounded-lg text-center">

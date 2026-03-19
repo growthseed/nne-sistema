@@ -191,8 +191,8 @@ export default function ClassesBatismaisPage() {
       setEditingId(null)
       fetchClasses()
     } catch (err) {
-      console.error('Erro ao salvar classe batismal:', err)
-      alert('Erro ao salvar classe batismal')
+      console.error('Erro ao salvar classe bíblica:', err)
+      alert('Erro ao salvar classe bíblica')
     } finally {
       setSaving(false)
     }
@@ -299,14 +299,14 @@ export default function ClassesBatismaisPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Classes Batismais</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Classes Bíblicas</h1>
           <p className="text-gray-500 mt-1">
             {classes.length} classe{classes.length !== 1 ? 's' : ''}
           </p>
         </div>
         <button className="btn-primary inline-flex items-center gap-2 w-fit" onClick={openCreate}>
           <FiPlus className="w-4 h-4" />
-          Nova Classe Batismal
+          Nova Classe Bíblica
         </button>
       </div>
 
@@ -336,7 +336,7 @@ export default function ClassesBatismaisPage() {
           <div className="p-8 text-center text-gray-400">Carregando...</div>
         ) : classes.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">Nenhuma classe batismal encontrada</p>
+            <p className="text-gray-500">Nenhuma classe bíblica encontrada</p>
           </div>
         ) : (
           <>
@@ -450,7 +450,7 @@ export default function ClassesBatismaisPage() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <h2 className="text-lg font-semibold text-gray-800">
-                {editingId ? 'Editar Classe Batismal' : 'Nova Classe Batismal'}
+                {editingId ? 'Editar Classe Bíblica' : 'Nova Classe Bíblica'}
               </h2>
 
               <div>
@@ -460,7 +460,7 @@ export default function ClassesBatismaisPage() {
                   value={form.nome}
                   onChange={(e) => setForm(f => ({ ...f, nome: e.target.value }))}
                   className="input-field"
-                  placeholder="Ex: Classe Batismal 2026"
+                  placeholder="Ex: Classe Bíblica 2026"
                   required
                 />
               </div>

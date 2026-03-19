@@ -460,7 +460,7 @@ export default function InventarioMissionariosPage() {
       Membros: d.total_membros,
       Interessados: d.total_interessados,
       'Dizimos (R$)': d.dizimos_total.toFixed(2),
-      'Classes Batismais': d.classes_batismais_ativas,
+      'Classes Bíblicas': d.classes_batismais_ativas,
       'KPI Score': d.kpi_score,
     }))
     const ws = XLSX.utils.json_to_sheet(rows)

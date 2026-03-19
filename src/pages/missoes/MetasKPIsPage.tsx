@@ -47,7 +47,7 @@ const KPI_FIELDS: { key: keyof MetaMissionario; label: string }[] = [
   { key: 'meta_pessoas_trazidas', label: 'Pessoas Trazidas' },
   { key: 'meta_horas_trabalho', label: 'Horas de Trabalho' },
   { key: 'meta_batismos', label: 'Batismos' },
-  { key: 'meta_classes_batismais', label: 'Classes Batismais' },
+  { key: 'meta_classes_batismais', label: 'Classes Bíblicas' },
   { key: 'meta_receita_dizimos', label: 'Receita Dizimos' },
   { key: 'meta_crescimento_membros', label: 'Crescimento Membros' },
 ]

@@ -229,7 +229,7 @@ export default function DiagnosticoPage() {
     return Math.round(recent.reduce((s, c) => s + c.media_presenca, 0) / recent.length)
   }, [contagemCurrentYear])
 
-  // Alunos em classes batismais
+  // Alunos em classes bíblicas
   const alunosClassesBatismais = useMemo(() => {
     return classesBatismais.reduce((sum, c) => sum + (c.alunos?.length || 0), 0)
   }, [classesBatismais])
@@ -683,7 +683,7 @@ export default function DiagnosticoPage() {
                 {trendArrow(novosInteressadosYTD > 0 ? 1 : 0)}
               </div>
             </div>
-            {/* Metric 3: Alunos em classes batismais */}
+            {/* Metric 3: Alunos em classes bíblicas */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Alunos em Classes</span>
               <div className="flex items-center gap-2">

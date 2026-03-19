@@ -39,10 +39,10 @@ export default function ContagemMensalPage() {
     try {
       let query = supabase
         .from('contagem_mensal')
-        .select('*')
+        .select('*, igreja:igrejas(nome)')
         .order('ano', { ascending: false })
         .order('mes', { ascending: false })
-        .limit(24)
+        .limit(50)
 
       if (profile.papel !== 'admin' && profile.igreja_id) {
         query = query.eq('igreja_id', profile.igreja_id)
@@ -164,6 +164,7 @@ export default function ContagemMensalPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600">Igreja</th>
                   <th className="text-left py-3 px-2 font-semibold text-gray-600">Período</th>
                   <th className="text-right py-3 px-2 font-semibold text-gray-600">Total Membros</th>
                   <th className="text-right py-3 px-2 font-semibold text-gray-600">Batismos</th>
@@ -176,6 +177,9 @@ export default function ContagemMensalPage() {
               <tbody>
                 {contagens.map((c) => (
                   <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-2 text-gray-600 text-xs">
+                      {(c as any).igreja?.nome || '—'}
+                    </td>
                     <td className="py-3 px-2 font-medium text-gray-800">
                       {MESES[c.mes - 1]} / {c.ano}
                     </td>

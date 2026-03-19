@@ -333,7 +333,7 @@ export default function RelatorioCampoPage() {
   const radarLabels = [
     'Estudos Biblicos', 'Familias Visitadas', 'Membros Visitados',
     'Interessados', 'Contatos', 'Sermoes',
-    'Batizados', 'Classes Batismais', 'Folhetos',
+    'Batizados', 'Classes Bíblicas', 'Folhetos',
   ]
 
   const radarData = useMemo(() => {
@@ -549,7 +549,7 @@ export default function RelatorioCampoPage() {
           c.nome, c.instrutor, c.data_inicio, c.alunos?.length || 0, c.status,
         ])
         const wsCl = XLSX.utils.aoa_to_sheet([classHeaders, ...classData])
-        XLSX.utils.book_append_sheet(wb, wsCl, 'Classes Batismais')
+        XLSX.utils.book_append_sheet(wb, wsCl, 'Classes Bíblicas')
       }
 
       // Missionary activity sheet (aggregated from daily reports)
