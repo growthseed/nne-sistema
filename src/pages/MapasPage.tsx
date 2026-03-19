@@ -1,23 +1,12 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { Igreja, Associacao } from '@/types'
 import { FiMapPin, FiAlertCircle } from 'react-icons/fi'
 import { HiOutlineOfficeBuilding, HiOutlineUserGroup, HiOutlineGlobe } from 'react-icons/hi'
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api'
 
-// Fix default Leaflet marker icon (Vite breaks it)
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-})
+const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyCWTRPhd43Zik0NjR_eqXReOPFEfGxNE5c'
 
 type IgrejaComAssociacao = Igreja & {
   associacao: { nome: string; sigla: string } | null
@@ -40,6 +29,9 @@ const CORES_ASSOCIACAO = [
 
 type Camada = 'igrejas' | 'densidade'
 
+const mapContainerStyle = { width: '100%', height: 'calc(100vh - 280px)' }
+const defaultCenter = { lat: -7.5, lng: -38.5 }
+
 export default function MapasPage() {
   const { profile } = useAuth()
 
@@ -48,9 +40,14 @@ export default function MapasPage() {
   const [loading, setLoading] = useState(true)
   const [filtroAssociacao, setFiltroAssociacao] = useState('')
   const [camada, setCamada] = useState<Camada>('igrejas')
+  const [selectedIgreja, setSelectedIgreja] = useState<IgrejaComAssociacao | null>(null)
+  const [selectedCidade, setSelectedCidade] = useState<CidadeDensidade | null>(null)
 
-  // Density data
   const [cidadesDensidade, setCidadesDensidade] = useState<CidadeDensidade[]>([])
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_KEY,
+  })
 
   useEffect(() => {
     if (profile) fetchData()
@@ -104,54 +101,45 @@ export default function MapasPage() {
 
   async function fetchDensidade() {
     try {
-      const { data } = await supabase
-        .from('pessoas')
-        .select('endereco_cidade, endereco_estado, tipo, situacao')
-        .in('situacao', ['ativo', 'inativo'])
-        .not('endereco_cidade', 'is', null)
+      // Use church-based density (since pessoas don't have endereco_cidade)
+      const { data: igData } = await supabase
+        .from('igrejas')
+        .select('endereco_cidade, endereco_estado, membros_ativos, interessados, coordenadas_lat, coordenadas_lng')
+        .eq('ativo', true)
 
-      if (!data) return
+      if (!igData) return
 
-      // Aggregate by city
-      const byCity: Record<string, { membros: number; interessados: number }> = {}
-      data.forEach(p => {
-        if (!p.endereco_cidade) return
-        const key = `${p.endereco_cidade}|${p.endereco_estado || ''}`
-        if (!byCity[key]) byCity[key] = { membros: 0, interessados: 0 }
-        if (p.tipo === 'membro') byCity[key].membros++
-        else byCity[key].interessados++
+      const byCity: Record<string, CidadeDensidade> = {}
+      igData.forEach(ig => {
+        if (!ig.endereco_cidade) return
+        const key = `${ig.endereco_cidade}|${ig.endereco_estado || ''}`
+        if (!byCity[key]) {
+          byCity[key] = {
+            cidade: ig.endereco_cidade,
+            estado: ig.endereco_estado || '',
+            membros: 0,
+            interessados: 0,
+            igrejas: 0,
+            lat: ig.coordenadas_lat || undefined,
+            lng: ig.coordenadas_lng || undefined,
+          }
+        }
+        byCity[key].membros += ig.membros_ativos || 0
+        byCity[key].interessados += ig.interessados || 0
+        byCity[key].igrejas += 1
+        if (!byCity[key].lat && ig.coordenadas_lat) {
+          byCity[key].lat = ig.coordenadas_lat
+          byCity[key].lng = ig.coordenadas_lng
+        }
       })
 
-      // Count churches per city
-      const cidadesResult: CidadeDensidade[] = Object.entries(byCity).map(([key, counts]) => {
-        const [cidade, estado] = key.split('|')
-        // Find a church in this city for coordinates
-        const igrejaCidade = igrejas.find(ig =>
-          ig.endereco_cidade?.toLowerCase() === cidade.toLowerCase() &&
-          ig.coordenadas_lat != null
-        )
-        const igrejasCount = igrejas.filter(ig =>
-          ig.endereco_cidade?.toLowerCase() === cidade.toLowerCase()
-        ).length
-
-        return {
-          cidade,
-          estado,
-          membros: counts.membros,
-          interessados: counts.interessados,
-          igrejas: igrejasCount,
-          lat: igrejaCidade?.coordenadas_lat ?? undefined,
-          lng: igrejaCidade?.coordenadas_lng ?? undefined,
-        }
-      }).sort((a, b) => b.membros - a.membros)
-
-      setCidadesDensidade(cidadesResult)
+      const result = Object.values(byCity).sort((a, b) => b.membros - a.membros)
+      setCidadesDensidade(result)
     } catch (err) {
       console.error('Erro ao buscar densidade:', err)
     }
   }
 
-  // Map associacao_id -> color index
   const coresMap = useMemo(() => {
     const map: Record<string, string> = {}
     const ids = [...new Set(igrejas.map(ig => ig.associacao_id))].sort()
@@ -186,17 +174,22 @@ export default function MapasPage() {
   const totalCidades = cidadesDensidade.length
   const cidadesComIgreja = cidadesDensidade.filter(c => c.igrejas > 0).length
 
-  if (loading) {
+  const onMapClick = useCallback(() => {
+    setSelectedIgreja(null)
+    setSelectedCidade(null)
+  }, [])
+
+  if (loading || !isLoaded) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-400">Carregando mapa...</p>
+        <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+        <span className="ml-3 text-gray-500">Carregando mapa...</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Mapa Territorial</h1>
         <p className="text-gray-500 mt-1">Visualização geográfica e densidade de membros</p>
@@ -245,8 +238,8 @@ export default function MapasPage() {
             <FiAlertCircle className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-gray-500">Sem Igreja</p>
-            <p className="text-xl font-bold text-gray-800">{totalCidades - cidadesComIgreja}</p>
+            <p className="text-xs text-gray-500">Sem Coords</p>
+            <p className="text-xl font-bold text-gray-800">{igrejasSemCoords.length}</p>
           </div>
         </div>
       </div>
@@ -266,7 +259,6 @@ export default function MapasPage() {
             ))}
           </select>
 
-          {/* Layer toggle */}
           <div className="flex gap-1 ml-auto">
             <button
               onClick={() => setCamada('igrejas')}
@@ -286,7 +278,6 @@ export default function MapasPage() {
             </button>
           </div>
 
-          {/* Legend */}
           {camada === 'igrejas' && (
             <div className="flex flex-wrap items-center gap-3">
               {associacoes
@@ -299,126 +290,135 @@ export default function MapasPage() {
                 ))}
             </div>
           )}
-          {camada === 'densidade' && (
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <span><span className="inline-block w-3 h-3 rounded-full bg-blue-400 mr-1" />1-10</span>
-              <span><span className="inline-block w-3 h-3 rounded-full bg-blue-600 mr-1" />11-50</span>
-              <span><span className="inline-block w-3 h-3 rounded-full bg-blue-800 mr-1" />50+</span>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Map */}
-      <div className="card p-0 overflow-hidden">
-        <MapContainer
-          center={[-7.5, -38.5]}
-          zoom={6}
-          className="h-[calc(100vh-280px)] w-full"
-          scrollWheelZoom={true}
+      {/* Google Map */}
+      <div className="card p-0 overflow-hidden rounded-xl">
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={defaultCenter}
+          zoom={5}
+          onClick={onMapClick}
+          options={{
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: true,
+            styles: [
+              { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+            ],
+          }}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-
           {/* Layer: Igrejas */}
           {camada === 'igrejas' && igrejasNoMapa.map(ig => (
-            <CircleMarker
+            <MarkerF
               key={ig.id}
-              center={[ig.coordenadas_lat!, ig.coordenadas_lng!]}
-              radius={Math.max(6, Math.min(18, ((ig as any).membros_ativos || 0) / 3 + 6))}
-              pathOptions={{
-                color: coresMap[ig.associacao_id] || '#999',
+              position={{ lat: ig.coordenadas_lat!, lng: ig.coordenadas_lng! }}
+              onClick={() => { setSelectedIgreja(ig); setSelectedCidade(null) }}
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: Math.max(6, Math.min(14, ((ig as any).membros_ativos || 0) / 5 + 6)),
                 fillColor: coresMap[ig.associacao_id] || '#999',
-                fillOpacity: 0.8,
-                weight: 2,
+                fillOpacity: 0.85,
+                strokeColor: '#fff',
+                strokeWeight: 2,
               }}
-            >
-              <Popup>
-                <div className="text-sm min-w-[200px]">
-                  <p className="font-bold text-gray-800 text-base mb-1">{ig.nome}</p>
-                  {ig.associacao && (
-                    <p className="text-gray-500 text-xs mb-2">
-                      {ig.associacao.nome} ({ig.associacao.sigla})
-                    </p>
-                  )}
-                  <div className="space-y-1 border-t border-gray-100 pt-2">
-                    {(ig.endereco_cidade || ig.endereco_estado) && (
-                      <p className="text-gray-600">
-                        <span className="font-medium">Cidade:</span>{' '}
-                        {ig.endereco_cidade ? `${ig.endereco_cidade}${ig.endereco_estado ? `/${ig.endereco_estado}` : ''}` : ig.endereco_estado}
-                      </p>
-                    )}
-                    {ig.pastor && <p className="text-gray-600"><span className="font-medium">Pastor:</span> {ig.pastor}</p>}
-                    <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-gray-100">
-                      <a
-                        href={`/membros?igreja=${ig.id}`}
-                        className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded hover:bg-green-100"
-                      >
-                        Ver Membros
-                      </a>
-                      <a
-                        href={`/organizacao/igrejas?id=${ig.id}`}
-                        className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
-                      >
-                        Ver Igreja
-                      </a>
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${ig.coordenadas_lat},${ig.coordenadas_lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
-                      >
-                        Rotas ↗
-                      </a>
-                    </div>
-                    {ig.telefone && <p className="text-gray-600"><span className="font-medium">Telefone:</span> {ig.telefone}</p>}
-                    <p className="text-gray-600"><span className="font-medium">Membros:</span> {((ig as any).membros_ativos || 0).toLocaleString('pt-BR')}</p>
-                    {(ig as any).interessados > 0 && (
-                      <p className="text-gray-600"><span className="font-medium">Interessados:</span> {((ig as any).interessados || 0).toLocaleString('pt-BR')}</p>
-                    )}
-                  </div>
-                </div>
-              </Popup>
-            </CircleMarker>
+            />
           ))}
 
-          {/* Layer: Density by city */}
+          {/* Layer: Densidade */}
           {camada === 'densidade' && cidadesComCoords.map(c => {
             const total = c.membros + c.interessados
             const color = total > 50 ? '#1e40af' : total > 10 ? '#2563eb' : '#60a5fa'
-            const radius = Math.max(8, Math.min(30, Math.sqrt(total) * 3))
 
             return (
-              <CircleMarker
+              <MarkerF
                 key={`${c.cidade}-${c.estado}`}
-                center={[c.lat!, c.lng!]}
-                radius={radius}
-                pathOptions={{
-                  color,
+                position={{ lat: c.lat!, lng: c.lng! }}
+                onClick={() => { setSelectedCidade(c); setSelectedIgreja(null) }}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: Math.max(8, Math.min(25, Math.sqrt(total) * 3)),
                   fillColor: color,
                   fillOpacity: 0.5,
-                  weight: 1,
+                  strokeColor: color,
+                  strokeWeight: 1,
                 }}
-              >
-                <Popup>
-                  <div className="text-sm min-w-[180px]">
-                    <p className="font-bold text-gray-800">{c.cidade}/{c.estado}</p>
-                    <div className="space-y-1 mt-1.5">
-                      <p className="text-gray-600"><span className="font-medium">Membros:</span> {c.membros}</p>
-                      <p className="text-gray-600"><span className="font-medium">Interessados:</span> {c.interessados}</p>
-                      <p className="text-gray-600"><span className="font-medium">Igrejas:</span> {c.igrejas}</p>
-                    </div>
-                  </div>
-                </Popup>
-              </CircleMarker>
+              />
             )
           })}
-        </MapContainer>
+
+          {/* InfoWindow: Igreja */}
+          {selectedIgreja && (
+            <InfoWindowF
+              position={{ lat: selectedIgreja.coordenadas_lat!, lng: selectedIgreja.coordenadas_lng! }}
+              onCloseClick={() => setSelectedIgreja(null)}
+            >
+              <div className="text-sm min-w-[220px] p-1">
+                <p className="font-bold text-gray-800 text-base mb-1">{selectedIgreja.nome}</p>
+                {selectedIgreja.associacao && (
+                  <p className="text-gray-500 text-xs mb-2">
+                    {selectedIgreja.associacao.nome} ({selectedIgreja.associacao.sigla})
+                  </p>
+                )}
+                <div className="space-y-1 border-t border-gray-200 pt-2">
+                  {selectedIgreja.endereco_cidade && (
+                    <p className="text-gray-600">
+                      <span className="font-medium">Cidade:</span> {selectedIgreja.endereco_cidade}/{selectedIgreja.endereco_estado}
+                    </p>
+                  )}
+                  {selectedIgreja.pastor && (
+                    <p className="text-gray-600"><span className="font-medium">Pastor:</span> {selectedIgreja.pastor}</p>
+                  )}
+                  <p className="text-gray-600">
+                    <span className="font-medium">Membros:</span> {((selectedIgreja as any).membros_ativos || 0).toLocaleString('pt-BR')}
+                  </p>
+                  {(selectedIgreja as any).interessados > 0 && (
+                    <p className="text-gray-600">
+                      <span className="font-medium">Interessados:</span> {((selectedIgreja as any).interessados || 0).toLocaleString('pt-BR')}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2 mt-3 pt-2 border-t border-gray-200">
+                  <a href={`/membros?igreja=${selectedIgreja.id}`} className="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-md hover:bg-green-100 font-medium">
+                    Ver Membros
+                  </a>
+                  <a href={`/organizacao/igrejas?id=${selectedIgreja.id}`} className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md hover:bg-blue-100 font-medium">
+                    Ver Igreja
+                  </a>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedIgreja.coordenadas_lat},${selectedIgreja.coordenadas_lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md hover:bg-gray-200 font-medium"
+                  >
+                    Rotas ↗
+                  </a>
+                </div>
+              </div>
+            </InfoWindowF>
+          )}
+
+          {/* InfoWindow: Cidade */}
+          {selectedCidade && (
+            <InfoWindowF
+              position={{ lat: selectedCidade.lat!, lng: selectedCidade.lng! }}
+              onCloseClick={() => setSelectedCidade(null)}
+            >
+              <div className="text-sm min-w-[180px] p-1">
+                <p className="font-bold text-gray-800">{selectedCidade.cidade}/{selectedCidade.estado}</p>
+                <div className="space-y-1 mt-1.5">
+                  <p className="text-gray-600"><span className="font-medium">Membros:</span> {selectedCidade.membros}</p>
+                  <p className="text-gray-600"><span className="font-medium">Interessados:</span> {selectedCidade.interessados}</p>
+                  <p className="text-gray-600"><span className="font-medium">Igrejas:</span> {selectedCidade.igrejas}</p>
+                </div>
+              </div>
+            </InfoWindowF>
+          )}
+        </GoogleMap>
       </div>
 
-      {/* Top cities by members */}
+      {/* Top cities */}
       {camada === 'densidade' && cidadesDensidade.length > 0 && (
         <div className="card">
           <h3 className="text-sm font-semibold text-gray-600 mb-3">Top Cidades por Membros</h3>
@@ -435,7 +435,6 @@ export default function MapasPage() {
                   {c.interessados > 0 && <span className="text-amber-600">{c.interessados} int.</span>}
                   <span className="text-gray-400">{c.igrejas} igr.</span>
                 </div>
-                {/* Bar indicator */}
                 <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary-500 rounded-full"
@@ -456,11 +455,10 @@ export default function MapasPage() {
             Igrejas sem coordenadas ({igrejasSemCoords.length})
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {igrejasSemCoords.map(ig => (
-              <div key={ig.id} className="text-xs text-gray-500 py-1 px-2 bg-gray-50 rounded">
-                <span className="font-medium text-gray-700">{ig.nome}</span>
-                {ig.associacao && <span className="ml-1">({ig.associacao.sigla})</span>}
-                {ig.endereco_cidade && <span className="ml-1">- {ig.endereco_cidade}/{ig.endereco_estado}</span>}
+            {igrejasSemCoords.slice(0, 30).map(ig => (
+              <div key={ig.id} className="text-xs text-gray-600 py-1.5 px-2 bg-gray-50 rounded">
+                <span className="font-medium text-gray-800">{ig.nome}</span>
+                {ig.endereco_cidade && <span className="ml-1">· {ig.endereco_cidade}/{ig.endereco_estado}</span>}
               </div>
             ))}
           </div>

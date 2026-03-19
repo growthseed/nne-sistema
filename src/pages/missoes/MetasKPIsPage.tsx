@@ -642,7 +642,7 @@ export default function MetasKPIsPage() {
 
       {/* ===== Historical Chart ===== */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Historico de Atingimento (12 meses)</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Histórico de Atingimento (12 meses)</h3>
         <div className="h-72">
           <Line
             data={historicalChartData}

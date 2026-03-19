@@ -176,12 +176,57 @@ export default function PlanejadorVisitasPage() {
   }
 
   function toggleFilter(filter: FilterToggle) {
-    setActiveFilters(prev => {
-      const next = new Set(prev)
-      if (next.has(filter)) next.delete(filter)
-      else next.add(filter)
-      return next
-    })
+    const next = new Set(activeFilters)
+    if (next.has(filter)) {
+      next.delete(filter)
+      if (next.size === 0 && !busca.trim()) setPessoas([])
+    } else {
+      next.add(filter)
+      // Fetch data for this filter from server
+      fetchByFilter(filter)
+    }
+    setActiveFilters(next)
+  }
+
+  async function fetchByFilter(filter: FilterToggle) {
+    if (!profile) return
+    setSearching(true)
+    try {
+      let query = supabase.from('pessoas').select('*').order('nome').limit(100)
+
+      // Scope filter
+      if (profile.papel === 'admin_uniao') query = query.eq('uniao_id', profile.uniao_id!)
+      else if (profile.papel === 'admin_associacao') query = query.eq('associacao_id', profile.associacao_id!)
+      else if (profile.papel !== 'admin') query = query.eq('igreja_id', profile.igreja_id!)
+
+      if (filter === 'aniversariantes') {
+        const currentMonth = new Date().getMonth() + 1
+        // Fetch all with birth dates and filter client-side for month
+        query = query.not('data_nascimento', 'is', null).eq('situacao', 'ativo')
+      } else if (filter === 'recentes') {
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        query = query.gte('created_at', thirtyDaysAgo.toISOString())
+      } else if (filter === 'interessados') {
+        query = query.eq('tipo', 'interessado')
+      } else if (filter === 'inativos') {
+        query = query.eq('situacao', 'inativo')
+      }
+
+      if (filtroIgrejaId) query = query.eq('igreja_id', filtroIgrejaId)
+
+      const { data } = await query
+      if (data) {
+        // Merge with existing, dedup by id
+        setPessoas(prev => {
+          const map = new Map(prev.map(p => [p.id, p]))
+          data.forEach(p => map.set(p.id, p))
+          return [...map.values()]
+        })
+      }
+    } finally {
+      setSearching(false)
+    }
   }
 
   const filteredPessoas = useMemo(() => {

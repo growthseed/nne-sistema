@@ -675,7 +675,7 @@ export default function RelatorioMissionarioPage() {
             ) : (
               <div className="card text-center py-12 text-gray-400 sticky top-4">
                 <FiCalendar className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Clique em um dia no calendario para lancar atividades</p>
+                <p className="text-sm">Clique em um dia no calendário para lançar atividades</p>
               </div>
             )}
           </div>

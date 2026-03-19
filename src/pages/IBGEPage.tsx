@@ -566,7 +566,7 @@ export default function IBGEPage() {
           </svg>
           <h3 className="mt-3 text-sm font-medium text-gray-900">Selecione um estado</h3>
           <p className="mt-1 text-xs text-gray-500">
-            Escolha um estado para visualizar dados demograficos do IBGE cruzados com a membresia.
+            Escolha um estado para visualizar dados demográficos do IBGE cruzados com a membresia.
           </p>
         </div>
       )}

@@ -746,7 +746,7 @@ export default function FichaCampoPage() {
         {historico.length <= 1 && (
           <div className="border border-dashed rounded-xl p-8 text-center text-gray-400">
             <FiTrendingUp size={36} className="mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Historico em construcao</p>
+            <p className="font-medium">Histórico em construção</p>
             <p className="text-sm mt-1">
               Os graficos de evolucao aparecerao conforme os dados mensais forem registrados no sistema.
             </p>

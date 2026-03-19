@@ -15,13 +15,13 @@ interface PessoaIncompleta {
 
 const CAMPOS_OBRIGATORIOS = [
   { campo: 'telefone', label: 'Telefone' },
+  { campo: 'celular', label: 'Celular' },
   { campo: 'email', label: 'E-mail' },
   { campo: 'data_nascimento', label: 'Data de Nascimento' },
   { campo: 'endereco_cidade', label: 'Cidade' },
   { campo: 'endereco_estado', label: 'UF' },
   { campo: 'sexo', label: 'Sexo' },
   { campo: 'estado_civil', label: 'Estado Civil' },
-  { campo: 'cpf', label: 'CPF' },
 ]
 
 export default function QualidadeDadosPage() {
@@ -40,7 +40,7 @@ export default function QualidadeDadosPage() {
     setLoading(true)
     let query = supabase
       .from('pessoas')
-      .select('id, nome, situacao, telefone, email, data_nascimento, endereco_cidade, endereco_estado, sexo, estado_civil, cpf, igreja:igrejas(nome)')
+      .select('id, nome, situacao, telefone, celular, email, data_nascimento, endereco_cidade, endereco_estado, sexo, estado_civil, igreja:igrejas(nome)')
       .in('situacao', ['ativo', 'inativo'])
       .order('nome')
       .limit(5000)
