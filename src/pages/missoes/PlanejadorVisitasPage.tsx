@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Pessoa, Igreja, PlanoVisita } from '@/types'
 import { generateGoogleCalendarUrl } from '@/lib/projections'
-import { FiFilter, FiMapPin, FiCalendar, FiSave, FiChevronUp, FiChevronDown, FiX, FiGift, FiUserPlus, FiUserX, FiUsers } from 'react-icons/fi'
+import { FiFilter, FiMapPin, FiCalendar, FiSave, FiChevronUp, FiChevronDown, FiX, FiGift, FiUserPlus, FiUserX, FiUsers, FiSearch } from 'react-icons/fi'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
@@ -94,36 +94,57 @@ export default function PlanejadorVisitasPage() {
   async function fetchData() {
     setLoading(true)
     try {
-      await Promise.all([fetchPessoas(), fetchIgrejas(), fetchPlanos()])
+      await Promise.all([fetchIgrejas(), fetchPlanos()])
     } finally {
       setLoading(false)
     }
   }
 
-  async function fetchPessoas() {
-    if (!profile) return
-    let query = supabase
-      .from('pessoas')
-      .select('*')
-      .order('nome')
+  // Search pessoas by name (on demand, not on load)
+  const [searching, setSearching] = useState(false)
 
-    if (profile.papel === 'admin') {
-      // no filter
-    } else if (profile.papel === 'admin_uniao') {
-      query = query.eq('uniao_id', profile.uniao_id!)
-    } else if (profile.papel === 'admin_associacao') {
-      query = query.eq('associacao_id', profile.associacao_id!)
-    } else {
-      query = query.eq('igreja_id', profile.igreja_id!)
-    }
-
-    const { data, error } = await query
-    if (error) {
-      console.error('Erro ao buscar pessoas:', error)
+  async function searchPessoas(termo: string) {
+    if (!profile || termo.trim().length < 2) {
+      setPessoas([])
       return
     }
-    setPessoas(data || [])
+    setSearching(true)
+    try {
+      let query = supabase
+        .from('pessoas')
+        .select('*')
+        .ilike('nome', `%${termo.trim()}%`)
+        .order('nome')
+        .limit(50)
+
+      if (profile.papel === 'admin_uniao') {
+        query = query.eq('uniao_id', profile.uniao_id!)
+      } else if (profile.papel === 'admin_associacao') {
+        query = query.eq('associacao_id', profile.associacao_id!)
+      } else if (profile.papel !== 'admin') {
+        query = query.eq('igreja_id', profile.igreja_id!)
+      }
+
+      const { data, error } = await query
+      if (error) {
+        console.error('Erro ao buscar pessoas:', error)
+        return
+      }
+      setPessoas(data || [])
+    } finally {
+      setSearching(false)
+    }
   }
+
+  // Debounce search
+  useEffect(() => {
+    if (busca.trim().length < 2) {
+      setPessoas([])
+      return
+    }
+    const timer = setTimeout(() => searchPessoas(busca), 400)
+    return () => clearTimeout(timer)
+  }, [busca]) // eslint-disable-line
 
   async function fetchIgrejas() {
     if (!profile) return
@@ -181,13 +202,7 @@ export default function PlanejadorVisitasPage() {
   const filteredPessoas = useMemo(() => {
     let result = [...pessoas]
 
-    // Text search
-    if (busca.trim()) {
-      const q = busca.toLowerCase()
-      result = result.filter(p => p.nome?.toLowerCase().includes(q) || p.telefone?.includes(q) || p.celular?.includes(q))
-    }
-
-    // Church filter
+    // Church filter (client-side, server already filtered by name)
     if (filtroIgrejaId) {
       result = result.filter(p => p.igreja_id === filtroIgrejaId)
     }
@@ -217,7 +232,7 @@ export default function PlanejadorVisitasPage() {
     }
 
     return result
-  }, [pessoas, filtroIgrejaId, activeFilters, busca])
+  }, [pessoas, filtroIgrejaId, activeFilters])
 
   // All filtered people with coordinates for map display
   const allMapPessoas = useMemo(() => {
@@ -513,7 +528,19 @@ export default function PlanejadorVisitasPage() {
           <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
             {filteredPessoas.length === 0 ? (
               <div className="card text-center py-8">
-                <p className="text-gray-500">Nenhuma pessoa encontrada com os filtros selecionados.</p>
+                {searching ? (
+                  <p className="text-gray-400">Buscando...</p>
+                ) : busca.trim().length === 0 ? (
+                  <div>
+                    <FiSearch className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-500">Digite o nome de uma pessoa para buscar.</p>
+                    <p className="text-xs text-gray-400 mt-1">Mínimo 2 caracteres</p>
+                  </div>
+                ) : busca.trim().length < 2 ? (
+                  <p className="text-gray-400">Digite pelo menos 2 caracteres...</p>
+                ) : (
+                  <p className="text-gray-500">Nenhuma pessoa encontrada para "{busca}".</p>
+                )}
               </div>
             ) : (
               filteredPessoas.map(pessoa => {
