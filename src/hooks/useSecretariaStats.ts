@@ -46,9 +46,13 @@ export function useSecretariaStats() {
       setError(null)
       const anoAtual = new Date().getFullYear()
 
-      // Parallel queries
+      // Parallel queries — use count for totals, limit for charts
       const [
-        membrosRes,
+        ativosRes,
+        inativosRes,
+        falecidosRes,
+        transferidosRes,
+        excluidosRes,
         interessadosRes,
         contagemRes,
         transfPendRes,
@@ -56,31 +60,32 @@ export function useSecretariaStats() {
         pessoasParaCharts,
         anivRes,
       ] = await Promise.all([
-        // Membros por situacao
-        supabase.from('pessoas').select('situacao').eq('tipo', 'membro'),
-        // Total interessados
-        buildScopeFilter(
-          supabase.from('pessoas').select('id', { count: 'exact', head: true }).eq('tipo', 'interessado'),
-          profile
-        ),
+        // Count membros by situacao (exact counts, no 1000 limit)
+        buildScopeFilter(supabase.from('pessoas').select('*', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'ativo'), profile),
+        buildScopeFilter(supabase.from('pessoas').select('*', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'inativo'), profile),
+        buildScopeFilter(supabase.from('pessoas').select('*', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'falecido'), profile),
+        buildScopeFilter(supabase.from('pessoas').select('*', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'transferido'), profile),
+        buildScopeFilter(supabase.from('pessoas').select('*', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'excluido'), profile),
+        // Total interessados (tipo=interessado, qualquer situacao)
+        buildScopeFilter(supabase.from('pessoas').select('*', { count: 'exact', head: true }).eq('tipo', 'interessado'), profile),
         // Contagem mensal do ano
         supabase.from('contagem_mensal').select('mes, ano, batismos, exclusoes, obitos, transferencias_entrada, transferencias_saida').eq('ano', anoAtual),
         // Transferências pendentes
         supabase.from('transferencias').select('id', { count: 'exact', head: true }).in('status', ['solicitada', 'pendente']),
         // Associações para labels
         supabase.from('associacoes').select('id, sigla'),
-        // Pessoas para charts (membros com dados)
-        supabase.from('pessoas').select('sexo, data_nascimento, associacao_id, situacao, igreja:igrejas(nome)').eq('tipo', 'membro'),
-        // Aniversariantes próximos 7 dias
-        supabase.from('pessoas').select('id, nome, data_nascimento, igreja:igrejas(nome)').eq('tipo', 'membro').eq('situacao', 'ativo').not('data_nascimento', 'is', null),
+        // Pessoas para charts — membros ativos (até 5000)
+        buildScopeFilter(supabase.from('pessoas').select('sexo, data_nascimento, associacao_id, situacao').eq('tipo', 'membro').eq('situacao', 'ativo').limit(5000), profile),
+        // Aniversariantes próximos 7 dias — membros ativos
+        buildScopeFilter(supabase.from('pessoas').select('id, nome, data_nascimento, igreja:igrejas(nome)').eq('tipo', 'membro').eq('situacao', 'ativo').not('data_nascimento', 'is', null).limit(5000), profile),
       ])
 
-      // Process member counts by status
-      const membros = membrosRes.data || []
-      const bySituacao = membros.reduce((acc: Record<string, number>, m) => {
-        acc[m.situacao || 'ativo'] = (acc[m.situacao || 'ativo'] || 0) + 1
-        return acc
-      }, {})
+      // Member counts from exact count queries (no 1000 limit)
+      const countAtivos = ativosRes.count || 0
+      const countInativos = inativosRes.count || 0
+      const countFalecidos = falecidosRes.count || 0
+      const countTransferidos = transferidosRes.count || 0
+      const countExcluidos = excluidosRes.count || 0
 
       // Process contagem
       const contagem = contagemRes.data || []
@@ -154,11 +159,11 @@ export function useSecretariaStats() {
       }).slice(0, 10)
 
       setStats({
-        membrosAtivos: bySituacao['ativo'] || 0,
-        membrosInativos: bySituacao['inativo'] || 0,
-        membrosFalecidos: bySituacao['falecido'] || 0,
-        membrosTransferidos: bySituacao['transferido'] || 0,
-        membrosExcluidos: bySituacao['excluido'] || 0,
+        membrosAtivos: countAtivos,
+        membrosInativos: countInativos,
+        membrosFalecidos: countFalecidos,
+        membrosTransferidos: countTransferidos,
+        membrosExcluidos: countExcluidos,
         interessados: interessadosRes.count || 0,
         batismosAno,
         exclusoesAno,

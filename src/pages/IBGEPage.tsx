@@ -203,12 +203,29 @@ export default function IBGEPage() {
     async function fetchMembrosCidade() {
       setLoadingMembros(true)
       try {
+        // First find churches in this city
+        const { data: igrejasNaCidade } = await supabase
+          .from('igrejas')
+          .select('id')
+          .eq('endereco_cidade', selectedMunicipio)
+          .eq('endereco_estado', selectedEstado)
+          .eq('ativo', true)
+
+        const igrejaIds = (igrejasNaCidade || []).map(ig => ig.id)
+
+        if (igrejaIds.length === 0) {
+          setMembrosCidade([])
+          setLoadingMembros(false)
+          return
+        }
+
+        // Then find members in those churches
         let query = supabase
           .from('pessoas')
           .select('*')
-          .eq('ativo', true)
-          .eq('endereco_estado', selectedEstado)
-          .eq('endereco_cidade', selectedMunicipio)
+          .in('igreja_id', igrejaIds)
+          .eq('situacao', 'ativo')
+          .eq('tipo', 'membro')
 
         query = applyScope(query)
         const { data, error: dbError } = await query

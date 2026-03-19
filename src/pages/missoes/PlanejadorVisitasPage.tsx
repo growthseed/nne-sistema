@@ -68,6 +68,7 @@ export default function PlanejadorVisitasPage() {
   // Filters
   const [activeFilters, setActiveFilters] = useState<Set<FilterToggle>>(new Set())
   const [filtroIgrejaId, setFiltroIgrejaId] = useState('')
+  const [busca, setBusca] = useState('')
   const [dataInicio, setDataInicio] = useState(() => new Date().toISOString().split('T')[0])
   const [dataFim, setDataFim] = useState(() => {
     const d = new Date()
@@ -180,6 +181,12 @@ export default function PlanejadorVisitasPage() {
   const filteredPessoas = useMemo(() => {
     let result = [...pessoas]
 
+    // Text search
+    if (busca.trim()) {
+      const q = busca.toLowerCase()
+      result = result.filter(p => p.nome?.toLowerCase().includes(q) || p.telefone?.includes(q) || p.celular?.includes(q))
+    }
+
     // Church filter
     if (filtroIgrejaId) {
       result = result.filter(p => p.igreja_id === filtroIgrejaId)
@@ -210,7 +217,7 @@ export default function PlanejadorVisitasPage() {
     }
 
     return result
-  }, [pessoas, filtroIgrejaId, activeFilters])
+  }, [pessoas, filtroIgrejaId, activeFilters, busca])
 
   // All filtered people with coordinates for map display
   const allMapPessoas = useMemo(() => {
@@ -428,6 +435,19 @@ export default function PlanejadorVisitasPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="label-field">Igreja</label>
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Buscar por nome..."
+                value={busca}
+                onChange={e => setBusca(e.target.value)}
+                className="input-field pl-10"
+              />
+            </div>
+          </div>
           <div>
             <label className="label-field">Igreja</label>
             <select
