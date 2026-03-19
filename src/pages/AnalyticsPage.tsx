@@ -60,6 +60,8 @@ interface FinRow {
   receita_dizimos: number
   receita_oferta_regular: number
   receita_oferta_especial: number
+  dizimo: number
+  primicias: number
   despesa_salarios: number
   despesa_manutencao: number
   despesa_agua: number
@@ -232,7 +234,7 @@ export default function AnalyticsPage() {
   async function fetchFinanceiro() {
     const { data } = await applyScope(
       supabase.from('dados_financeiros')
-        .select('mes, receita_dizimos, receita_oferta_regular, receita_oferta_especial, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras')
+        .select('mes, receita_dizimos, receita_oferta_regular, receita_oferta_especial, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias')
         .eq('ano', ano)
     )
 
@@ -242,7 +244,7 @@ export default function AnalyticsPage() {
     ;(data || []).forEach((r: FinRow) => {
       if (r.mes >= 1 && r.mes <= 12) {
         const idx = r.mes - 1
-        rec[idx] += (r.receita_dizimos || 0) + (r.receita_oferta_regular || 0) + (r.receita_oferta_especial || 0)
+        rec[idx] += (r.receita_dizimos || 0) + (r.dizimo || 0) + (r.receita_oferta_regular || 0) + (r.primicias || 0) + (r.receita_oferta_especial || 0)
         desp[idx] += (r.despesa_salarios || 0) + (r.despesa_manutencao || 0) + (r.despesa_agua || 0) + (r.despesa_energia || 0) + (r.despesa_internet || 0) + (r.despesa_material_es || 0) + (r.despesa_outras || 0)
       }
     })

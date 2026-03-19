@@ -22,7 +22,9 @@ function formatCurrency(value: number) {
 function calcTotalReceitas(d: DadosFinanceiros): number {
   return (
     (d.receita_dizimos || 0) +
+    ((d as any).dizimo || 0) +
     (d.receita_primicias || 0) +
+    ((d as any).primicias || 0) +
     (d.receita_oferta_regular || 0) +
     (d.receita_oferta_especial || 0) +
     (d.receita_oferta_missoes || 0) +
@@ -127,7 +129,7 @@ export default function FinanceiroPage() {
     entries.forEach((d) => {
       totalReceitas += calcTotalReceitas(d)
       totalDespesas += calcTotalDespesas(d)
-      totalDizimos += d.receita_dizimos || 0
+      totalDizimos += (d.receita_dizimos || 0) + ((d as any).dizimo || 0)
     })
 
     return {
@@ -287,7 +289,7 @@ export default function FinanceiroPage() {
                       {formatCurrency(saldo)}
                     </td>
                     <td className="py-3 px-2 text-right text-purple-600 font-medium">
-                      {formatCurrency(entry.receita_dizimos || 0)}
+                      {formatCurrency((entry.receita_dizimos || 0) + ((entry as any).dizimo || 0))}
                     </td>
                     <td className="py-3 px-2 text-center">
                       <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${st.bg} ${st.text}`}>

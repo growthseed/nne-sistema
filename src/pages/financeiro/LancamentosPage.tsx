@@ -132,7 +132,9 @@ const emptyForm: FormData = {
 function calcTotalReceitas(d: ReceitaFields): number {
   return (
     (d.receita_dizimos || 0) +
+    ((d as any).dizimo || 0) +
     (d.receita_primicias || 0) +
+    ((d as any).primicias || 0) +
     (d.receita_oferta_regular || 0) +
     (d.receita_oferta_especial || 0) +
     (d.receita_oferta_missoes || 0) +

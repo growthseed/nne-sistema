@@ -154,12 +154,12 @@ export default function FichaCampoPage() {
           let igOfertas = 0
           const { data: igFins } = await supabase
             .from('dados_financeiros')
-            .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_primicia')
+            .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_primicia, dizimo, primicias')
             .eq('igreja_id', ig.id)
             .eq('ano', anoAtual)
           for (const f of igFins || []) {
-            igDizimos += f.receita_dizimos || 0
-            igOfertas += (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0) + (f.receita_oferta_missoes || 0) + (f.receita_primicia || 0)
+            igDizimos += (f.receita_dizimos || 0) + (f.dizimo || 0)
+            igOfertas += (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0) + (f.receita_oferta_missoes || 0) + (f.receita_primicia || 0) + (f.primicias || 0)
           }
 
           const vinculo = vinculoMap.get(ig.id)
@@ -190,12 +190,12 @@ export default function FichaCampoPage() {
       if (igrejaIds.length > 0) {
         const { data: fins } = await supabase
           .from('dados_financeiros')
-          .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial')
+          .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, dizimo, primicias')
           .in('igreja_id', igrejaIds)
           .eq('ano', anoAtual)
         for (const f of fins || []) {
-          dizimos += f.receita_dizimos || 0
-          ofertas += (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0)
+          dizimos += (f.receita_dizimos || 0) + (f.dizimo || 0)
+          ofertas += (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0) + (f.primicias || 0)
         }
       }
 

@@ -245,7 +245,9 @@ export default function RelatoriosPage() {
     const rows = (data || []).map((r: any) => {
       const totalReceita =
         (r.receita_dizimos || 0) +
+        (r.dizimo || 0) +
         (r.receita_oferta_regular || 0) +
+        (r.primicias || 0) +
         (r.receita_oferta_especial || 0) +
         (r.receita_oferta_missoes || 0) +
         (r.receita_oferta_agradecimento || 0) +

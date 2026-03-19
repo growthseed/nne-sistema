@@ -68,14 +68,14 @@ export default function Dashboard() {
             : { count: 1 },
       scopeFilter(supabase.from('contagem_mensal').select('batismos').eq('mes', mesAtual).eq('ano', anoAtual)),
       supabase.from('transferencias').select('id', { count: 'exact', head: true }).eq('status', 'solicitada'),
-      scopeFilter(supabase.from('dados_financeiros').select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras').eq('mes', mesAtual).eq('ano', anoAtual)),
+      scopeFilter(supabase.from('dados_financeiros').select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias').eq('mes', mesAtual).eq('ano', anoAtual)),
     ])
 
     const totalBatismos = (batismos.data || []).reduce((sum: number, r: any) => sum + (r.batismos || 0), 0)
 
     let receitaTotal = 0, despesaTotal = 0
     for (const r of (fin.data || []) as any[]) {
-      receitaTotal += (r.receita_dizimos || 0) + (r.receita_oferta_regular || 0) + (r.receita_oferta_especial || 0) + (r.receita_oferta_missoes || 0) + (r.receita_oferta_agradecimento || 0) + (r.receita_oferta_es || 0) + (r.receita_doacoes || 0) + (r.receita_fundo_assistencial || 0) + (r.receita_proventos_imoveis || 0) + (r.receita_outras || 0)
+      receitaTotal += (r.receita_dizimos || 0) + (r.dizimo || 0) + (r.receita_oferta_regular || 0) + (r.primicias || 0) + (r.receita_oferta_especial || 0) + (r.receita_oferta_missoes || 0) + (r.receita_oferta_agradecimento || 0) + (r.receita_oferta_es || 0) + (r.receita_doacoes || 0) + (r.receita_fundo_assistencial || 0) + (r.receita_proventos_imoveis || 0) + (r.receita_outras || 0)
       despesaTotal += (r.despesa_salarios || 0) + (r.despesa_manutencao || 0) + (r.despesa_agua || 0) + (r.despesa_energia || 0) + (r.despesa_internet || 0) + (r.despesa_material_es || 0) + (r.despesa_outras || 0)
     }
 
@@ -101,13 +101,13 @@ export default function Dashboard() {
 
       const { data } = await scopeFilter(
         supabase.from('dados_financeiros')
-          .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras')
+          .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias')
           .eq('mes', m).eq('ano', a)
       )
 
       let rec = 0, des = 0
       for (const r of (data || []) as any[]) {
-        rec += (r.receita_dizimos || 0) + (r.receita_oferta_regular || 0) + (r.receita_oferta_especial || 0) + (r.receita_oferta_missoes || 0) + (r.receita_oferta_agradecimento || 0) + (r.receita_oferta_es || 0) + (r.receita_doacoes || 0) + (r.receita_fundo_assistencial || 0) + (r.receita_proventos_imoveis || 0) + (r.receita_outras || 0)
+        rec += (r.receita_dizimos || 0) + (r.dizimo || 0) + (r.receita_oferta_regular || 0) + (r.primicias || 0) + (r.receita_oferta_especial || 0) + (r.receita_oferta_missoes || 0) + (r.receita_oferta_agradecimento || 0) + (r.receita_oferta_es || 0) + (r.receita_doacoes || 0) + (r.receita_fundo_assistencial || 0) + (r.receita_proventos_imoveis || 0) + (r.receita_outras || 0)
         des += (r.despesa_salarios || 0) + (r.despesa_manutencao || 0) + (r.despesa_agua || 0) + (r.despesa_energia || 0) + (r.despesa_internet || 0) + (r.despesa_material_es || 0) + (r.despesa_outras || 0)
       }
       meses.push({ mes: `${nomesMes[m - 1]}/${a}`, receita: rec, despesa: des })

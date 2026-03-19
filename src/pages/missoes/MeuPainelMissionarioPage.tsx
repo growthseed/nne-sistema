@@ -167,11 +167,11 @@ export default function MeuPainelMissionarioPage() {
     if (!igrejasIds.length) return
     const { data } = await supabase
       .from('dados_financeiros')
-      .select('receita_dizimos')
+      .select('receita_dizimos, dizimo')
       .in('igreja_id', igrejasIds)
       .eq('mes', currentMonth)
       .eq('ano', currentYear)
-    const soma = (data || []).reduce((acc, d) => acc + (d.receita_dizimos || 0), 0)
+    const soma = (data || []).reduce((acc, d) => acc + (d.receita_dizimos || 0) + (d.dizimo || 0), 0)
     setTotalDizimos(soma)
   }
 

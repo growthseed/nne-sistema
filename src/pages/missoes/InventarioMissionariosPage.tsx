@@ -189,7 +189,7 @@ export default function InventarioMissionariosPage() {
           const batch = uniqueIgrejaIds.slice(i, i + 20)
           const fQuery = supabase
             .from('dados_financeiros')
-            .select('igreja_id, receita_dizimos, receita_oferta_regular, receita_oferta_especial')
+            .select('igreja_id, receita_dizimos, receita_oferta_regular, receita_oferta_especial, dizimo, primicias, receita_primicias')
             .in('igreja_id', batch)
             .eq('ano', now.getFullYear())
           const { data: fins } = await fQuery
@@ -197,8 +197,11 @@ export default function InventarioMissionariosPage() {
             if (!finByChurch[f.igreja_id]) {
               finByChurch[f.igreja_id] = { receita: 0, dizimos: 0 }
             }
-            finByChurch[f.igreja_id].dizimos += f.receita_dizimos || 0
-            finByChurch[f.igreja_id].receita += (f.receita_dizimos || 0) + (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0)
+            // Sum both new fields (receita_*) and legacy fields (dizimo, primicias)
+            const diz = (f.receita_dizimos || 0) + (f.dizimo || 0)
+            const oferta = (f.receita_oferta_regular || 0) + (f.receita_oferta_especial || 0) + (f.primicias || 0) + (f.receita_primicias || 0)
+            finByChurch[f.igreja_id].dizimos += diz
+            finByChurch[f.igreja_id].receita += diz + oferta
           }
         }
       }

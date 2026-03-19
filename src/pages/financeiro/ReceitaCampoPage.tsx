@@ -90,9 +90,10 @@ export default function ReceitaCampoPage() {
       const key = entry.igreja_id
       const existing = map.get(key)
 
-      const dizimos = entry.receita_dizimos || 0
+      const dizimos = (entry.receita_dizimos || 0) + ((entry as any).dizimo || 0)
       const ofertas =
         (entry.receita_oferta_regular || 0) +
+        ((entry as any).primicias || 0) +
         (entry.receita_oferta_especial || 0) +
         (entry.receita_oferta_missoes || 0) +
         (entry.receita_oferta_agradecimento || 0) +

@@ -53,6 +53,7 @@ interface FinanceiroRow {
   mes: number
   ano: number
   receita_dizimos: number
+  dizimo: number
   igreja_id: string
 }
 
@@ -165,7 +166,7 @@ export default function DiagnosticoPage() {
   async function fetchFinanceiro() {
     let query = supabase
       .from('dados_financeiros')
-      .select('mes, ano, receita_dizimos, igreja_id')
+      .select('mes, ano, receita_dizimos, igreja_id, dizimo')
       .gte('ano', currentYear - 1)
       .order('ano')
       .order('mes')
@@ -259,7 +260,7 @@ export default function DiagnosticoPage() {
 
   // Dizimo per capita
   const totalDizimosCurrentYear = useMemo(() => {
-    return financeiroCurrentYear.reduce((s, f) => s + (f.receita_dizimos || 0), 0)
+    return financeiroCurrentYear.reduce((s, f) => s + (f.receita_dizimos || 0) + (f.dizimo || 0), 0)
   }, [financeiroCurrentYear])
 
   const dizimoPerCapita = useMemo(() => {
@@ -269,7 +270,7 @@ export default function DiagnosticoPage() {
 
   // Taxa crescimento dizimos
   const taxaCrescimentoDizimos = useMemo(() => {
-    const prevTotal = financeiroPrevYear.reduce((s, f) => s + (f.receita_dizimos || 0), 0)
+    const prevTotal = financeiroPrevYear.reduce((s, f) => s + (f.receita_dizimos || 0) + (f.dizimo || 0), 0)
     return calculateGrowthRate(totalDizimosCurrentYear, prevTotal)
   }, [totalDizimosCurrentYear, financeiroPrevYear])
 
@@ -388,11 +389,11 @@ export default function DiagnosticoPage() {
 
     const latestTotal = sorted
       .filter(f => f.ano === latest.ano && f.mes === latest.mes)
-      .reduce((s, f) => s + f.receita_dizimos, 0)
+      .reduce((s, f) => s + (f.receita_dizimos || 0) + (f.dizimo || 0), 0)
 
     const oldTotal = sorted
       .filter(f => f.ano === sixBack.ano && f.mes === sixBack.mes)
-      .reduce((s, f) => s + f.receita_dizimos, 0)
+      .reduce((s, f) => s + (f.receita_dizimos || 0) + (f.dizimo || 0), 0)
 
     const rate = calculateGrowthRate(latestTotal, oldTotal)
 

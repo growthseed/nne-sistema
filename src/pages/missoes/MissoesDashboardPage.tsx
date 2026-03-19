@@ -182,7 +182,7 @@ export default function MissoesDashboardPage() {
     // Financeiro do mes atual
     let finQuery = supabase
       .from('dados_financeiros')
-      .select('receita_dizimos, receita_primicias')
+      .select('receita_dizimos, receita_primicias, dizimo, primicias')
       .eq('mes', mesAtual)
       .eq('ano', anoAtual)
     finQuery = scopeFilter(finQuery)
@@ -190,8 +190,8 @@ export default function MissoesDashboardPage() {
 
     let dizimos = 0, primicias = 0
     for (const f of finData || []) {
-      dizimos += f.receita_dizimos || 0
-      primicias += f.receita_primicias || 0
+      dizimos += (f.receita_dizimos || 0) + (f.dizimo || 0)
+      primicias += (f.receita_primicias || 0) + (f.primicias || 0)
     }
 
     setKpi({
@@ -219,7 +219,7 @@ export default function MissoesDashboardPage() {
     // Fetch dados_financeiros for dizimos/primicias
     let finQuery = supabase
       .from('dados_financeiros')
-      .select('mes, ano, receita_dizimos, receita_primicias')
+      .select('mes, ano, receita_dizimos, receita_primicias, dizimo, primicias')
       .or(`and(ano.gt.${startAno}),and(ano.eq.${startAno},mes.gte.${startMes}),and(ano.eq.${anoAtual},mes.lte.${mesAtual})`)
     finQuery = scopeFilter(finQuery)
     const { data: finData } = await finQuery
@@ -247,8 +247,8 @@ export default function MissoesDashboardPage() {
     for (const r of finData || []) {
       const key = `${r.ano}-${r.mes}`
       if (monthMap[key]) {
-        monthMap[key].dizimos += r.receita_dizimos || 0
-        monthMap[key].primicias += r.receita_primicias || 0
+        monthMap[key].dizimos += (r.receita_dizimos || 0) + (r.dizimo || 0)
+        monthMap[key].primicias += (r.receita_primicias || 0) + (r.primicias || 0)
       }
     }
 
@@ -270,7 +270,7 @@ export default function MissoesDashboardPage() {
 
     let currFinQ = supabase
       .from('dados_financeiros')
-      .select('receita_dizimos, receita_primicias, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento')
+      .select('receita_dizimos, receita_primicias, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, dizimo, primicias')
       .eq('mes', mesAtual)
       .eq('ano', anoAtual)
     currFinQ = scopeFilter(currFinQ)
@@ -282,8 +282,8 @@ export default function MissoesDashboardPage() {
       curr.interessados += r.total_interessados || 0
     }
     for (const r of currFin || []) {
-      curr.dizimos += r.receita_dizimos || 0
-      curr.primicias += r.receita_primicias || 0
+      curr.dizimos += (r.receita_dizimos || 0) + (r.dizimo || 0)
+      curr.primicias += (r.receita_primicias || 0) + (r.primicias || 0)
       curr.ofertas += (r.receita_oferta_regular || 0) + (r.receita_oferta_especial || 0) + (r.receita_oferta_missoes || 0) + (r.receita_oferta_agradecimento || 0)
     }
     setCurrMonthData(curr)
@@ -302,7 +302,7 @@ export default function MissoesDashboardPage() {
 
     let prevFinQ = supabase
       .from('dados_financeiros')
-      .select('receita_dizimos, receita_primicias, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento')
+      .select('receita_dizimos, receita_primicias, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, dizimo, primicias')
       .eq('mes', prevMes)
       .eq('ano', prevAno)
     prevFinQ = scopeFilter(prevFinQ)
@@ -314,8 +314,8 @@ export default function MissoesDashboardPage() {
       prev.interessados += r.total_interessados || 0
     }
     for (const r of prevFin || []) {
-      prev.dizimos += r.receita_dizimos || 0
-      prev.primicias += r.receita_primicias || 0
+      prev.dizimos += (r.receita_dizimos || 0) + (r.dizimo || 0)
+      prev.primicias += (r.receita_primicias || 0) + (r.primicias || 0)
       prev.ofertas += (r.receita_oferta_regular || 0) + (r.receita_oferta_especial || 0) + (r.receita_oferta_missoes || 0) + (r.receita_oferta_agradecimento || 0)
     }
     setPrevMonthData(prev)

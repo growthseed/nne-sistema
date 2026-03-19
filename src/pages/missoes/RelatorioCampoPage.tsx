@@ -164,7 +164,7 @@ export default function RelatorioCampoPage() {
     if (igrejasIds.length === 0) { setFinanceiro([]); return }
     const { data, error } = await supabase
       .from('dados_financeiros')
-      .select('mes, ano, receita_dizimos, receita_primicias, receita_oferta_regular, receita_oferta_especial, receita_oferta_es, receita_doacoes')
+      .select('mes, ano, receita_dizimos, receita_primicias, receita_oferta_regular, receita_oferta_especial, receita_oferta_es, receita_doacoes, dizimo, primicias')
       .in('igreja_id', igrejasIds)
       .gte('ano', currentYear - 1)
       .order('ano')
@@ -295,8 +295,8 @@ export default function RelatorioCampoPage() {
     for (const f of financeiro) {
       const key = `${f.ano}-${String(f.mes).padStart(2, '0')}`
       if (!aggregated[key]) aggregated[key] = { dizimos: 0, ofertas: 0 }
-      aggregated[key].dizimos += (f as any).receita_dizimos || 0
-      const ofertas = ((f as any).receita_oferta_regular || 0) + ((f as any).receita_oferta_especial || 0) + ((f as any).receita_oferta_es || 0)
+      aggregated[key].dizimos += ((f as any).receita_dizimos || 0) + ((f as any).dizimo || 0)
+      const ofertas = ((f as any).receita_oferta_regular || 0) + ((f as any).primicias || 0) + ((f as any).receita_oferta_especial || 0) + ((f as any).receita_oferta_es || 0)
       aggregated[key].ofertas += ofertas
     }
 
@@ -427,7 +427,7 @@ export default function RelatorioCampoPage() {
     const aggregated: Record<string, number> = {}
     for (const f of financeiro) {
       const key = `${f.ano}-${String(f.mes).padStart(2, '0')}`
-      const total = ((f as any).receita_dizimos || 0) + ((f as any).receita_oferta_regular || 0) + ((f as any).receita_oferta_especial || 0) + ((f as any).receita_oferta_es || 0) + ((f as any).receita_doacoes || 0)
+      const total = ((f as any).receita_dizimos || 0) + ((f as any).dizimo || 0) + ((f as any).receita_oferta_regular || 0) + ((f as any).primicias || 0) + ((f as any).receita_oferta_especial || 0) + ((f as any).receita_oferta_es || 0) + ((f as any).receita_doacoes || 0)
       aggregated[key] = (aggregated[key] || 0) + total
     }
 
@@ -532,8 +532,8 @@ export default function RelatorioCampoPage() {
         const finHeaders = ['Mes', 'Ano', 'Dizimos', 'Ofertas Regular', 'Ofertas Especial', 'Ofertas ES', 'Doacoes']
         const finData = financeiro.map(f => [
           f.mes, f.ano,
-          (f as any).receita_dizimos || 0,
-          (f as any).receita_oferta_regular || 0,
+          ((f as any).receita_dizimos || 0) + ((f as any).dizimo || 0),
+          ((f as any).receita_oferta_regular || 0) + ((f as any).primicias || 0),
           (f as any).receita_oferta_especial || 0,
           (f as any).receita_oferta_es || 0,
           (f as any).receita_doacoes || 0,
