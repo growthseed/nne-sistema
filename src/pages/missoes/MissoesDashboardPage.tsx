@@ -388,13 +388,17 @@ export default function MissoesDashboardPage() {
     setTopPerformers(performers.slice(0, 10))
   }
 
+  // Filter months that have at least some data (avoid showing 10 empty months)
+  const activeMonthlyData = monthlyData.filter(d => d.membros > 0 || d.dizimos > 0 || d.interessados > 0 || d.primicias > 0)
+  const chartMonths = activeMonthlyData.length > 0 ? activeMonthlyData : monthlyData.slice(-3)
+
   // Chart data: monthly trends (2 y-axes: people left, currency right)
   const lineChartData = {
-    labels: monthlyData.map(d => MONTH_LABELS[d.mes - 1]),
+    labels: chartMonths.map(d => `${MONTH_LABELS[d.mes - 1]}/${d.ano}`),
     datasets: [
       {
         label: 'Membros',
-        data: monthlyData.map(d => d.membros),
+        data: chartMonths.map(d => d.membros),
         borderColor: COLORS[0],
         backgroundColor: COLORS[0] + '15',
         tension: 0.3,
@@ -403,7 +407,7 @@ export default function MissoesDashboardPage() {
       },
       {
         label: 'Interessados',
-        data: monthlyData.map(d => d.interessados),
+        data: chartMonths.map(d => d.interessados),
         borderColor: COLORS[2],
         backgroundColor: COLORS[2] + '15',
         tension: 0.3,
@@ -411,8 +415,8 @@ export default function MissoesDashboardPage() {
         yAxisID: 'y',
       },
       {
-        label: 'Dizimos',
-        data: monthlyData.map(d => d.dizimos),
+        label: 'Dízimos',
+        data: chartMonths.map(d => d.dizimos),
         borderColor: COLORS[3],
         backgroundColor: COLORS[3] + '10',
         tension: 0.3,
@@ -421,8 +425,8 @@ export default function MissoesDashboardPage() {
         yAxisID: 'y1',
       },
       {
-        label: 'Primicias',
-        data: monthlyData.map(d => d.primicias),
+        label: 'Primícias',
+        data: chartMonths.map(d => d.primicias),
         borderColor: COLORS[4],
         backgroundColor: COLORS[4] + '10',
         tension: 0.3,

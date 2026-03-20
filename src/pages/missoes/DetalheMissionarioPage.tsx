@@ -1793,9 +1793,9 @@ export default function DetalheMissionarioPage() {
             )}
           </div>
 
-          {/* Baptismal Classes */}
+          {/* Classes Bíblicas */}
           <div className="card p-0 overflow-hidden">
-            <div className="px-4 py-3 border-b border-gray-100">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-800">
                 <FiCheckCircle className="inline w-5 h-5 mr-1 text-green-500" />
                 Classes Bíblicas
@@ -1805,9 +1805,20 @@ export default function DetalheMissionarioPage() {
                   </span>
                 )}
               </h3>
+              <Link
+                to="/escola-sabatina/batismais"
+                className="btn-primary text-xs inline-flex items-center gap-1 px-3 py-1.5"
+              >
+                <FiPlus className="w-3.5 h-3.5" /> Nova Classe
+              </Link>
             </div>
             {classesBatismais.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Nenhuma classe bíblica registrada</div>
+              <div className="p-8 text-center text-gray-500">
+                <p>Nenhuma classe bíblica registrada</p>
+                <Link to="/escola-sabatina/batismais" className="text-primary-600 hover:underline text-sm mt-2 inline-block">
+                  Criar classe bíblica →
+                </Link>
+              </div>
             ) : (
               <table className="w-full text-sm">
                 <thead>
@@ -2672,6 +2683,44 @@ export default function DetalheMissionarioPage() {
                 </div>
               </div>
             )}
+
+            {/* Create new church inline */}
+            <div className="mb-3 border rounded-lg p-3 bg-blue-50">
+              <p className="text-xs font-semibold text-blue-800 mb-2">Criar Nova Igreja</p>
+              <div className="flex gap-2">
+                <input
+                  className="input-field text-sm flex-1"
+                  placeholder="Nome da nova igreja..."
+                  id="nova-igreja-nome"
+                />
+                <button
+                  className="btn-primary text-sm px-3 whitespace-nowrap"
+                  onClick={async () => {
+                    const input = document.getElementById('nova-igreja-nome') as HTMLInputElement
+                    const nome = input?.value?.trim()
+                    if (!nome) return
+                    const { data: newIg, error } = await supabase
+                      .from('igrejas')
+                      .insert({
+                        nome,
+                        associacao_id: missionario?.associacao_id,
+                        ativo: true,
+                      })
+                      .select('id, nome')
+                      .single()
+                    if (error) { alert('Erro ao criar: ' + error.message); return }
+                    if (newIg) {
+                      setAllIgrejas(prev => [...prev, { ...newIg, endereco_cidade: null, endereco_estado: null, telefone: null, membros_ativos: 0, interessados: 0, tipo: null }])
+                      setSelectedIgrejasIds(prev => [...prev, newIg.id])
+                      setSelectedIgrejasFuncao(prev => ({ ...prev, [newIg.id]: 'Pastor' }))
+                      input.value = ''
+                    }
+                  }}
+                >
+                  + Criar
+                </button>
+              </div>
+            </div>
 
             {/* Checkboxes - unselected churches */}
             <div className="max-h-[40vh] overflow-y-auto space-y-1 border rounded-lg p-2">
