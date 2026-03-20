@@ -746,7 +746,7 @@ export default function DiagnosticoPage() {
             </div>
             {/* Metric 2: Taxa crescimento dizimos */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Cresc. Dizimos</span>
+              <span className="text-sm text-gray-600">Cresc. Dízimos</span>
               <div className="flex items-center gap-2">
                 <span className={`text-lg font-bold ${trendColor(taxaCrescimentoDizimos)}`}>
                   {taxaCrescimentoDizimos >= 0 ? '+' : ''}{taxaCrescimentoDizimos}%
@@ -822,7 +822,7 @@ export default function DiagnosticoPage() {
           <div className={`rounded-xl p-4 ${riskBadgeClass(riskDizimos.level)}`}>
             <div className="flex items-center gap-2 mb-2">
               {riskIcon(riskDizimos.level)}
-              <span className="text-sm font-semibold">Dizimos em Declinio</span>
+              <span className="text-sm font-semibold">Dízimos em Declínio</span>
             </div>
             <p className="text-xs mt-1">{riskDizimos.detail}</p>
           </div>

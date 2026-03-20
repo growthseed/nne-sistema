@@ -347,7 +347,7 @@ export default function InventarioMissionariosPage() {
     const mapa = new Map<string, GrupoAssociacao & { _igrejaIds: Set<string> }>()
     for (const d of filteredData) {
       const aId = d.associacao_id || 'sem-associacao'
-      const aNome = d.associacao_nome || 'Sem Associacao'
+      const aNome = d.associacao_nome || 'Sem Associação'
       if (!mapa.has(aId)) {
         mapa.set(aId, {
           associacao_id: aId,
@@ -457,14 +457,14 @@ export default function InventarioMissionariosPage() {
 
   function exportExcel() {
     const rows = filteredData.map(d => ({
-      Associacao: d.associacao_nome || '-',
+      Associação: d.associacao_nome || '-',
       Nome: d.nome,
       Cargo: CARGO_LABELS[d.cargo_ministerial] || d.cargo_ministerial,
       Status: STATUS_LABELS[d.status as StatusMissionario] || d.status,
       Igrejas: d.total_igrejas,
       Membros: d.total_membros,
       Interessados: d.total_interessados,
-      'Dizimos (R$)': d.dizimos_total.toFixed(2),
+      'Dízimos (R$)': d.dizimos_total.toFixed(2),
       'Classes Bíblicas': d.classes_batismais_ativas,
       'KPI Score': d.kpi_score,
     }))
@@ -545,7 +545,7 @@ export default function InventarioMissionariosPage() {
                   ? `R$ ${(summary.totalDizimos / 1000).toFixed(1)}k`
                   : 'R$ 0'}
               </p>
-              <p className="text-xs text-gray-500">Dizimos ({new Date().getFullYear()})</p>
+              <p className="text-xs text-gray-500">Dízimos ({new Date().getFullYear()})</p>
             </div>
           </div>
         </div>
@@ -556,7 +556,7 @@ export default function InventarioMissionariosPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800">{grupos.length}</p>
-              <p className="text-xs text-gray-500">Associacoes</p>
+              <p className="text-xs text-gray-500">Associações</p>
             </div>
           </div>
         </div>
@@ -601,7 +601,7 @@ export default function InventarioMissionariosPage() {
           <div>
             <label className="label-field">
               <FiFilter className="inline w-3.5 h-3.5 mr-1" />
-              Associacao
+              Associação
             </label>
             <select
               value={filtroAssociacao}
@@ -728,7 +728,7 @@ export default function InventarioMissionariosPage() {
                               className="px-4 py-3 text-right cursor-pointer select-none"
                               onClick={() => handleSort('dizimos_total')}
                             >
-                              Dizimos <SortIcon field="dizimos_total" />
+                              Dízimos <SortIcon field="dizimos_total" />
                             </th>
                             <th
                               className="px-4 py-3 text-center cursor-pointer select-none"
@@ -737,7 +737,7 @@ export default function InventarioMissionariosPage() {
                               KPI <SortIcon field="kpi_score" />
                             </th>
                             <th className="px-4 py-3 text-gray-500 font-medium">Status</th>
-                            <th className="px-4 py-3 text-gray-500 font-medium">Acao</th>
+                            <th className="px-4 py-3 text-gray-500 font-medium">Ação</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">

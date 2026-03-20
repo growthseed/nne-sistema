@@ -449,7 +449,7 @@ export default function MeuPainelMissionarioPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800">{formatCurrency(totalDizimos)}</p>
-              <p className="text-xs text-gray-500">Dizimos no Mes</p>
+              <p className="text-xs text-gray-500">Dízimos no Mês</p>
             </div>
           </div>
         </div>

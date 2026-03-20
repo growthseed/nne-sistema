@@ -432,7 +432,7 @@ export default function RelatorioMissionarioPage() {
       {/* ── HEADER BAR ── */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px]">
-          <label className="label-field text-xs">Missionario</label>
+          <label className="label-field text-xs">Missionário</label>
           <select
             value={selectedId}
             onChange={e => setSelectedId(e.target.value)}
@@ -771,7 +771,7 @@ export default function RelatorioMissionarioPage() {
             </div>
             <div className="text-center">
               <div className="border-t-2 border-gray-400 pt-2 mt-12">
-                <p className="font-semibold text-gray-800 text-xs">Presidente da Associacao</p>
+                <p className="font-semibold text-gray-800 text-xs">Presidente da Associação</p>
                 <p className="text-[10px] text-gray-500">{(selectedMiss?.associacao as any)?.nome || ''}</p>
               </div>
             </div>

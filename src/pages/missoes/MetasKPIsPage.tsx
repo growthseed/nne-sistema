@@ -584,7 +584,7 @@ export default function MetasKPIsPage() {
 
           {/* Missionary selector */}
           <div className="flex-1">
-            <label className="label-field">Missionario</label>
+            <label className="label-field">Missionário</label>
             <select
               value={selectedMissionario}
               onChange={e => handleMissionarioChange(e.target.value)}
@@ -750,7 +750,7 @@ export default function MetasKPIsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {isAdmin && (
                   <div>
-                    <label className="label-field">Missionario</label>
+                    <label className="label-field">Missionário</label>
                     <select
                       value={form.missionario_id}
                       onChange={e => setForm(f => ({ ...f, missionario_id: e.target.value }))}

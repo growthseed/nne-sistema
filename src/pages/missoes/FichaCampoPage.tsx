@@ -560,7 +560,7 @@ export default function FichaCampoPage() {
                     <th className="text-left px-3 py-2.5 text-white font-medium">Funcao</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Membros</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Interess.</th>
-                    <th className="text-right px-3 py-2.5 text-white font-medium">Dizimos</th>
+                    <th className="text-right px-3 py-2.5 text-white font-medium">Dízimos</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Ofertas</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Total</th>
                   </tr>
@@ -672,14 +672,14 @@ export default function FichaCampoPage() {
         {historico.length > 1 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FiTrendingUp className="text-purple-600" size={18} /> Evolucao do Campo
+              <FiTrendingUp className="text-purple-600" size={18} /> Evolução do Campo
               <span className="text-sm font-normal text-gray-400 ml-2">
                 Ultimos {historico.length} meses
               </span>
             </h2>
             <div className="grid grid-cols-2 gap-6">
               <div className="border rounded-xl p-4">
-                <p className="text-sm font-medium text-gray-600 mb-3">Evolucao de Membros</p>
+                <p className="text-sm font-medium text-gray-600 mb-3">Evolução de Membros</p>
                 <Line
                   data={{
                     labels: mesesLabels,
@@ -700,7 +700,7 @@ export default function FichaCampoPage() {
                 />
               </div>
               <div className="border rounded-xl p-4">
-                <p className="text-sm font-medium text-gray-600 mb-3">Evolucao de Dizimos (R$)</p>
+                <p className="text-sm font-medium text-gray-600 mb-3">Evolução de Dízimos (R$)</p>
                 <Bar
                   data={{
                     labels: mesesLabels,

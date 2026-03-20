@@ -593,7 +593,7 @@ export default function RelatorioCampoPage() {
       <div className="card">
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           <div className="flex-1">
-            <label className="label-field">Missionario</label>
+            <label className="label-field">Missionário</label>
             <select
               value={selectedMissionarioId}
               onChange={e => setSelectedMissionarioId(e.target.value)}
@@ -641,7 +641,7 @@ export default function RelatorioCampoPage() {
                 <FiUsers className="w-6 h-6 text-primary-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-800">{missionario.nome || missionario.usuario?.nome || 'Missionario'}</h2>
+                <h2 className="text-xl font-bold text-gray-800">{missionario.nome || missionario.usuario?.nome || 'Missionário'}</h2>
                 <p className="text-sm text-gray-500">
                   {CARGO_LABELS[missionario.cargo_ministerial] || missionario.cargo_ministerial}
                   {missionario.associacao && ` - ${missionario.associacao.sigla}`}

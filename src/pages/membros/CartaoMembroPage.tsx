@@ -367,7 +367,7 @@ export default function CartaoMembroPage() {
 
                 {/* Card info below */}
                 <div className="no-print mt-4 bg-gray-50 rounded-xl p-4 text-xs text-gray-500">
-                  <p className="font-medium text-gray-600 mb-1">Informacoes do Cartao</p>
+                  <p className="font-medium text-gray-600 mb-1">Informações do Cartão</p>
                   <div className="grid grid-cols-2 gap-2">
                     <p><strong>ID Completo:</strong> <span className="font-mono text-[10px]">{membroSelecionado.id}</span></p>
                     <p><strong>Link de Validacao:</strong>{' '}
