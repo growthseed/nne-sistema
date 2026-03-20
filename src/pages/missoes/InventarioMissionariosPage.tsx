@@ -333,10 +333,7 @@ export default function InventarioMissionariosPage() {
       data = data.filter(d =>
         d.nome.toLowerCase().includes(term) ||
         d.associacao_nome?.toLowerCase().includes(term) ||
-        (d.igrejas_ids || []).some(igId => {
-          const ig = igrejaNames[igId]
-          return ig && ig.toLowerCase().includes(term)
-        })
+        (d.igrejas_ids || []).some(igId => igrejaNames[igId]?.toLowerCase().includes(term))
       )
     }
     data.sort((a, b) => {
@@ -493,221 +490,329 @@ export default function InventarioMissionariosPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Ficha de Campo</h1>
-          <p className="text-gray-500 mt-1">Gestão do corpo missionário por associação</p>
+          <h1 className="text-2xl font-bold text-gray-800">Ficha de Campo - Inventário</h1>
+          <p className="text-gray-500 mt-1">
+            Visão consolidada da União Norte Nordeste · Agrupado por Associação
+          </p>
         </div>
         <div className="flex gap-2">
           <button onClick={exportPDF} className="btn-secondary inline-flex items-center gap-2 text-sm">
-            <FiDownload className="w-4 h-4" /> PDF
+            <FiDownload className="w-4 h-4" />
+            PDF
           </button>
           <button onClick={exportExcel} className="btn-secondary inline-flex items-center gap-2 text-sm">
-            <FiDownload className="w-4 h-4" /> Excel
+            <FiDownload className="w-4 h-4" />
+            Excel
           </button>
         </div>
       </div>
 
-      {/* Association Tabs (SAS-style) */}
-      <div className="flex gap-1 overflow-x-auto pb-1">
-        <button
-          onClick={() => {
-            setFiltroAssociacao('')
-            window.history.replaceState({}, '', window.location.pathname)
-          }}
-          className={`px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-            !filtroAssociacao ? 'bg-green-600 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-green-50'
-          }`}
-        >
-          Todas ({inventario.length})
-        </button>
-        {associacoes.map(a => {
-          const count = inventario.filter(d => d.associacao_id === a.id).length
-          return (
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-green-100">
+              <FiUsers className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{summary.total}</p>
+              <p className="text-xs text-gray-500">Total Obreiros</p>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-purple-100">
+              <FiHome className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{summary.totalIgrejas}</p>
+              <p className="text-xs text-gray-500">Igrejas / Campos</p>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-amber-100">
+              <FiTrendingUp className="w-6 h-6 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{summary.totalMembros.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">Total Membros</p>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-emerald-100">
+              <FiDollarSign className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">
+                {summary.totalDizimos > 0
+                  ? `R$ ${(summary.totalDizimos / 1000).toFixed(1)}k`
+                  : 'R$ 0'}
+              </p>
+              <p className="text-xs text-gray-500">Dízimos ({new Date().getFullYear()})</p>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-blue-100">
+              <FiBarChart2 className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{grupos.length}</p>
+              <p className="text-xs text-gray-500">Associações</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Cargo Distribution */}
+      {cargoDistribution.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {cargoDistribution.map(({ cargo, count }) => (
             <button
-              key={a.id}
-              onClick={() => {
-                setFiltroAssociacao(a.id)
-                window.history.replaceState({}, '', `${window.location.pathname}?associacao=${a.id}`)
-              }}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                filtroAssociacao === a.id ? 'bg-green-600 text-white shadow-sm' : 'bg-white text-gray-600 border border-gray-200 hover:bg-green-50'
+              key={cargo}
+              onClick={() => setFiltroCargo(filtroCargo === cargo ? '' : cargo)}
+              className={`p-3 rounded-xl text-center transition-all cursor-pointer border ${
+                filtroCargo === cargo
+                  ? 'bg-green-50 border-green-300 ring-2 ring-green-200'
+                  : 'bg-white border-gray-200 hover:border-green-200 hover:bg-green-50/50'
               }`}
             >
-              {a.sigla} ({count})
+              <p className="text-2xl font-bold text-gray-800">{count}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{CARGO_LABELS[cargo] || cargo}</p>
             </button>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Summary for selected association */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="card py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-green-100">
-              <FiUsers className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-gray-800">{summary.total}</p>
-              <p className="text-xs text-gray-500">Obreiros</p>
-            </div>
-          </div>
-        </div>
-        <div className="card py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-purple-100">
-              <FiHome className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-gray-800">{summary.totalIgrejas}</p>
-              <p className="text-xs text-gray-500">Igrejas</p>
-            </div>
-          </div>
-        </div>
-        <div className="card py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-100">
-              <FiTrendingUp className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-gray-800">{summary.totalMembros.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">Membros</p>
-            </div>
-          </div>
-        </div>
-        <div className="card py-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-100">
-              <FiDollarSign className="w-5 h-5 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-gray-800">
-                R$ {summary.totalDizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-gray-500">Dízimos {new Date().getFullYear()}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search + Filters (SAS-style inline) */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+      {/* Filters */}
+      <div className="card">
+        <div className="flex flex-col sm:flex-row gap-3 items-end">
+          <div className="flex-1">
+            <label className="label-field">
+              <FiSearch className="inline w-3.5 h-3.5 mr-1" />
+              Buscar
+            </label>
             <input
               type="text"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className="input-field pl-10"
-              placeholder="Buscar missionário ou igreja..."
+              className="input-field"
+              placeholder="Buscar obreiro ou igreja..."
             />
           </div>
-          <select value={filtroCargo} onChange={(e) => setFiltroCargo(e.target.value)} className="input-field sm:w-48">
-            <option value="">Todos os cargos</option>
-            {cargoOptions.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
-          </select>
-          <select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)} className="input-field sm:w-40">
-            <option value="">Todos status</option>
-            {statusOptions.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
-          </select>
+          <div>
+            <label className="label-field">
+              <FiFilter className="inline w-3.5 h-3.5 mr-1" />
+              Associação
+            </label>
+            <select
+              value={filtroAssociacao}
+              onChange={(e) => {
+                setFiltroAssociacao(e.target.value)
+                const params = new URLSearchParams(window.location.search)
+                if (e.target.value) params.set('associacao', e.target.value)
+                else params.delete('associacao')
+                window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`)
+              }}
+              className="input-field"
+            >
+              <option value="">Todas</option>
+              {associacoes.map(a => (
+                <option key={a.id} value={a.id}>{a.sigla} - {a.nome}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label-field">Status</label>
+            <select
+              value={filtroStatus}
+              onChange={(e) => setFiltroStatus(e.target.value)}
+              className="input-field"
+            >
+              <option value="">Todos</option>
+              {statusOptions.map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label-field">Cargo</label>
+            <select
+              value={filtroCargo}
+              onChange={(e) => setFiltroCargo(e.target.value)}
+              className="input-field"
+            >
+              <option value="">Todos</option>
+              {cargoOptions.map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Results */}
+      {/* Grouped Listing by Association */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full animate-spin" />
-          <span className="ml-3 text-gray-500">Carregando ficha de campo...</span>
+          <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+          <span className="ml-3 text-gray-500">Carregando inventario...</span>
         </div>
-      ) : filteredData.length === 0 ? (
+      ) : grupos.length === 0 ? (
         <div className="card text-center py-12">
           <FiUsers className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500">Nenhum obreiro encontrado</p>
+          <p className="text-gray-500">Nenhum obreiro encontrado com os filtros selecionados</p>
         </div>
       ) : (
-        <div ref={tableRef} className="space-y-3">
-          {/* Card list of missionaries */}
-          {filteredData.map((d) => (
-            <div
-              key={d.missionario_id}
-              className="bg-white rounded-xl border border-gray-200 hover:border-green-300 hover:shadow-md transition-all cursor-pointer"
-              onClick={() => navigate(`/missoes/missionario/${d.missionario_id}${filtroAssociacao ? `?from_assoc=${filtroAssociacao}` : ''}`)}
-            >
-              <div className="flex items-center gap-4 p-4">
-                {/* Avatar */}
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg shrink-0">
-                  {d.nome.charAt(0)}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-gray-800">{d.nome}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[d.status] || 'bg-gray-100 text-gray-600'}`}>
-                      {STATUS_LABELS[d.status as StatusMissionario] || d.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {CARGO_LABELS[d.cargo_ministerial] || d.cargo_ministerial}
-                    {d.associacao_nome && !filtroAssociacao && (
-                      <span className="text-gray-400"> · {d.associacao_nome}</span>
+        <div ref={tableRef} className="space-y-4">
+          {grupos.map(grupo => {
+            const isExpanded = expandidos[grupo.associacao_id] !== false
+            return (
+              <div key={grupo.associacao_id} className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                {/* Association Header (accordion toggle) */}
+                <button
+                  onClick={() => toggleGrupo(grupo.associacao_id)}
+                  className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-green-700 to-green-600 text-white hover:from-green-800 hover:to-green-700 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <FiHome size={18} />
+                    <span className="font-semibold text-lg">{grupo.associacao_nome}</span>
+                    {grupo.associacao_sigla && (
+                      <span className="text-green-200 text-sm">({grupo.associacao_sigla})</span>
                     )}
-                  </p>
-                </div>
-
-                {/* Stats */}
-                <div className="hidden sm:flex items-center gap-6 text-sm shrink-0">
-                  <div className="text-center">
-                    <p className="font-bold text-gray-800">{d.total_igrejas}</p>
-                    <p className="text-xs text-gray-400">Igrejas</p>
                   </div>
-                  <div className="text-center">
-                    <p className="font-bold text-gray-800">{d.total_membros}</p>
-                    <p className="text-xs text-gray-400">Membros</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-bold text-emerald-700">
-                      R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-xs text-gray-400">Dízimos</p>
-                  </div>
-                  <div className="text-center">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${kpiColor(d.kpi_score)}`}>
-                      {d.kpi_score}
+                  <div className="flex items-center gap-6 text-sm">
+                    <span className="text-green-100">
+                      {grupo.missionarios.length} obreiro{grupo.missionarios.length !== 1 ? 's' : ''}
                     </span>
-                    <p className="text-xs text-gray-400 mt-0.5">KPI</p>
-                  </div>
-                </div>
-
-                {/* Mobile stats */}
-                <div className="sm:hidden text-right shrink-0">
-                  <p className="font-bold text-emerald-700 text-sm">
-                    R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-xs text-gray-400">{d.total_membros} membros</p>
-                </div>
-
-                <FiChevronDown className="w-4 h-4 text-gray-300 shrink-0 rotate-[-90deg]" />
-              </div>
-            </div>
-          ))}
-
-          {/* Association totals footer */}
-          {filtroAssociacao && grupos.length > 0 && (
-            <div className="bg-green-50 rounded-xl border border-green-200 p-4">
-              <div className="flex flex-wrap gap-4 text-sm">
-                {Object.entries(grupos[0].totais.por_cargo)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([cargo, qtd]) => (
-                    <span key={cargo} className="text-gray-600">
-                      <span className="font-semibold">{CARGO_LABELS[cargo as CargoMinisterial] || cargo}:</span> {qtd}
+                    <span className="text-green-100">
+                      {grupo.totais.membros} membros
                     </span>
-                  ))}
-                <span className="text-gray-500 ml-auto">
-                  {grupos[0].missionarios.length} obreiros · {grupos[0].totais.igrejas} igrejas · {grupos[0].totais.membros} membros
-                </span>
+                    <span className="text-green-100">
+                      R$ {grupo.totais.dizimos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                    {isExpanded ? <FiChevronUp size={20} /> : <FiChevronDown size={20} />}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div>
+                    {/* Table of missionaries in this association */}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                            <th className="px-4 py-3 w-10">#</th>
+                            <th
+                              className="px-4 py-3 cursor-pointer select-none"
+                              onClick={() => handleSort('nome')}
+                            >
+                              Nome <SortIcon field="nome" />
+                            </th>
+                            <th
+                              className="px-4 py-3 cursor-pointer select-none"
+                              onClick={() => handleSort('cargo_ministerial')}
+                            >
+                              Cargo <SortIcon field="cargo_ministerial" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-center cursor-pointer select-none"
+                              onClick={() => handleSort('total_igrejas')}
+                            >
+                              Igrejas <SortIcon field="total_igrejas" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-center cursor-pointer select-none"
+                              onClick={() => handleSort('total_membros')}
+                            >
+                              Membros <SortIcon field="total_membros" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-right cursor-pointer select-none"
+                              onClick={() => handleSort('dizimos_total')}
+                            >
+                              Dízimos <SortIcon field="dizimos_total" />
+                            </th>
+                            <th
+                              className="px-4 py-3 text-center cursor-pointer select-none"
+                              onClick={() => handleSort('kpi_score')}
+                            >
+                              KPI <SortIcon field="kpi_score" />
+                            </th>
+                            <th className="px-4 py-3 text-gray-500 font-medium">Status</th>
+                            <th className="px-4 py-3 text-gray-500 font-medium">Ação</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {grupo.missionarios.map((d, idx) => (
+                            <tr
+                              key={d.missionario_id}
+                              className="hover:bg-gray-50 transition-colors"
+                            >
+                              <td className="px-4 py-3 text-gray-400">{idx + 1}</td>
+                              <td className="px-4 py-3">
+                                <div className="font-medium text-gray-800">{d.nome}</div>
+                              </td>
+                              <td className="px-4 py-3 text-gray-600 text-xs">
+                                {CARGO_LABELS[d.cargo_ministerial] || d.cargo_ministerial}
+                              </td>
+                              <td className="px-4 py-3 text-center text-gray-700">{d.total_igrejas}</td>
+                              <td className="px-4 py-3 text-center font-semibold text-gray-900">{d.total_membros}</td>
+                              <td className="px-4 py-3 text-right text-gray-600">
+                                R$ {d.dizimos_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${kpiColor(d.kpi_score)}`}>
+                                  {d.kpi_score}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-block text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[d.status] || 'bg-gray-100 text-gray-600'}`}>
+                                  {STATUS_LABELS[d.status as StatusMissionario] || d.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  onClick={() => navigate(`/missoes/missionario/${d.missionario_id}${filtroAssociacao ? `?from_assoc=${filtroAssociacao}` : ''}`)}
+                                  className="flex items-center gap-1 text-green-600 hover:text-green-800 text-xs font-medium"
+                                >
+                                  <FiFileText size={14} /> Ver Ficha
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Association footer: cargo summary */}
+                    <div className="px-6 py-3 bg-gray-50 border-t flex flex-wrap gap-4">
+                      {Object.entries(grupo.totais.por_cargo)
+                        .sort(([, a], [, b]) => b - a)
+                        .map(([cargo, qtd]) => (
+                          <span key={cargo} className="text-xs text-gray-500">
+                            <span className="font-semibold text-gray-700">
+                              {CARGO_LABELS[cargo as CargoMinisterial] || cargo}:
+                            </span>{' '}
+                            {qtd}
+                          </span>
+                        ))}
+                      <span className="text-xs text-gray-400 ml-auto">
+                        Total: {grupo.missionarios.length} obreiro{grupo.missionarios.length !== 1 ? 's' : ''} ·{' '}
+                        {grupo.totais.igrejas} igreja{grupo.totais.igrejas !== 1 ? 's' : ''} ·{' '}
+                        {grupo.totais.membros} membros
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            )
+          })}
         </div>
       )}
     </div>
