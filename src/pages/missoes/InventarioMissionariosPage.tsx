@@ -770,7 +770,7 @@ export default function InventarioMissionariosPage() {
                               </td>
                               <td className="px-4 py-3">
                                 <button
-                                  onClick={() => navigate(`/missoes/missionario/${d.missionario_id}`)}
+                                  onClick={() => navigate(`/missoes/missionario/${d.missionario_id}${filtroAssociacao ? `?from_assoc=${filtroAssociacao}` : ''}`)}
                                   className="flex items-center gap-1 text-green-600 hover:text-green-800 text-xs font-medium"
                                 >
                                   <FiFileText size={14} /> Ver Ficha

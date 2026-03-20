@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type {
@@ -201,6 +201,9 @@ interface FinancialSummary {
 
 export default function DetalheMissionarioPage() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
+  const fromAssoc = searchParams.get('from_assoc')
+  const backUrl = fromAssoc ? `/missoes/inventario?associacao=${fromAssoc}` : '/missoes/inventario'
   const { profile } = useAuth()
   const { labels: CARGO_LABELS } = useCargoLabels()
   const { labels: STATUS_LABELS } = useStatusLabels()
@@ -1087,7 +1090,7 @@ export default function DetalheMissionarioPage() {
       <div className="space-y-6">
         <div className="card text-center py-12">
           <p className="text-gray-500">Missionário não encontrado</p>
-          <Link to="/missoes/inventario" className="text-green-600 hover:underline text-sm mt-2 inline-block">
+          <Link to={backUrl} className="text-green-600 hover:underline text-sm mt-2 inline-block">
             Voltar ao inventário
           </Link>
         </div>
@@ -1102,7 +1105,7 @@ export default function DetalheMissionarioPage() {
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Link to="/missoes/inventario" className="hover:text-green-600 flex items-center gap-1">
+        <Link to={backUrl} className="hover:text-green-600 flex items-center gap-1">
           <FiArrowLeft className="w-4 h-4" />
           Inventário
         </Link>
