@@ -17,9 +17,32 @@ interface ClasseBiblica {
   total_licoes: number
   observacoes: string | null
   created_at: string
-  igreja: { nome: string } | null
+  igreja: { nome: string } | { nome: string }[] | null
+  modulo_id: string | null
+  modulo_titulo: string | null
+  instrutor_nome: string | null
+  formato_typeform: boolean
+  classe_online: boolean
+  link_online: string | null
+  total_alunos: number
   _alunos_count?: number
   _licoes_dadas?: number
+}
+
+interface AulaEB {
+  id: string
+  classe_id: string
+  ponto_numero: number
+  ponto_titulo: string | null
+  professor_nome: string | null
+  data_aula: string
+  ativada: boolean
+  ativada_em: string | null
+  questionario_liberado: boolean
+  questionario_liberado_em: string | null
+  observacoes: string | null
+  _presentes?: number
+  _responderam?: number
 }
 
 interface Aluno {
@@ -29,7 +52,7 @@ interface Aluno {
   licoes_concluidas: number
   decisao_batismo: boolean
   data_decisao: string | null
-  pessoa: { nome: string; celular: string | null } | null
+  pessoa: { nome: string; celular: string | null } | { nome: string; celular: string | null }[] | null
 }
 
 interface PessoaOption {
@@ -59,7 +82,7 @@ export default function ClassesBiblicasPage() {
 
   // New class form
   const [showNovaClasse, setShowNovaClasse] = useState(false)
-  const [novaClasse, setNovaClasse] = useState({ nome: '', data_inicio: '', total_licoes: 28 })
+  const [novaClasse, setNovaClasse] = useState({ nome: '', data_inicio: '', total_licoes: 37, modulo_id: 'principios_fe' as string })
 
   // Add student
   const [showAddAluno, setShowAddAluno] = useState(false)
@@ -70,6 +93,11 @@ export default function ClassesBiblicasPage() {
   // New lesson
   const [showNovaLicao, setShowNovaLicao] = useState(false)
   const [novaLicao, setNovaLicao] = useState({ numero: 1, titulo: '', presentes: [] as string[] })
+
+  // Aulas (novo sistema)
+  const [aulas, setAulas] = useState<AulaEB[]>([])
+  const [showNovaAula, setShowNovaAula] = useState(false)
+  const [novaAula, setNovaAula] = useState({ ponto_numero: 1, ponto_titulo: '', presentes: [] as string[] })
 
   function buildScopeFilter(query: any) {
     if (!profile) return query
@@ -88,7 +116,7 @@ export default function ClassesBiblicasPage() {
     try {
       let query = supabase
         .from('classes_biblicas')
-        .select('id, nome, data_inicio, data_previsao_termino, status, total_licoes, observacoes, created_at, igreja:igrejas(nome)')
+        .select('id, nome, data_inicio, data_previsao_termino, status, total_licoes, observacoes, created_at, modulo_id, modulo_titulo, instrutor_nome, formato_typeform, classe_online, link_online, total_alunos, igreja:igrejas(nome)')
         .order('created_at', { ascending: false })
 
       if (profile!.papel !== 'admin') {
@@ -129,17 +157,31 @@ export default function ClassesBiblicasPage() {
 
   async function criarClasse() {
     if (!novaClasse.nome.trim() || !profile) return
+    const moduloTitulos: Record<string, string> = {
+      principios_fe: 'Princípios de Fé',
+      crencas_fundamentais: 'Crenças Fundamentais'
+    }
+    const moduloPontos: Record<string, number> = {
+      principios_fe: 37,
+      crencas_fundamentais: 25
+    }
     try {
       const { error } = await supabase.from('classes_biblicas').insert({
         nome: novaClasse.nome,
         igreja_id: profile.igreja_id,
         instrutor_id: profile.id,
+        instrutor_nome: profile.nome || null,
         data_inicio: novaClasse.data_inicio || null,
-        total_licoes: novaClasse.total_licoes,
+        total_licoes: moduloPontos[novaClasse.modulo_id] || novaClasse.total_licoes,
+        modulo_id: novaClasse.modulo_id,
+        modulo_titulo: moduloTitulos[novaClasse.modulo_id] || null,
+        formato_typeform: novaClasse.modulo_id === 'crencas_fundamentais',
+        associacao_id: profile.associacao_id || null,
+        uniao_id: profile.uniao_id || null,
       })
       if (error) throw error
       setShowNovaClasse(false)
-      setNovaClasse({ nome: '', data_inicio: '', total_licoes: 28 })
+      setNovaClasse({ nome: '', data_inicio: '', total_licoes: 37, modulo_id: 'principios_fe' })
       fetchClasses()
     } catch (err) {
       console.error('Erro ao criar classe:', err)
@@ -165,6 +207,7 @@ export default function ClassesBiblicasPage() {
 
       setAlunos(alunosRes.data || [])
       setPresencas(presencasRes.data || [])
+      await fetchAulas(classe.id)
 
       // Set next lesson number
       const maxLicao = (presencasRes.data || []).reduce((max, p) => Math.max(max, p.licao_numero), 0)
@@ -286,6 +329,72 @@ export default function ClassesBiblicasPage() {
 
   function togglePresente(pessoaId: string) {
     setNovaLicao(prev => ({
+      ...prev,
+      presentes: prev.presentes.includes(pessoaId)
+        ? prev.presentes.filter(id => id !== pessoaId)
+        : [...prev.presentes, pessoaId],
+    }))
+  }
+
+  async function fetchAulas(classeId: string) {
+    const { data } = await supabase
+      .from('classe_biblica_aulas')
+      .select('*')
+      .eq('classe_id', classeId)
+      .order('ponto_numero')
+    setAulas(data || [])
+  }
+
+  async function ativarAula() {
+    if (!selectedClasse || !profile) return
+    try {
+      const { data, error } = await supabase.from('classe_biblica_aulas').insert({
+        classe_id: selectedClasse.id,
+        ponto_numero: novaAula.ponto_numero,
+        ponto_titulo: novaAula.ponto_titulo || `Ponto ${novaAula.ponto_numero}`,
+        professor_id: profile.id,
+        professor_nome: profile.nome || null,
+        data_aula: new Date().toISOString(),
+        ativada: true,
+        ativada_em: new Date().toISOString(),
+      }).select().single()
+      if (error) throw error
+
+      // Registrar presença dos marcados
+      if (data && novaAula.presentes.length > 0) {
+        const presencaRows = alunos.map(a => ({
+          aula_id: data.id,
+          aluno_id: a.id,
+          aluno_nome: (a.pessoa as any)?.nome || '',
+          presente: novaAula.presentes.includes(a.pessoa_id),
+          registrado_por: profile.id,
+        }))
+        await supabase.from('classe_biblica_aula_presenca').insert(presencaRows)
+      }
+
+      setShowNovaAula(false)
+      setNovaAula({ ponto_numero: novaAula.ponto_numero + 1, ponto_titulo: '', presentes: [] })
+      fetchAulas(selectedClasse.id)
+    } catch (err) {
+      console.error('Erro ao ativar aula:', err)
+    }
+  }
+
+  async function liberarQuestionario(aulaId: string) {
+    try {
+      await supabase.from('classe_biblica_aulas').update({
+        questionario_liberado: true,
+        questionario_liberado_em: new Date().toISOString(),
+        questionario_liberado_por: profile?.id,
+      }).eq('id', aulaId)
+      if (selectedClasse) fetchAulas(selectedClasse.id)
+    } catch (err) {
+      console.error('Erro ao liberar questionário:', err)
+    }
+  }
+
+  function toggleAulaPresente(pessoaId: string) {
+    setNovaAula(prev => ({
       ...prev,
       presentes: prev.presentes.includes(pessoaId)
         ? prev.presentes.filter(id => id !== pessoaId)
@@ -555,6 +664,122 @@ export default function ClassesBiblicasPage() {
             </div>
           )}
         </div>
+
+        {/* Aulas Ativadas (novo sistema) */}
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+              <HiOutlineAcademicCap className="w-4 h-4" /> Aulas Ativadas
+            </h2>
+            <button
+              onClick={() => { setShowNovaAula(!showNovaAula); setNovaAula(prev => ({ ...prev, presentes: [] })) }}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
+              disabled={alunos.length === 0}
+            >
+              <HiOutlinePlus className="w-3.5 h-3.5" /> Ativar Aula
+            </button>
+          </div>
+
+          {/* Formulário nova aula */}
+          {showNovaAula && alunos.length > 0 && (
+            <div className="mb-4 p-3 bg-blue-50/50 border border-blue-200 rounded-lg space-y-3">
+              <div className="flex gap-2">
+                <div className="w-20">
+                  <label className="text-[10px] text-gray-400">Ponto nº</label>
+                  <input
+                    type="number"
+                    value={novaAula.ponto_numero}
+                    onChange={e => setNovaAula(prev => ({ ...prev, ponto_numero: parseInt(e.target.value) || 1 }))}
+                    className="input-field text-sm"
+                    min={1}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] text-gray-400">Título do ponto</label>
+                  <input
+                    value={novaAula.ponto_titulo}
+                    onChange={e => setNovaAula(prev => ({ ...prev, ponto_titulo: e.target.value }))}
+                    className="input-field text-sm"
+                    placeholder="Ex: Deus, Jesus Cristo..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[10px] text-gray-400">Presença</label>
+                  <button
+                    onClick={() => setNovaAula(prev => ({
+                      ...prev,
+                      presentes: prev.presentes.length === alunos.length ? [] : alunos.map(a => a.pessoa_id),
+                    }))}
+                    className="text-[10px] text-blue-600 hover:underline"
+                  >
+                    {novaAula.presentes.length === alunos.length ? 'Desmarcar todos' : 'Marcar todos'}
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  {alunos.map(a => {
+                    const nome = Array.isArray(a.pessoa) ? a.pessoa[0]?.nome : (a.pessoa as any)?.nome
+                    return (
+                      <label key={a.id} className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={novaAula.presentes.includes(a.pessoa_id)}
+                          onChange={() => toggleAulaPresente(a.pessoa_id)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">{nome || '—'}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>{novaAula.presentes.length} de {alunos.length} presentes</span>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowNovaAula(false)} className="btn-secondary text-xs">Cancelar</button>
+                  <button onClick={ativarAula} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg">Ativar Aula</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Lista de aulas */}
+          {aulas.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-4">Nenhuma aula ativada</p>
+          ) : (
+            <div className="space-y-1">
+              {aulas.map(a => (
+                <div key={a.id} className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-50">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
+                    {a.ponto_numero}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 truncate">{a.ponto_titulo || `Ponto ${a.ponto_numero}`}</p>
+                    <p className="text-[10px] text-gray-400">
+                      {a.data_aula ? formatDateBR(a.data_aula) : ''}
+                      {a.ativada && ' • Ativada'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {a.questionario_liberado ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700">Questionário liberado</span>
+                    ) : (
+                      <button
+                        onClick={() => liberarQuestionario(a.id)}
+                        className="text-[10px] px-2 py-1 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50"
+                      >
+                        Liberar Questionário
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -578,13 +803,45 @@ export default function ClassesBiblicasPage() {
 
       {/* New class form */}
       {showNovaClasse && (
-        <div className="card p-5 space-y-3 border-primary-200">
-          <h3 className="text-sm font-semibold text-gray-700">Criar Nova Classe</h3>
+        <div className="card p-5 space-y-4 border-blue-200">
+          <h3 className="text-sm font-semibold text-gray-700">Criar Nova Classe Bíblica</h3>
+
+          {/* Seleção de Módulo */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1.5 block">Material de Estudo</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setNovaClasse(prev => ({ ...prev, modulo_id: 'principios_fe', total_licoes: 37 }))}
+                className={`p-3 rounded-lg border-2 text-left transition-all ${
+                  novaClasse.modulo_id === 'principios_fe'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300'
+                }`}
+              >
+                <p className="text-sm font-semibold text-gray-800">Princípios de Fé</p>
+                <p className="text-xs text-gray-500 mt-0.5">37 pontos doutrinários</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setNovaClasse(prev => ({ ...prev, modulo_id: 'crencas_fundamentais', total_licoes: 25 }))}
+                className={`p-3 rounded-lg border-2 text-left transition-all ${
+                  novaClasse.modulo_id === 'crencas_fundamentais'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300'
+                }`}
+              >
+                <p className="text-sm font-semibold text-gray-800">Crenças Fundamentais</p>
+                <p className="text-xs text-gray-500 mt-0.5">25 temas (formato Typeform)</p>
+              </button>
+            </div>
+          </div>
+
           <input
             value={novaClasse.nome}
             onChange={e => setNovaClasse(prev => ({ ...prev, nome: e.target.value }))}
             className="input-field"
-            placeholder="Nome da classe..."
+            placeholder="Nome da classe (ex: Classe Bíblica Central - Sábado Manhã)"
             autoFocus
           />
           <div className="flex gap-3">
@@ -598,11 +855,11 @@ export default function ClassesBiblicasPage() {
               />
             </div>
             <div className="w-28">
-              <label className="text-xs text-gray-400">Total de lições</label>
+              <label className="text-xs text-gray-400">Total de pontos</label>
               <input
                 type="number"
                 value={novaClasse.total_licoes}
-                onChange={e => setNovaClasse(prev => ({ ...prev, total_licoes: parseInt(e.target.value) || 28 }))}
+                onChange={e => setNovaClasse(prev => ({ ...prev, total_licoes: parseInt(e.target.value) || 37 }))}
                 className="input-field"
                 min={1}
               />
@@ -655,12 +912,18 @@ export default function ClassesBiblicasPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-gray-800">{c.nome}</h3>
+                      {c.modulo_id && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
+                          {c.modulo_id === 'principios_fe' ? 'PF' : 'CF'}
+                        </span>
+                      )}
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[c.status] || 'bg-gray-100 text-gray-600'}`}>
                         {c.status}
                       </span>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {(c.igreja as any)?.nome || ''}
+                      {c.modulo_titulo || ''}{c.modulo_titulo && (Array.isArray(c.igreja) ? c.igreja[0]?.nome : (c.igreja as any)?.nome) ? ' • ' : ''}
+                      {Array.isArray(c.igreja) ? c.igreja[0]?.nome || '' : (c.igreja as any)?.nome || ''}
                       {c.data_inicio && ` • Início: ${formatDateBR(c.data_inicio)}`}
                     </p>
                   </div>
