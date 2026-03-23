@@ -124,7 +124,7 @@ const menuGroups: MenuGroup[] = [
     label: 'Administração',
     items: [
       { to: '/configuracoes', label: 'Configurações', icon: HiOutlineCog, roles: ['admin'] },
-      { to: '/cadastro', label: 'Cadastro Público', icon: HiOutlineClipboardCheck, roles: ADMIN_ROLES },
+      { to: '/cadastro/dashboard', label: 'Respostas do Censo', icon: HiOutlineClipboardCheck, roles: ADMIN_ROLES },
       { to: '/organizacao/unioes', label: 'Uniões', icon: HiOutlineOfficeBuilding, roles: ['admin', 'admin_uniao'] },
     ],
   },
