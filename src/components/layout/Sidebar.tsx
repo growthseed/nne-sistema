@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import {
   HiOutlineHome,
   HiOutlineUserGroup,
-  HiOutlineCurrencyDollar,
   HiOutlineAcademicCap,
   HiOutlineMap,
   HiOutlineChartBar,
@@ -41,7 +40,6 @@ interface MenuGroup {
 
 const SEC_ROLES = ['admin', 'admin_uniao', 'admin_associacao', 'secretario_igreja']
 const ADMIN_ROLES = ['admin', 'admin_uniao', 'admin_associacao']
-const FIN_ROLES = ['admin', 'admin_uniao', 'admin_associacao', 'tesoureiro']
 const ES_ROLES = ['admin', 'admin_uniao', 'admin_associacao', 'diretor_es', 'professor_es', 'secretario_es']
 
 const menuGroups: MenuGroup[] = [
@@ -62,7 +60,6 @@ const menuGroups: MenuGroup[] = [
       { to: '/secretaria/contagem', label: 'Contagem Mensal', icon: HiOutlineClipboardCheck, roles: SEC_ROLES },
       { to: '/secretaria/transferencias', label: 'Transferências', icon: HiOutlineDocumentReport, roles: SEC_ROLES },
       { to: '/secretaria/aniversariantes', label: 'Aniversariantes', icon: HiOutlineCalendar, roles: SEC_ROLES },
-      { to: '/secretaria/qualidade-dados', label: 'Qualidade de Dados', icon: HiOutlineSearchCircle, roles: ADMIN_ROLES },
       { to: '/secretaria/duplicados', label: 'Duplicados', icon: HiOutlineUsers, roles: ADMIN_ROLES },
     ],
   },
@@ -75,19 +72,7 @@ const menuGroups: MenuGroup[] = [
       { to: '/missoes/relatorio', label: 'Relatório Mensal', icon: HiOutlineDocumentText, roles: ADMIN_ROLES },
       { to: '/missoes/inventario', label: 'Ficha de Campo', icon: HiOutlineClipboardCheck, roles: ADMIN_ROLES },
       { to: '/missoes/planejador-visitas', label: 'Planejador de Visitas', icon: HiOutlineCalendar, roles: [...ADMIN_ROLES, 'secretario_igreja'] },
-      { to: '/missoes/metas', label: 'Metas e KPIs', icon: HiOutlinePresentationChartBar, roles: ADMIN_ROLES },
-      { to: '/missoes/relatorio-campo', label: 'Relatório do Campo', icon: HiOutlineDocumentReport, roles: ADMIN_ROLES },
-      { to: '/missoes/diagnostico', label: 'Diagnóstico', icon: HiOutlineSearchCircle, roles: ADMIN_ROLES },
       { to: '/missoes/painel-geral', label: 'Painel Geral', icon: HiOutlineChartBar, roles: ADMIN_ROLES },
-    ],
-  },
-  {
-    key: 'financeiro',
-    label: 'Financeiro',
-    items: [
-      { to: '/financeiro', label: 'Painel', icon: HiOutlineCurrencyDollar, roles: FIN_ROLES },
-      { to: '/financeiro/lancamentos', label: 'Lançamentos', icon: HiOutlineDocumentText, roles: FIN_ROLES },
-      { to: '/financeiro/receita-campo', label: 'Contribuições', icon: HiOutlinePresentationChartBar, roles: FIN_ROLES },
     ],
   },
   {
