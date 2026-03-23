@@ -115,6 +115,10 @@ const menuGroups: MenuGroup[] = [
   },
 ]
 
+interface SidebarProps {
+  onClose?: () => void
+}
+
 const STORAGE_KEY = 'nne-sidebar-groups-v2'
 
 function getGroupForPath(path: string): string | null {
@@ -127,7 +131,7 @@ function getGroupForPath(path: string): string | null {
   return null
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: SidebarProps) {
   const { profile, hasRole } = useAuth()
   const location = useLocation()
 
@@ -200,8 +204,9 @@ export default function Sidebar() {
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      end={item.to === '/' || item.to === '/financeiro' || item.to === '/escola-sabatina' || item.to === '/secretaria' || item.to === '/missoes'}
+                      end={item.to === '/' || item.to === '/escola-sabatina' || item.to === '/secretaria' || item.to === '/missoes'}
                       className={({ isActive }) => isActive ? 'sidebar-subitem-active' : 'sidebar-subitem'}
+                      onClick={() => onClose?.()}
                     >
                       <item.icon className="w-4.5 h-4.5" />
                       {item.label}

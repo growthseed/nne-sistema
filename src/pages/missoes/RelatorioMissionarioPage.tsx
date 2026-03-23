@@ -430,13 +430,13 @@ export default function RelatorioMissionarioPage() {
   return (
     <div className="space-y-4">
       {/* ── HEADER BAR ── */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="col-span-2">
           <label className="label-field text-xs">Missionário</label>
           <select
             value={selectedId}
             onChange={e => setSelectedId(e.target.value)}
-            className="input-field"
+            className="input-field text-sm"
           >
             <option value="">-- Selecione --</option>
             {missionarios.map(m => (
@@ -446,45 +446,44 @@ export default function RelatorioMissionarioPage() {
             ))}
           </select>
         </div>
-        <div className="w-36">
-          <label className="label-field text-xs">Mes</label>
-          <select value={mes} onChange={e => setMes(Number(e.target.value))} className="input-field">
+        <div>
+          <label className="label-field text-xs">Mês</label>
+          <select value={mes} onChange={e => setMes(Number(e.target.value))} className="input-field text-sm">
             {MESES_NOMES.map((n, i) => <option key={i} value={i + 1}>{n}</option>)}
           </select>
         </div>
-        <div className="w-24">
+        <div>
           <label className="label-field text-xs">Ano</label>
-          <select value={ano} onChange={e => setAno(Number(e.target.value))} className="input-field">
+          <select value={ano} onChange={e => setAno(Number(e.target.value))} className="input-field text-sm">
             {anos.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
-        <div className="flex items-end gap-2 pt-5">
+        <div className="col-span-2 sm:col-span-4 flex flex-wrap items-center gap-2">
           <button
             onClick={toggleStatus}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium ${
               status === 'aberto'
                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
                 : 'bg-red-100 text-red-700 hover:bg-red-200'
             }`}
-            title={status === 'aberto' ? 'Relatório aberto para edição. Clique para fechar.' : 'Relatório fechado. Clique para reabrir para edição.'}
           >
-            {status === 'aberto' ? <FiUnlock size={14} /> : <FiLock size={14} />}
+            {status === 'aberto' ? <FiUnlock size={12} /> : <FiLock size={12} />}
             {status === 'aberto' ? 'Aberto' : 'Fechado'}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || isReadOnly || !selectedId}
-            className="btn-primary inline-flex items-center gap-1.5 text-sm"
+            className="btn-primary inline-flex items-center gap-1 text-xs px-3 py-1.5"
           >
-            <FiSave size={14} />
+            <FiSave size={12} />
             {saving ? 'Salvando...' : 'Salvar'}
           </button>
           <button
             onClick={gerarPDF}
             disabled={!selectedId}
-            className="btn-secondary inline-flex items-center gap-1.5 text-sm"
+            className="btn-secondary inline-flex items-center gap-1 text-xs px-3 py-1.5"
           >
-            <FiDownload size={14} /> PDF
+            <FiDownload size={12} /> PDF
           </button>
         </div>
       </div>
@@ -495,19 +494,19 @@ export default function RelatorioMissionarioPage() {
           <p>Selecione um missionário para abrir o relatório mensal</p>
         </div>
       ) : (
-        <div className="flex gap-4">
+        <div className="flex flex-col lg:flex-row gap-4">
           {/* ── LEFT: Calendar + Summary ── */}
           <div className="flex-1 space-y-4">
 
             {/* Calendar Grid */}
             <div className="card">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <FiCalendar size={14} />
+              <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                <FiCalendar size={12} />
                 {MESES_NOMES[mes - 1]} {ano}
               </h3>
-              <div className="grid grid-cols-7 gap-1 text-center">
-                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
-                  <div key={d} className="text-xs font-medium text-gray-400 py-1">{d}</div>
+              <div className="grid grid-cols-7 gap-0.5 text-center">
+                {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+                  <div key={`${d}-${i}`} className="text-[10px] font-medium text-gray-400 py-0.5">{d}</div>
                 ))}
                 {/* Empty cells for offset */}
                 {Array.from({ length: firstDayOfWeek }, (_, i) => (
@@ -525,9 +524,9 @@ export default function RelatorioMissionarioPage() {
                       key={dia}
                       onClick={() => setSelectedDay(isSelected ? null : dia)}
                       className={`
-                        relative w-full aspect-square rounded-lg text-sm font-medium transition-all
+                        relative w-full aspect-square rounded text-xs font-medium transition-all
                         ${isSelected
-                          ? 'bg-green-600 text-white ring-2 ring-green-400'
+                          ? 'bg-green-600 text-white ring-1 ring-green-400'
                           : hasData
                             ? 'bg-green-100 text-green-800 hover:bg-green-200'
                             : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
@@ -536,7 +535,7 @@ export default function RelatorioMissionarioPage() {
                     >
                       {dia}
                       {hasData && !isSelected && (
-                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green-500" />
                       )}
                     </button>
                   )
@@ -546,25 +545,25 @@ export default function RelatorioMissionarioPage() {
 
             {/* Summary Totals */}
             <div className="card">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Resumo do Mês</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              <h3 className="text-xs font-semibold text-gray-700 mb-2">Resumo do Mês</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                 {RELATORIO_TODOS_CAMPOS.map(f => {
                   const val = totals[f.key] || 0
                   const prev = prevTotals[f.key] || 0
                   if (val === 0 && prev === 0) return null
                   const diff = val - prev
                   return (
-                    <div key={f.key} className="px-3 py-2 bg-gray-50 rounded-lg">
+                    <div key={f.key} className="px-2 py-1.5 bg-gray-50 rounded">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600 truncate mr-2">{f.label}</span>
-                        <span className="text-sm font-bold text-gray-900">{val}</span>
+                        <span className="text-[10px] text-gray-600 truncate mr-1">{f.label}</span>
+                        <span className="text-xs font-bold text-gray-900">{val}</span>
                       </div>
                       {prev > 0 && (
-                        <div className="flex items-center justify-end gap-1 mt-0.5">
-                          <span className={`text-[10px] font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                        <div className="flex items-center justify-end gap-0.5 mt-0.5">
+                          <span className={`text-[9px] font-medium ${diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-400'}`}>
                             {diff > 0 ? `+${diff}` : diff === 0 ? '=' : diff}
                           </span>
-                          <span className="text-[10px] text-gray-400">vs ant.</span>
+                          <span className="text-[9px] text-gray-400">vs ant.</span>
                         </div>
                       )}
                     </div>
@@ -591,19 +590,19 @@ export default function RelatorioMissionarioPage() {
           </div>
 
           {/* ── RIGHT: Day Entry Panel ── */}
-          <div className="w-[400px] shrink-0">
+          <div className="w-full lg:w-[360px] lg:shrink-0">
             {selectedDay ? (
-              <div className="card sticky top-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
+              <div className="card lg:sticky lg:top-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setSelectedDay(Math.max(1, selectedDay - 1))}
                       className="p-1 hover:bg-gray-100 rounded"
                       disabled={selectedDay <= 1}
                     >
-                      <FiChevronLeft size={16} />
+                      <FiChevronLeft size={14} />
                     </button>
-                    <h3 className="text-lg font-bold text-gray-800">
+                    <h3 className="text-base font-bold text-gray-800">
                       Dia {selectedDay}
                     </h3>
                     <button
@@ -611,11 +610,11 @@ export default function RelatorioMissionarioPage() {
                       className="p-1 hover:bg-gray-100 rounded"
                       disabled={selectedDay >= numDays}
                     >
-                      <FiChevronRight size={16} />
+                      <FiChevronRight size={14} />
                     </button>
                   </div>
                   <button onClick={() => setSelectedDay(null)} className="p-1 hover:bg-gray-100 rounded text-gray-400">
-                    <FiX size={16} />
+                    <FiX size={14} />
                   </button>
                 </div>
 
@@ -640,7 +639,7 @@ export default function RelatorioMissionarioPage() {
                     <button
                       key={b.key}
                       onClick={() => setActiveBlock(b.key)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${
                         activeBlock === b.key ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -650,7 +649,7 @@ export default function RelatorioMissionarioPage() {
                 </div>
 
                 {/* Fields for selected block */}
-                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-[50vh] lg:max-h-[400px] overflow-y-auto pr-1">
                   {(activeBlock === 'atividades' ? RELATORIO_ATIVIDADES_MISSIONARIAS :
                     activeBlock === 'horas' ? RELATORIO_HORAS :
                     activeBlock === 'pastorais' ? RELATORIO_PASTORAIS :
@@ -662,7 +661,7 @@ export default function RelatorioMissionarioPage() {
                         type="number"
                         min={0}
                         step={'decimal' in f && f.decimal ? '0.5' : 'currency' in f && f.currency ? '0.01' : '1'}
-                        className="input-field w-20 text-right text-sm"
+                        className="input-field w-16 text-right text-xs"
                         value={Number((dailyData[selectedDay] as any)?.[f.key]) || ''}
                         onChange={e => updateDayField(selectedDay, f.key, Number(e.target.value) || 0)}
                         disabled={isReadOnly}
@@ -673,9 +672,9 @@ export default function RelatorioMissionarioPage() {
                 </div>
               </div>
             ) : (
-              <div className="card text-center py-12 text-gray-400 sticky top-4">
-                <FiCalendar className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">Clique em um dia no calendário para lançar atividades</p>
+              <div className="hidden lg:block card text-center py-8 text-gray-400 lg:sticky lg:top-4">
+                <FiCalendar className="w-6 h-6 mx-auto mb-2 opacity-30" />
+                <p className="text-xs">Clique em um dia para lançar atividades</p>
               </div>
             )}
           </div>
