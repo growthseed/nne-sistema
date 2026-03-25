@@ -23,7 +23,7 @@ import FinanceiroPage from '@/pages/financeiro/FinanceiroPage'
 import LancamentosPage from '@/pages/financeiro/LancamentosPage'
 import ReceitaCampoPage from '@/pages/financeiro/ReceitaCampoPage'
 import ClassesPage from '@/pages/escola-sabatina/ClassesPage'
-import ClassesBatismaisPage from '@/pages/escola-sabatina/ClassesBatismaisPage'
+// ClassesBatismaisPage removida - substituída por EscolaBiblicaPage em /missoes
 import PresencaPage from '@/pages/escola-sabatina/PresencaPage'
 import MissoesDashboardPage from '@/pages/missoes/MissoesDashboardPage'
 import RelatorioMissionarioPage from '@/pages/missoes/RelatorioMissionarioPage'
@@ -76,6 +76,7 @@ export default function App() {
           <Route path="relatorio-campo" element={<RelatorioCampoPage />} />
           <Route path="diagnostico" element={<DiagnosticoPage />} />
           <Route path="painel-geral" element={<PainelGeralMissionariosPage />} />
+          <Route path="escola-biblica" element={<EscolaBiblicaPage />} />
         </Route>
 
         {/* Secretaria & Membros */}
@@ -92,7 +93,7 @@ export default function App() {
           <Route path="saude" element={<SaudeMembrosPage />} />
           <Route path="classes-biblicas" element={<ClassesBiblicasPage />} />
           <Route path="qualidade-dados" element={<QualidadeDadosPage />} />
-          <Route path="duplicados" element={<DuplicadosPage />} />
+          {/* duplicados removido */}
         </Route>
 
         {/* Organizacao */}
@@ -112,9 +113,7 @@ export default function App() {
         {/* Escola Sabatina */}
         <Route path="escola-sabatina">
           <Route index element={<ClassesPage />} />
-          <Route path="batismais" element={<ClassesBatismaisPage />} />
           <Route path="presenca" element={<PresencaPage />} />
-          <Route path="escola-biblica" element={<EscolaBiblicaPage />} />
         </Route>
 
         {/* Inteligencia */}

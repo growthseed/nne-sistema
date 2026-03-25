@@ -60,7 +60,6 @@ const menuGroups: MenuGroup[] = [
       { to: '/secretaria/contagem', label: 'Contagem Mensal', icon: HiOutlineClipboardCheck, roles: SEC_ROLES },
       { to: '/secretaria/transferencias', label: 'Transferências', icon: HiOutlineDocumentReport, roles: SEC_ROLES },
       { to: '/secretaria/aniversariantes', label: 'Aniversariantes', icon: HiOutlineCalendar, roles: SEC_ROLES },
-      { to: '/secretaria/duplicados', label: 'Duplicados', icon: HiOutlineUsers, roles: ADMIN_ROLES },
     ],
   },
   {
@@ -73,6 +72,7 @@ const menuGroups: MenuGroup[] = [
       { to: '/missoes/inventario', label: 'Ficha de Campo', icon: HiOutlineClipboardCheck, roles: ADMIN_ROLES },
       { to: '/missoes/planejador-visitas', label: 'Planejador de Visitas', icon: HiOutlineCalendar, roles: [...ADMIN_ROLES, 'secretario_igreja'] },
       { to: '/missoes/painel-geral', label: 'Painel Geral', icon: HiOutlineChartBar, roles: ADMIN_ROLES },
+      { to: '/missoes/escola-biblica', label: 'Escola Bíblica', icon: HiOutlineLibrary, roles: [...ADMIN_ROLES, 'secretario_igreja', 'diretor_es', 'professor_es'] },
     ],
   },
   {
@@ -80,8 +80,6 @@ const menuGroups: MenuGroup[] = [
     label: 'Escola Sabatina',
     items: [
       { to: '/escola-sabatina', label: 'Classes', icon: HiOutlineAcademicCap, roles: ES_ROLES },
-      { to: '/escola-sabatina/escola-biblica', label: 'Escola Bíblica', icon: HiOutlineLibrary, roles: ES_ROLES },
-      { to: '/escola-sabatina/batismais', label: 'Classes Batismais', icon: HiOutlineClipboardCheck, roles: ES_ROLES },
       { to: '/escola-sabatina/presenca', label: 'Presença', icon: HiOutlineClipboardCheck, roles: ES_ROLES },
     ],
   },
