@@ -7,7 +7,8 @@ import {
   HiOutlineArrowLeft, HiOutlineUser, HiOutlinePhone, HiOutlineMail,
   HiOutlineLocationMarker, HiOutlineOfficeBuilding, HiOutlineCalendar,
   HiOutlineAcademicCap, HiOutlineBriefcase, HiOutlineClipboardList,
-  HiOutlineHeart, HiOutlinePencil, HiOutlineIdentification
+  HiOutlineHeart, HiOutlinePencil, HiOutlineIdentification,
+  HiOutlineEye, HiOutlineTrendingUp, HiOutlineTrendingDown,
 } from 'react-icons/hi'
 
 interface PessoaDetalhe {
@@ -63,6 +64,26 @@ interface PessoaDetalhe {
   associacao: { nome: string; sigla: string } | null
 }
 
+interface CensoResposta {
+  id: string
+  nome: string | null
+  email: string | null
+  telefone: string | null
+  satisfacao: Record<string, number> | null
+  prioridades: string[] | null
+  participacao: Record<string, number> | null
+  pontos_fortes: string[] | null
+  pontos_fracos: string[] | null
+  cargos_ocupa: string[] | null
+  como_conheceu: string | null
+  tempo_membro: string | null
+  distancia_igreja: string | null
+  meio_transporte: string | null
+  opiniao_departamentos: string | null
+  completo: boolean
+  created_at: string
+}
+
 interface Transferencia {
   id: string
   tipo: string
@@ -72,7 +93,7 @@ interface Transferencia {
   igreja_destino: { nome: string } | null
 }
 
-type TabKey = 'pessoal' | 'endereco' | 'religioso' | 'historico'
+type TabKey = 'pessoal' | 'endereco' | 'religioso' | 'historico' | 'percepcao'
 
 export default function MembroDetalhePage() {
   const { id } = useParams<{ id: string }>()
@@ -80,6 +101,7 @@ export default function MembroDetalhePage() {
   const navigate = useNavigate()
   const [pessoa, setPessoa] = useState<PessoaDetalhe | null>(null)
   const [transferencias, setTransferencias] = useState<Transferencia[]>([])
+  const [censoRespostas, setCensoRespostas] = useState<CensoResposta[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<TabKey>('pessoal')
 
@@ -122,6 +144,25 @@ export default function MembroDetalhePage() {
       if (pessoaRes.error) throw pessoaRes.error
       setPessoa(pessoaRes.data)
       setTransferencias(transfRes.data || [])
+
+      // Buscar respostas do censo vinculadas (por nome, email ou telefone)
+      const p = pessoaRes.data
+      if (p) {
+        const conditions: string[] = []
+        if (p.nome) conditions.push(`nome.ilike.%${p.nome.split(' ')[0]}%`)
+        if (p.email) conditions.push(`email.eq.${p.email}`)
+        if (p.celular) conditions.push(`telefone.eq.${p.celular}`)
+        if (p.telefone) conditions.push(`telefone.eq.${p.telefone}`)
+
+        if (conditions.length > 0) {
+          const { data: censoData } = await supabase
+            .from('cadastro_respostas')
+            .select('id, nome, email, telefone, satisfacao, prioridades, participacao, pontos_fortes, pontos_fracos, cargos_ocupa, como_conheceu, tempo_membro, distancia_igreja, meio_transporte, opiniao_departamentos, completo, created_at')
+            .or(conditions.join(','))
+            .order('created_at', { ascending: true })
+          setCensoRespostas(censoData || [])
+        }
+      }
     } catch (err) {
       console.error('Erro ao buscar pessoa:', err)
     } finally {
@@ -177,6 +218,7 @@ export default function MembroDetalhePage() {
     { key: 'endereco', label: 'Endereço', icon: HiOutlineLocationMarker },
     { key: 'religioso', label: 'Religioso', icon: HiOutlineAcademicCap },
     { key: 'historico', label: 'Histórico', icon: HiOutlineClipboardList },
+    { key: 'percepcao', label: `Percepção${censoRespostas.length > 0 ? ` (${censoRespostas.length})` : ''}`, icon: HiOutlineEye },
   ]
 
   function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
@@ -382,6 +424,210 @@ export default function MembroDetalhePage() {
             <h3 className="text-sm font-semibold text-gray-700 mt-6 mb-3">Família</h3>
             <InfoRow label="Família" value={pessoa.familia_id ? 'Vinculado' : 'Não vinculado'} />
             <InfoRow label="Parentesco" value={pessoa.parentesco} />
+          </div>
+        )}
+
+        {tab === 'percepcao' && (
+          <div>
+            {censoRespostas.length === 0 ? (
+              <div className="text-center py-8">
+                <HiOutlineEye className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Nenhuma resposta do censo encontrada para este membro</p>
+                <p className="text-xs text-gray-400 mt-1">O sistema busca por nome, e-mail ou telefone coincidentes</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Timeline de respostas */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                    Histórico de Respostas ({censoRespostas.length})
+                  </h3>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {censoRespostas.map((r, i) => (
+                      <div key={r.id} className={`shrink-0 px-3 py-2 rounded-lg border text-center ${
+                        i === censoRespostas.length - 1 ? 'border-primary-300 bg-primary-50' : 'border-gray-200'
+                      }`}>
+                        <p className="text-xs font-medium text-gray-700">
+                          {new Date(r.created_at).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
+                        </p>
+                        <p className={`text-[10px] ${r.completo ? 'text-green-600' : 'text-amber-600'}`}>
+                          {r.completo ? 'Completo' : 'Parcial'}
+                        </p>
+                        {i === censoRespostas.length - 1 && (
+                          <span className="text-[10px] text-primary-600 font-medium">Mais recente</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Satisfação - última resposta com comparativo */}
+                {(() => {
+                  const ultima = censoRespostas[censoRespostas.length - 1]
+                  const anterior = censoRespostas.length > 1 ? censoRespostas[censoRespostas.length - 2] : null
+                  const SATISF_LABELS = ['', 'Muito insatisfeito', 'Insatisfeito', 'Satisfeito', 'Muito satisfeito']
+                  const SATISF_COLORS = ['', 'bg-red-100 text-red-700', 'bg-amber-100 text-amber-700', 'bg-green-100 text-green-700', 'bg-emerald-100 text-emerald-700']
+
+                  return ultima.satisfacao && Object.keys(ultima.satisfacao).length > 0 ? (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        Satisfação
+                        {anterior && <span className="text-[10px] text-gray-400 font-normal">(com evolução)</span>}
+                      </h3>
+                      <div className="space-y-2">
+                        {Object.entries(ultima.satisfacao).map(([key, val]) => {
+                          const prevVal = anterior?.satisfacao?.[key]
+                          const diff = prevVal != null ? val - prevVal : null
+                          return (
+                            <div key={key} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                              <span className="text-sm text-gray-700 flex-1">{key}</span>
+                              <div className="flex items-center gap-2">
+                                {diff !== null && diff !== 0 && (
+                                  <span className={`flex items-center gap-0.5 text-[10px] font-medium ${diff > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {diff > 0 ? <HiOutlineTrendingUp className="w-3 h-3" /> : <HiOutlineTrendingDown className="w-3 h-3" />}
+                                    {diff > 0 ? '+' : ''}{diff}
+                                  </span>
+                                )}
+                                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${SATISF_COLORS[val] || 'bg-gray-100 text-gray-600'}`}>
+                                  {SATISF_LABELS[val] || val}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      {/* Média geral */}
+                      {(() => {
+                        const vals = Object.values(ultima.satisfacao)
+                        const media = vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '0'
+                        const prevVals = anterior?.satisfacao ? Object.values(anterior.satisfacao) : null
+                        const prevMedia = prevVals && prevVals.length > 0 ? (prevVals.reduce((a, b) => a + b, 0) / prevVals.length).toFixed(1) : null
+                        return (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-600">Média geral de satisfação</span>
+                            <div className="flex items-center gap-2">
+                              {prevMedia && prevMedia !== media && (
+                                <span className="text-xs text-gray-400">anterior: {prevMedia}</span>
+                              )}
+                              <span className={`text-lg font-bold ${Number(media) >= 3 ? 'text-green-600' : Number(media) >= 2 ? 'text-amber-600' : 'text-red-600'}`}>
+                                {media}/4
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  ) : null
+                })()}
+
+                {/* Participação */}
+                {(() => {
+                  const ultima = censoRespostas[censoRespostas.length - 1]
+                  return ultima.participacao && Object.keys(ultima.participacao).length > 0 ? (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Participação Mensal</h3>
+                      <div className="space-y-2">
+                        {Object.entries(ultima.participacao).map(([key, val]) => (
+                          <div key={key} className="flex items-center justify-between py-1.5 border-b border-gray-50">
+                            <span className="text-sm text-gray-700">{key}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-100 rounded-full h-2">
+                                <div className="h-full bg-primary-500 rounded-full" style={{ width: `${Math.min(100, (val / 4) * 100)}%` }} />
+                              </div>
+                              <span className="text-sm font-medium text-gray-800 w-12 text-right">{val}x/mês</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null
+                })()}
+
+                {/* Prioridades */}
+                {(() => {
+                  const ultima = censoRespostas[censoRespostas.length - 1]
+                  return ultima.prioridades && ultima.prioridades.length > 0 ? (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Prioridades que este membro elegeu</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {ultima.prioridades.map(p => (
+                          <span key={p} className="bg-amber-50 text-amber-700 text-xs font-medium px-2.5 py-1 rounded-full">{p}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null
+                })()}
+
+                {/* Pontos Fortes e Fracos */}
+                {(() => {
+                  const ultima = censoRespostas[censoRespostas.length - 1]
+                  const temFortes = ultima.pontos_fortes && ultima.pontos_fortes.length > 0
+                  const temFracos = ultima.pontos_fracos && ultima.pontos_fracos.length > 0
+                  return temFortes || temFracos ? (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Pontos Fortes e Fracos</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {temFortes && (
+                          <div className="p-3 bg-green-50 rounded-xl">
+                            <p className="text-xs font-semibold text-green-700 mb-2">Fortes</p>
+                            {ultima.pontos_fortes!.map((pf, i) => (
+                              <p key={i} className="text-sm text-green-800 flex items-center gap-1.5 py-0.5">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0" /> {pf}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        {temFracos && (
+                          <div className="p-3 bg-red-50 rounded-xl">
+                            <p className="text-xs font-semibold text-red-700 mb-2">Fracos</p>
+                            {ultima.pontos_fracos!.map((pf, i) => (
+                              <p key={i} className="text-sm text-red-800 flex items-center gap-1.5 py-0.5">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0" /> {pf}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null
+                })()}
+
+                {/* Jornada */}
+                {(() => {
+                  const ultima = censoRespostas[censoRespostas.length - 1]
+                  const COMO_LABELS: Record<string, string> = {
+                    amigo_parente: 'Amigo/parente convidou', conjuge_membro: 'Cônjuge já era membro',
+                    veio_pais: 'Veio com os pais', nasci_igreja: 'Nasceu na igreja',
+                    visita_membro: 'Recebeu uma visita', campanha: 'Campanha evangelística',
+                    colportagem: 'Colportagem', internet: 'Internet', sem_convite: 'Veio sem convite',
+                  }
+                  const TEMPO_LABELS: Record<string, string> = {
+                    menos1: '< 1 ano', '1a5': '1-5 anos', '6a10': '6-10 anos',
+                    '11a20': '11-20 anos', '21a30': '21-30 anos', mais30: '30+ anos',
+                  }
+                  return (ultima.como_conheceu || ultima.tempo_membro || ultima.distancia_igreja) ? (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Jornada na Igreja</h3>
+                      <InfoRow label="Como conheceu" value={COMO_LABELS[ultima.como_conheceu || ''] || ultima.como_conheceu} />
+                      <InfoRow label="Tempo de membro" value={TEMPO_LABELS[ultima.tempo_membro || ''] || ultima.tempo_membro} />
+                      <InfoRow label="Distância" value={ultima.distancia_igreja} />
+                      <InfoRow label="Transporte" value={ultima.meio_transporte} />
+                    </div>
+                  ) : null
+                })()}
+
+                {/* Observações */}
+                {(() => {
+                  const ultima = censoRespostas[censoRespostas.length - 1]
+                  return ultima.opiniao_departamentos ? (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Observações do Membro</h3>
+                      <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 italic">"{ultima.opiniao_departamentos}"</p>
+                    </div>
+                  ) : null
+                })()}
+              </div>
+            )}
           </div>
         )}
 
