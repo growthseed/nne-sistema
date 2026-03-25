@@ -64,6 +64,9 @@ interface CadastroRow {
   etapa_atual: number
   completo: boolean
   created_at: string
+  associacao_id: string | null
+  uniao_id: string | null
+  igreja_frequenta: string | null
 }
 
 function calcAge(birth: string): number {
@@ -86,21 +89,42 @@ function getAgeGroup(age: number): string {
 }
 
 type TabFilter = 'todos' | 'completos' | 'parciais'
+type PageTab = 'dashboard' | 'gestao'
+
+interface AssociacaoInfo {
+  id: string
+  nome: string
+  sigla: string
+}
 
 export default function CadastroDashboardPage() {
   const { profile } = useAuth()
   const [respostas, setRespostas] = useState<CadastroRow[]>([])
+  const [associacoes, setAssociacoes] = useState<AssociacaoInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [tabFilter, setTabFilter] = useState<TabFilter>('todos')
   const [searchTerm, setSearchTerm] = useState('')
   const [showDetail, setShowDetail] = useState<CadastroRow | null>(null)
+  const [pageTab, setPageTab] = useState<PageTab>('dashboard')
+  const [filtroAssociacao, setFiltroAssociacao] = useState<string>('todas')
 
   const publicUrl = `${window.location.origin}/formulario`
 
   useEffect(() => {
-    if (profile) fetchRespostas()
+    if (profile) {
+      fetchRespostas()
+      fetchAssociacoes()
+    }
   }, [profile])
+
+  async function fetchAssociacoes() {
+    const { data } = await supabase
+      .from('associacoes')
+      .select('id, nome, sigla')
+      .order('sigla')
+    setAssociacoes(data || [])
+  }
 
   async function fetchRespostas() {
     setLoading(true)
@@ -127,6 +151,23 @@ export default function CadastroDashboardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Respostas filtradas por associação (usado em ambas as abas)
+  const respostasByAssoc = filtroAssociacao === 'todas'
+    ? respostas
+    : filtroAssociacao === 'sem_associacao'
+      ? respostas.filter(r => !r.associacao_id)
+      : respostas.filter(r => r.associacao_id === filtroAssociacao)
+
+  function getAssocSigla(assocId: string | null) {
+    if (!assocId) return 'N/D'
+    return associacoes.find(a => a.id === assocId)?.sigla || 'N/D'
+  }
+
+  function getAssocNome(assocId: string | null) {
+    if (!assocId) return 'Sem associação'
+    return associacoes.find(a => a.id === assocId)?.nome || 'Desconhecida'
   }
 
   function copyLink() {
@@ -178,7 +219,7 @@ export default function CadastroDashboardPage() {
 
   // ========== FILTERED DATA ==========
 
-  const filteredRespostas = respostas.filter(r => {
+  const filteredRespostas = respostasByAssoc.filter(r => {
     // Tab filter
     if (tabFilter === 'completos' && !r.completo) return false
     if (tabFilter === 'parciais' && r.completo) return false
@@ -197,21 +238,21 @@ export default function CadastroDashboardPage() {
 
   // ========== COMPUTED STATS ==========
 
-  const total = respostas.length
-  const completos = respostas.filter(r => r.completo).length
+  const total = respostasByAssoc.length
+  const completos = respostasByAssoc.filter(r => r.completo).length
   const parciais = total - completos
   const taxaComplecao = total > 0 ? Math.round((completos / total) * 100) : 0
 
   // Gender
   const generoCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     const g = r.sexo || 'Não informado'
     generoCount[g] = (generoCount[g] || 0) + 1
   })
 
   // Age groups
   const faixaEtariaCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.data_nascimento) {
       const age = calcAge(r.data_nascimento)
       const group = getAgeGroup(age)
@@ -223,7 +264,7 @@ export default function CadastroDashboardPage() {
 
   // Estado civil
   const estadoCivilCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.estado_civil) {
       estadoCivilCount[r.estado_civil] = (estadoCivilCount[r.estado_civil] || 0) + 1
     }
@@ -231,7 +272,7 @@ export default function CadastroDashboardPage() {
 
   // Satisfacao averages
   const satisfacaoSums: Record<string, { total: number; count: number }> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.satisfacao) {
       for (const [key, val] of Object.entries(r.satisfacao)) {
         if (!satisfacaoSums[key]) satisfacaoSums[key] = { total: 0, count: 0 }
@@ -245,7 +286,7 @@ export default function CadastroDashboardPage() {
 
   // Prioridades
   const prioridadeCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.prioridades) {
       r.prioridades.forEach(p => {
         prioridadeCount[p] = (prioridadeCount[p] || 0) + 1
@@ -256,7 +297,7 @@ export default function CadastroDashboardPage() {
 
   // Departamentos (participacao)
   const depCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.participacao) {
       for (const key of Object.keys(r.participacao)) {
         depCount[key] = (depCount[key] || 0) + 1
@@ -267,7 +308,7 @@ export default function CadastroDashboardPage() {
 
   // Dons/Talentos (pontos_fortes)
   const donsCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.pontos_fortes) {
       r.pontos_fortes.forEach(d => {
         donsCount[d] = (donsCount[d] || 0) + 1
@@ -278,7 +319,7 @@ export default function CadastroDashboardPage() {
 
   // Cidades
   const cidadeCount: Record<string, number> = {}
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     if (r.cidade) {
       cidadeCount[r.cidade] = (cidadeCount[r.cidade] || 0) + 1
     }
@@ -288,7 +329,7 @@ export default function CadastroDashboardPage() {
   // Monthly submissions
   const monthlyCount: Record<string, number> = {}
   const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-  respostas.forEach(r => {
+  respostasByAssoc.forEach(r => {
     const d = new Date(r.created_at)
     const key = `${mesesNomes[d.getMonth()]}/${d.getFullYear()}`
     monthlyCount[key] = (monthlyCount[key] || 0) + 1
@@ -297,7 +338,7 @@ export default function CadastroDashboardPage() {
 
   // Etapa distribution (for partial responses)
   const etapaCount: Record<number, number> = {}
-  respostas.filter(r => !r.completo).forEach(r => {
+  respostasByAssoc.filter(r => !r.completo).forEach(r => {
     etapaCount[r.etapa_atual] = (etapaCount[r.etapa_atual] || 0) + 1
   })
 
@@ -388,13 +429,8 @@ export default function CadastroDashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <Link to="/cadastro" className="hover:text-blue-600">Cadastro</Link>
-            <span>/</span>
-            <span>Dashboard</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard de Cadastros</h1>
-          <p className="text-gray-500 mt-1">{total} resposta{total !== 1 ? 's' : ''} registrada{total !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-bold text-gray-800">Censo / Pesquisa</h1>
+          <p className="text-gray-500 mt-1">{respostas.length} resposta{respostas.length !== 1 ? 's' : ''} total • {total} filtrada{total !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/cadastro" className="btn-primary inline-flex items-center gap-2">
@@ -404,6 +440,195 @@ export default function CadastroDashboardPage() {
         </div>
       </div>
 
+      {/* Page Tabs: Dashboard / Gestão */}
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+        {([['dashboard', 'Dashboard'], ['gestao', 'Gestão por Associação']] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setPageTab(key)}
+            className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
+              pageTab === key ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Filtro por Associação */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <label className="text-sm font-medium text-gray-600">Associação:</label>
+        <select value={filtroAssociacao} onChange={e => setFiltroAssociacao(e.target.value)}
+          className="input-field max-w-xs text-sm">
+          <option value="todas">Todas as Associações</option>
+          <option value="sem_associacao">Sem Associação ({respostas.filter(r => !r.associacao_id).length})</option>
+          {associacoes.map(a => {
+            const count = respostas.filter(r => r.associacao_id === a.id).length
+            return <option key={a.id} value={a.id}>{a.sigla} — {a.nome} ({count})</option>
+          })}
+        </select>
+        {filtroAssociacao !== 'todas' && (
+          <button onClick={() => setFiltroAssociacao('todas')} className="text-xs text-primary-600 hover:underline">Limpar filtro</button>
+        )}
+      </div>
+
+      {/* ========== TAB: GESTÃO POR ASSOCIAÇÃO ========== */}
+      {pageTab === 'gestao' && (
+        <div className="space-y-6">
+          {/* Resumo por associação */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {associacoes.map(a => {
+              const assocRespostas = respostas.filter(r => r.associacao_id === a.id)
+              const assocCompletos = assocRespostas.filter(r => r.completo).length
+              const pct = assocRespostas.length > 0 ? Math.round((assocCompletos / assocRespostas.length) * 100) : 0
+              return (
+                <div key={a.id} className="card hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => { setFiltroAssociacao(a.id); setPageTab('dashboard') }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg">{a.sigla}</span>
+                    <span className="text-xs text-gray-400">{pct}% completos</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
+                  <div className="flex items-center justify-between mt-3">
+                    <div>
+                      <p className="text-2xl font-bold text-gray-800">{assocRespostas.length}</p>
+                      <p className="text-[10px] text-gray-400">respostas</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-green-600">{assocCompletos}</p>
+                      <p className="text-[10px] text-gray-400">completos</p>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  {/* Export button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); exportCSV(assocRespostas, `censo_${a.sigla}_${new Date().toISOString().slice(0,10)}.csv`) }}
+                    disabled={assocRespostas.length === 0}
+                    className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors disabled:opacity-40"
+                  >
+                    <HiOutlineDownload className="w-3.5 h-3.5" />
+                    Exportar CSV ({assocRespostas.length})
+                  </button>
+                </div>
+              )
+            })}
+
+            {/* Sem associação */}
+            {(() => {
+              const semAssoc = respostas.filter(r => !r.associacao_id)
+              const semCompletos = semAssoc.filter(r => r.completo).length
+              return semAssoc.length > 0 ? (
+                <div className="card border-dashed hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => { setFiltroAssociacao('sem_associacao'); setPageTab('dashboard') }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">N/D</span>
+                    <span className="text-xs text-gray-400">{semAssoc.length > 0 ? Math.round((semCompletos / semAssoc.length) * 100) : 0}%</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-700">Sem Associação</p>
+                  <div className="flex items-center justify-between mt-3">
+                    <div>
+                      <p className="text-2xl font-bold text-gray-800">{semAssoc.length}</p>
+                      <p className="text-[10px] text-gray-400">respostas</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-green-600">{semCompletos}</p>
+                      <p className="text-[10px] text-gray-400">completos</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); exportCSV(semAssoc, `censo_sem_associacao_${new Date().toISOString().slice(0,10)}.csv`) }}
+                    className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <HiOutlineDownload className="w-3.5 h-3.5" />
+                    Exportar CSV ({semAssoc.length})
+                  </button>
+                </div>
+              ) : null
+            })()}
+          </div>
+
+          {/* Exportar tudo */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => exportCSV(respostas, `censo_completo_${new Date().toISOString().slice(0,10)}.csv`)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+            >
+              <HiOutlineDownload className="w-4 h-4" />
+              Exportar Tudo ({respostas.length} respostas)
+            </button>
+          </div>
+
+          {/* Tabela completa com coluna Associação */}
+          <div className="card p-0 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <h3 className="text-base font-semibold text-gray-800">Todas as Respostas ({filteredRespostas.length})</h3>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                      placeholder="Buscar..." className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 w-52" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {filteredRespostas.length === 0 ? (
+              <div className="p-8 text-center text-gray-400">Nenhuma resposta encontrada</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
+                      <th className="px-4 py-3">Nome</th>
+                      <th className="px-4 py-3">Associação</th>
+                      <th className="px-4 py-3">Igreja</th>
+                      <th className="px-4 py-3">Cidade</th>
+                      <th className="px-4 py-3">Contato</th>
+                      <th className="px-4 py-3 text-center">Status</th>
+                      <th className="px-4 py-3 text-right">Data</th>
+                      <th className="px-4 py-3 text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredRespostas.map(r => (
+                      <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 font-medium text-gray-800">{r.nome || '-'}</td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
+                            {getAssocSigla(r.associacao_id)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">{r.igreja_frequenta || '-'}</td>
+                        <td className="px-4 py-3 text-gray-600">{r.cidade || '-'}</td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <div className="text-xs">
+                            {r.telefone && <span className="block">{r.telefone}</span>}
+                            {r.email && <span className="block text-gray-400">{r.email}</span>}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.completo ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {r.completo ? 'Completo' : 'Parcial'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right text-gray-500 text-xs">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={() => setShowDetail(r)} className="text-primary-600 hover:text-primary-800 p-1 rounded-lg hover:bg-primary-50">
+                            <HiOutlineEye className="w-5 h-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========== TAB: DASHBOARD ========== */}
+      {pageTab === 'dashboard' && <>
       {/* Public Link Banner */}
       <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1">
@@ -741,6 +966,8 @@ export default function CadastroDashboardPage() {
           </div>
         )}
       </div>
+
+      </>}
 
       {/* Detail Modal */}
       {showDetail && (
