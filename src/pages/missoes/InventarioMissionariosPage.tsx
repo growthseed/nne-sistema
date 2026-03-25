@@ -58,7 +58,7 @@ export default function InventarioMissionariosPage() {
 
   // Filters
   const [filtroAssociacao, setFiltroAssociacao] = useState('')
-  const [filtroStatus, setFiltroStatus] = useState<string>('')
+  const [filtroStatus, setFiltroStatus] = useState<string>('ativo')
   const [filtroCargo, setFiltroCargo] = useState<string>('')
   const [busca, setBusca] = useState('')
 

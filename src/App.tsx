@@ -45,6 +45,8 @@ import QualidadeDadosPage from '@/pages/secretaria/QualidadeDadosPage'
 import DuplicadosPage from '@/pages/secretaria/DuplicadosPage'
 import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
 import DiretorioIgrejasPage from '@/pages/DiretorioIgrejasPage'
+import EBPublicPage from '@/pages/public/EBPublicPage'
+import EscolaBiblicaPage from '@/pages/escola-sabatina/EscolaBiblicaPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -54,6 +56,7 @@ export default function App() {
       <Route path="/formulario" element={<CadastroPublicoPage />} />
       <Route path="/validar-cartao" element={<ValidarCartaoPage />} />
       <Route path="/diretorio" element={<DiretorioIgrejasPage />} />
+      <Route path="/eb/:classeId" element={<EBPublicPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
@@ -111,6 +114,7 @@ export default function App() {
           <Route index element={<ClassesPage />} />
           <Route path="batismais" element={<ClassesBatismaisPage />} />
           <Route path="presenca" element={<PresencaPage />} />
+          <Route path="escola-biblica" element={<EscolaBiblicaPage />} />
         </Route>
 
         {/* Inteligencia */}

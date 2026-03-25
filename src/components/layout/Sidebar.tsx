@@ -80,7 +80,8 @@ const menuGroups: MenuGroup[] = [
     label: 'Escola Sabatina',
     items: [
       { to: '/escola-sabatina', label: 'Classes', icon: HiOutlineAcademicCap, roles: ES_ROLES },
-      { to: '/escola-sabatina/batismais', label: 'Classes Bíblicas', icon: HiOutlineLibrary, roles: ES_ROLES },
+      { to: '/escola-sabatina/escola-biblica', label: 'Escola Bíblica', icon: HiOutlineLibrary, roles: ES_ROLES },
+      { to: '/escola-sabatina/batismais', label: 'Classes Batismais', icon: HiOutlineClipboardCheck, roles: ES_ROLES },
       { to: '/escola-sabatina/presenca', label: 'Presença', icon: HiOutlineClipboardCheck, roles: ES_ROLES },
     ],
   },
