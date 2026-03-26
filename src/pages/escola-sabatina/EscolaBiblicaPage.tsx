@@ -939,11 +939,44 @@ function TabTurmas() {
   }
 
   async function toggleDecisao(a: AlunoEB) {
+    const novaDecisao = !a.decisao_batismo
     await supabase.from('classe_biblica_alunos').update({
-      decisao_batismo: !a.decisao_batismo,
-      data_decisao: !a.decisao_batismo ? new Date().toISOString().slice(0, 10) : null,
+      decisao_batismo: novaDecisao,
+      data_decisao: novaDecisao ? new Date().toISOString().slice(0, 10) : null,
     }).eq('id', a.id)
-    if (!a.decisao_batismo) await supabase.from('pessoas').update({ etapa_funil: 'decisao' }).eq('id', a.pessoa_id)
+    if (novaDecisao) {
+      await supabase.from('pessoas').update({
+        etapa_funil: 'decisao',
+        data_ultimo_contato: new Date().toISOString().slice(0, 10),
+        observacoes_funil: `Decisão de batismo registrada na Escola Bíblica em ${new Date().toLocaleDateString('pt-BR')}`,
+      }).eq('id', a.pessoa_id)
+    }
+    if (selectedTurma) openTurma(selectedTurma)
+  }
+
+  async function registrarBatismo(a: AlunoEB) {
+    const dataBatismo = prompt('Data do batismo (DD/MM/AAAA):')
+    if (!dataBatismo) return
+    // Parse DD/MM/YYYY to YYYY-MM-DD
+    const parts = dataBatismo.split('/')
+    const dataISO = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : null
+    if (!dataISO) { alert('Data inválida. Use formato DD/MM/AAAA'); return }
+
+    await supabase.from('pessoas').update({
+      etapa_funil: 'batismo',
+      data_batismo: dataISO,
+      tipo: 'membro',
+      situacao: 'ativo',
+      data_ultimo_contato: new Date().toISOString().slice(0, 10),
+      observacoes_funil: `Batizado em ${dataBatismo}. Concluiu Escola Bíblica.`,
+    }).eq('id', a.pessoa_id)
+
+    // Update aluno status
+    await supabase.from('classe_biblica_alunos').update({
+      status: 'batizado',
+    }).eq('id', a.id)
+
+    alert(`Batismo de ${getNome(a)} registrado! O membro foi atualizado na secretaria.`)
     if (selectedTurma) openTurma(selectedTurma)
   }
 
@@ -1208,15 +1241,25 @@ function TabTurmas() {
                         {getCelular(a) && ` • ${getCelular(a)}`}
                       </p>
                     </div>
-                    <button onClick={() => toggleDecisao(a)}
-                      className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                        a.decisao_batismo
-                          ? 'border-green-400 bg-green-50 text-green-700'
-                          : 'border-gray-200 text-gray-400 hover:border-green-300'
-                      }`}>
-                      <HiOutlineCheck className="w-3.5 h-3.5 inline mr-0.5" />
-                      {a.decisao_batismo ? 'Decisão ✓' : 'Batismo?'}
-                    </button>
+                    {a.decisao_batismo && (a as any).status !== 'batizado' && (
+                      <button onClick={() => registrarBatismo(a)}
+                        className="text-xs px-2.5 py-1 rounded-lg border border-blue-400 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">
+                        Registrar Batismo
+                      </button>
+                    )}
+                    {(a as any).status === 'batizado' ? (
+                      <span className="text-xs px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 font-medium">Batizado</span>
+                    ) : (
+                      <button onClick={() => toggleDecisao(a)}
+                        className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                          a.decisao_batismo
+                            ? 'border-green-400 bg-green-50 text-green-700'
+                            : 'border-gray-200 text-gray-400 hover:border-green-300'
+                        }`}>
+                        <HiOutlineCheck className="w-3.5 h-3.5 inline mr-0.5" />
+                        {a.decisao_batismo ? 'Decisão ✓' : 'Batismo?'}
+                      </button>
+                    )}
                     <button onClick={() => removeAluno(a.id)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors">
                       <HiOutlineTrash className="w-4 h-4" />
                     </button>
