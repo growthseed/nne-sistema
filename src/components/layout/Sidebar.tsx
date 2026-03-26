@@ -72,7 +72,16 @@ const menuGroups: MenuGroup[] = [
       { to: '/missoes/inventario', label: 'Ficha de Campo', icon: HiOutlineClipboardCheck, roles: ADMIN_ROLES },
       { to: '/missoes/planejador-visitas', label: 'Planejador de Visitas', icon: HiOutlineCalendar, roles: [...ADMIN_ROLES, 'secretario_igreja'] },
       { to: '/missoes/painel-geral', label: 'Painel Geral', icon: HiOutlineChartBar, roles: ADMIN_ROLES },
-      { to: '/missoes/escola-biblica', label: 'Escola Bíblica', icon: HiOutlineLibrary, roles: [...ADMIN_ROLES, 'secretario_igreja', 'diretor_es', 'professor_es'] },
+    ],
+  },
+  {
+    key: 'escola-biblica',
+    label: 'Escola Bíblica',
+    items: [
+      { to: '/escola-biblica', label: 'Painel Geral', icon: HiOutlineLightBulb, roles: [...ADMIN_ROLES, 'secretario_igreja', 'diretor_es', 'professor_es'] },
+      { to: '/escola-biblica/conteudo', label: 'Conteúdo & Turmas', icon: HiOutlineLibrary, roles: [...ADMIN_ROLES, 'secretario_igreja', 'diretor_es', 'professor_es'] },
+      { to: '/escola-biblica/professores', label: 'Professores', icon: HiOutlineUsers, roles: ADMIN_ROLES },
+      { to: '/escola-biblica/nps', label: 'NPS & Avaliações', icon: HiOutlineChartBar, roles: ADMIN_ROLES },
     ],
   },
   {

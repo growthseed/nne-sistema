@@ -47,6 +47,7 @@ import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
 import DiretorioIgrejasPage from '@/pages/DiretorioIgrejasPage'
 import EBPublicPage from '@/pages/public/EBPublicPage'
 import EscolaBiblicaPage from '@/pages/escola-sabatina/EscolaBiblicaPage'
+import EBDashboardPage from '@/pages/escola-biblica/EBDashboardPage'
 import PortalLoginPage from '@/pages/portal/PortalLoginPage'
 import PortalDashboardPage from '@/pages/portal/PortalDashboardPage'
 import PortalPerfilPage from '@/pages/portal/PortalPerfilPage'
@@ -84,7 +85,7 @@ export default function App() {
           <Route path="relatorio-campo" element={<RelatorioCampoPage />} />
           <Route path="diagnostico" element={<DiagnosticoPage />} />
           <Route path="painel-geral" element={<PainelGeralMissionariosPage />} />
-          <Route path="escola-biblica" element={<EscolaBiblicaPage />} />
+          {/* escola-biblica movida para seção própria */}
         </Route>
 
         {/* Secretaria & Membros */}
@@ -116,6 +117,14 @@ export default function App() {
           <Route index element={<FinanceiroPage />} />
           <Route path="lancamentos" element={<LancamentosPage />} />
           <Route path="receita-campo" element={<ReceitaCampoPage />} />
+        </Route>
+
+        {/* Escola Bíblica (seção própria) */}
+        <Route path="escola-biblica">
+          <Route index element={<EBDashboardPage />} />
+          <Route path="conteudo" element={<EscolaBiblicaPage />} />
+          <Route path="professores" element={<EBDashboardPage />} />
+          <Route path="nps" element={<EBDashboardPage />} />
         </Route>
 
         {/* Escola Sabatina */}

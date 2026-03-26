@@ -429,16 +429,40 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           </div>
         )}
 
-        {/* Vídeo (sempre visível) */}
+        {/* Vídeo embed (sempre visível) */}
         {selectedPonto.video_url && !editing && (
-          <div className="card p-4">
-            <a href={selectedPonto.video_url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-3 text-sm text-blue-600 hover:text-blue-800">
-              <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                <HiOutlinePlay className="w-5 h-5" />
-              </div>
-              Assistir vídeo da aula
-            </a>
+          <div className="rounded-xl overflow-hidden shadow-sm">
+            {(() => {
+              const url = selectedPonto.video_url || ''
+              let embedId = ''
+              if (url.includes('youtu.be/')) embedId = url.split('youtu.be/')[1]?.split('?')[0] || ''
+              else if (url.includes('youtube.com/watch')) embedId = new URL(url).searchParams.get('v') || ''
+              else if (url.includes('youtube.com/embed/')) embedId = url.split('embed/')[1]?.split('?')[0] || ''
+              if (embedId) {
+                return (
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${embedId}?rel=0&modestbranding=1`}
+                      title="Vídeo da aula"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full rounded-xl"
+                    />
+                  </div>
+                )
+              }
+              return (
+                <div className="card p-4">
+                  <a href={url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-sm text-blue-600 hover:text-blue-800">
+                    <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                      <HiOutlinePlay className="w-5 h-5" />
+                    </div>
+                    Assistir vídeo da aula
+                  </a>
+                </div>
+              )
+            })()}
           </div>
         )}
 
