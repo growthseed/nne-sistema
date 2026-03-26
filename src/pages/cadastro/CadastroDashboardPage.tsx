@@ -470,161 +470,154 @@ export default function CadastroDashboardPage() {
       </div>
 
       {/* ========== TAB: GESTÃO POR ASSOCIAÇÃO ========== */}
-      {pageTab === 'gestao' && (
-        <div className="space-y-6">
-          {/* Resumo por associação */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {associacoes.map(a => {
-              const assocRespostas = respostas.filter(r => r.associacao_id === a.id)
-              const assocCompletos = assocRespostas.filter(r => r.completo).length
-              const pct = assocRespostas.length > 0 ? Math.round((assocCompletos / assocRespostas.length) * 100) : 0
+      {pageTab === 'gestao' && (() => {
+        const [expandedAssoc, setExpandedAssoc] = [filtroAssociacao, setFiltroAssociacao]
+        const [statusFilter, setStatusFilter] = [tabFilter, setTabFilter]
+
+        function getAssocRespostas(assocId: string | null) {
+          const base = assocId === null
+            ? respostas.filter(r => !r.associacao_id)
+            : respostas.filter(r => r.associacao_id === assocId)
+          if (statusFilter === 'completos') return base.filter(r => r.completo)
+          if (statusFilter === 'parciais') return base.filter(r => !r.completo)
+          return base
+        }
+
+        const allAssocs = [
+          ...associacoes.map(a => ({ id: a.id, sigla: a.sigla, nome: a.nome })),
+          ...(respostas.some(r => !r.associacao_id) ? [{ id: 'sem' as string, sigla: 'N/D', nome: 'Sem Associação' }] : []),
+        ]
+
+        return (
+        <div className="space-y-4">
+          {/* Export geral + filtro status */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+              {([['todos', 'Todos'], ['completos', 'Completos'], ['parciais', 'Parciais']] as const).map(([key, label]) => (
+                <button key={key} onClick={() => setStatusFilter(key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${statusFilter === key ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500'}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => exportCSV(respostas, `censo_completo_${new Date().toISOString().slice(0,10)}.csv`)}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors">
+                <HiOutlineDownload className="w-4 h-4" /> Exportar Tudo ({respostas.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Busca */}
+          <div className="relative">
+            <HiOutlineSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+              className="input-field pl-10 text-sm" placeholder="Buscar por nome, email, telefone..." />
+          </div>
+
+          {/* Cards por associação (expandíveis) */}
+          <div className="space-y-3">
+            {allAssocs.map(a => {
+              const assocId = a.id === 'sem' ? null : a.id
+              const allAssocRespostas = respostas.filter(r => a.id === 'sem' ? !r.associacao_id : r.associacao_id === a.id)
+              const filtered = getAssocRespostas(assocId)
+              const searched = searchTerm ? filtered.filter(r => {
+                const t = searchTerm.toLowerCase()
+                return (r.nome || '').toLowerCase().includes(t) || (r.email || '').toLowerCase().includes(t) || (r.telefone || '').includes(t)
+              }) : filtered
+              const completos = allAssocRespostas.filter(r => r.completo).length
+              const parciais = allAssocRespostas.length - completos
+              const pct = allAssocRespostas.length > 0 ? Math.round((completos / allAssocRespostas.length) * 100) : 0
+              const isExpanded = expandedAssoc === a.id
+
               return (
-                <div key={a.id} className="card hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => { setFiltroAssociacao(a.id); setPageTab('dashboard') }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg">{a.sigla}</span>
-                    <span className="text-xs text-gray-400">{pct}% completos</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-800">{assocRespostas.length}</p>
-                      <p className="text-[10px] text-gray-400">respostas</p>
+                <div key={a.id} className="card overflow-hidden">
+                  {/* Header */}
+                  <button onClick={() => setExpandedAssoc(isExpanded ? 'todas' : a.id)}
+                    className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                    <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0">{a.sigla}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="text-xs text-gray-400">{allAssocRespostas.length} respostas</span>
+                        <span className="text-xs text-green-600">{completos} completos</span>
+                        <span className="text-xs text-amber-600">{parciais} parciais</span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-green-600">{assocCompletos}</p>
-                      <p className="text-[10px] text-gray-400">completos</p>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="w-20">
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary-500 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="text-[10px] text-gray-400 text-right mt-0.5">{pct}%</p>
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); exportCSV(allAssocRespostas, `censo_${a.sigla}_${new Date().toISOString().slice(0,10)}.csv`) }}
+                        className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg" title="Exportar CSV">
+                        <HiOutlineDownload className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-                  {/* Progress bar */}
-                  <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                  {/* Export button */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); exportCSV(assocRespostas, `censo_${a.sigla}_${new Date().toISOString().slice(0,10)}.csv`) }}
-                    disabled={assocRespostas.length === 0}
-                    className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors disabled:opacity-40"
-                  >
-                    <HiOutlineDownload className="w-3.5 h-3.5" />
-                    Exportar CSV ({assocRespostas.length})
                   </button>
+
+                  {/* Expanded: lista de respostas */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100">
+                      {searched.length === 0 ? (
+                        <p className="p-4 text-sm text-gray-400 text-center">Nenhuma resposta {statusFilter !== 'todos' ? `(${statusFilter})` : ''}</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-gray-50 text-left text-gray-500 text-[10px] uppercase tracking-wider">
+                                <th className="px-4 py-2">Nome</th>
+                                <th className="px-4 py-2">Igreja</th>
+                                <th className="px-4 py-2">Contato</th>
+                                <th className="px-4 py-2 text-center">Status</th>
+                                <th className="px-4 py-2 text-center">Secretaria</th>
+                                <th className="px-4 py-2 text-center">Ações</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                              {searched.map(r => (
+                                <tr key={r.id} className="hover:bg-gray-50">
+                                  <td className="px-4 py-2.5 font-medium text-gray-800 text-xs">{r.nome || '-'}</td>
+                                  <td className="px-4 py-2.5 text-gray-500 text-xs">{r.igreja_frequenta || '-'}</td>
+                                  <td className="px-4 py-2.5 text-xs">
+                                    {r.telefone && <span className="block text-gray-600">{r.telefone}</span>}
+                                    {r.email && <span className="block text-gray-400">{r.email}</span>}
+                                  </td>
+                                  <td className="px-4 py-2.5 text-center">
+                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${r.completo ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                      {r.completo ? 'Completo' : `Parcial (${r.etapa_atual}/11)`}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-2.5 text-center">
+                                    {r.nome && (
+                                      <a href={`/membros?q=${encodeURIComponent(r.nome)}`} target="_blank" rel="noopener noreferrer"
+                                        className="text-[10px] text-blue-600 hover:text-blue-800 hover:underline">
+                                        Ver ficha
+                                      </a>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2.5 text-center">
+                                    <button onClick={() => setShowDetail(r)} className="text-primary-600 hover:text-primary-800 p-1 rounded-lg hover:bg-primary-50">
+                                      <HiOutlineEye className="w-4 h-4" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
-
-            {/* Sem associação */}
-            {(() => {
-              const semAssoc = respostas.filter(r => !r.associacao_id)
-              const semCompletos = semAssoc.filter(r => r.completo).length
-              return semAssoc.length > 0 ? (
-                <div className="card border-dashed hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => { setFiltroAssociacao('sem_associacao'); setPageTab('dashboard') }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">N/D</span>
-                    <span className="text-xs text-gray-400">{semAssoc.length > 0 ? Math.round((semCompletos / semAssoc.length) * 100) : 0}%</span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-700">Sem Associação</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <div>
-                      <p className="text-2xl font-bold text-gray-800">{semAssoc.length}</p>
-                      <p className="text-[10px] text-gray-400">respostas</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-green-600">{semCompletos}</p>
-                      <p className="text-[10px] text-gray-400">completos</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); exportCSV(semAssoc, `censo_sem_associacao_${new Date().toISOString().slice(0,10)}.csv`) }}
-                    className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <HiOutlineDownload className="w-3.5 h-3.5" />
-                    Exportar CSV ({semAssoc.length})
-                  </button>
-                </div>
-              ) : null
-            })()}
-          </div>
-
-          {/* Exportar tudo */}
-          <div className="flex justify-end">
-            <button
-              onClick={() => exportCSV(respostas, `censo_completo_${new Date().toISOString().slice(0,10)}.csv`)}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
-            >
-              <HiOutlineDownload className="w-4 h-4" />
-              Exportar Tudo ({respostas.length} respostas)
-            </button>
-          </div>
-
-          {/* Tabela completa com coluna Associação */}
-          <div className="card p-0 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h3 className="text-base font-semibold text-gray-800">Todas as Respostas ({filteredRespostas.length})</h3>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                      placeholder="Buscar..." className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 w-52" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            {filteredRespostas.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">Nenhuma resposta encontrada</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                      <th className="px-4 py-3">Nome</th>
-                      <th className="px-4 py-3">Associação</th>
-                      <th className="px-4 py-3">Igreja</th>
-                      <th className="px-4 py-3">Cidade</th>
-                      <th className="px-4 py-3">Contato</th>
-                      <th className="px-4 py-3 text-center">Status</th>
-                      <th className="px-4 py-3 text-right">Data</th>
-                      <th className="px-4 py-3 text-center">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {filteredRespostas.map(r => (
-                      <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-gray-800">{r.nome || '-'}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
-                            {getAssocSigla(r.associacao_id)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-600 text-xs">{r.igreja_frequenta || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">{r.cidade || '-'}</td>
-                        <td className="px-4 py-3 text-gray-600">
-                          <div className="text-xs">
-                            {r.telefone && <span className="block">{r.telefone}</span>}
-                            {r.email && <span className="block text-gray-400">{r.email}</span>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.completo ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {r.completo ? 'Completo' : 'Parcial'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right text-gray-500 text-xs">{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button onClick={() => setShowDetail(r)} className="text-primary-600 hover:text-primary-800 p-1 rounded-lg hover:bg-primary-50">
-                            <HiOutlineEye className="w-5 h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </div>
+        )
+      })()}
       )}
 
       {/* ========== TAB: DASHBOARD ========== */}
