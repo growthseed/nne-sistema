@@ -422,6 +422,26 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           )}
         </div>
 
+        {/* Imagem do ponto (sempre visível) */}
+        {selectedPonto.imagem_url && !editing && (
+          <div className="rounded-xl overflow-hidden">
+            <img src={selectedPonto.imagem_url} alt={selectedPonto.titulo} className="w-full h-48 object-cover" />
+          </div>
+        )}
+
+        {/* Vídeo (sempre visível) */}
+        {selectedPonto.video_url && !editing && (
+          <div className="card p-4">
+            <a href={selectedPonto.video_url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-3 text-sm text-blue-600 hover:text-blue-800">
+              <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <HiOutlinePlay className="w-5 h-5" />
+              </div>
+              Assistir vídeo da aula
+            </a>
+          </div>
+        )}
+
         {/* Mídia (modo edição) */}
         {editing && (
           <div className="card p-5 space-y-4">
