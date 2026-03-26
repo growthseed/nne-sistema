@@ -47,6 +47,7 @@ export default function EBDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [filtroAssoc, setFiltroAssoc] = useState('todas')
   const [expandedProf, setExpandedProf] = useState<string | null>(null)
+  const [buscaAluno, setBuscaAluno] = useState('')
 
   useEffect(() => { if (profile) loadData() }, [profile])
 
@@ -195,6 +196,45 @@ export default function EBDashboardPage() {
 
       {/* ========== VIEW: PAINEL GERAL ========== */}
       {viewMode === 'painel' && <>
+        {/* Busca global de alunos */}
+        <div className="relative">
+          <HiOutlineUserGroup className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input value={buscaAluno} onChange={e => setBuscaAluno(e.target.value)}
+            className="input-field pl-10 text-sm" placeholder="Buscar aluno por nome..." />
+        </div>
+        {buscaAluno.length >= 2 && (() => {
+          const term = buscaAluno.toLowerCase()
+          const found = alunos.filter(a => {
+            const nome = Array.isArray(a.pessoa) ? a.pessoa[0]?.nome : (a.pessoa as any)?.nome
+            return nome?.toLowerCase().includes(term)
+          }).slice(0, 15)
+          return found.length > 0 ? (
+            <div className="card p-3 space-y-1 -mt-2">
+              <p className="text-xs text-gray-400 mb-2">{found.length} aluno(s) encontrado(s)</p>
+              {found.map(a => {
+                const nome = Array.isArray(a.pessoa) ? a.pessoa[0]?.nome : (a.pessoa as any)?.nome
+                const cel = Array.isArray(a.pessoa) ? a.pessoa[0]?.celular : (a.pessoa as any)?.celular
+                const turma = turmas.find(t => t.id === a.classe_id)
+                return (
+                  <div key={a.id} className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-gray-50 text-xs">
+                    <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {(nome || '?').charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-700 truncate">{nome || '—'}</p>
+                      <p className="text-[10px] text-gray-400">{turma?.nome} • {a.licoes_concluidas} lições</p>
+                    </div>
+                    {a.decisao_batismo && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Decisão</span>}
+                    {cel && <span className="text-gray-400">{cel}</span>}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="card p-4 text-center text-xs text-gray-400 -mt-2">Nenhum aluno encontrado para "{buscaAluno}"</div>
+          )
+        })()}
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[

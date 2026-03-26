@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import jsPDF from 'jspdf'
 import {
   HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineLogout,
   HiOutlineChevronRight, HiOutlineTrendingUp, HiOutlineBell,
   HiOutlineStar, HiOutlineClipboardCheck, HiOutlineChatAlt2,
-  HiOutlinePaperAirplane, HiOutlineChevronLeft,
+  HiOutlinePaperAirplane, HiOutlineChevronLeft, HiOutlineDownload,
 } from 'react-icons/hi'
 
 // =============================================
@@ -114,21 +115,95 @@ export default function PortalDashboardPage() {
     setMensagens(data || [])
     setLoadingChat(false)
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+
+    // Realtime subscription
+    const channel = supabase
+      .channel(`chat-${m.classe_id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'eb_mensagens', filter: `classe_id=eq.${m.classe_id}` },
+        (payload) => {
+          setMensagens(prev => [...prev, payload.new as Mensagem])
+          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+        }
+      )
+      .subscribe()
+
+    // Cleanup on unmount or chat change
+    return () => { supabase.removeChannel(channel) }
   }
 
   async function enviarMensagem() {
     if (!novaMensagem.trim() || !chatTurma || !user) return
-    const { error } = await supabase.from('eb_mensagens').insert({
+    await supabase.from('eb_mensagens').insert({
       classe_id: chatTurma.classe_id,
       autor_nome: user.nome,
       autor_email: user.email,
       autor_tipo: 'aluno',
       mensagem: novaMensagem.trim(),
     })
-    if (!error) {
-      setNovaMensagem('')
-      openChat(chatTurma)
-    }
+    setNovaMensagem('')
+    // No need to reload — realtime subscription handles new messages
+  }
+
+  function gerarCertificado(nomeAluno: string, moduloTitulo: string, turmaNome: string) {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+    const w = 297, h = 210
+
+    // Border
+    doc.setDrawColor(22, 163, 74)
+    doc.setLineWidth(2)
+    doc.rect(10, 10, w - 20, h - 20)
+    doc.setLineWidth(0.5)
+    doc.rect(14, 14, w - 28, h - 28)
+
+    // Header
+    doc.setFontSize(14)
+    doc.setTextColor(100, 100, 100)
+    doc.text('ESCOLA BÍBLICA', w / 2, 35, { align: 'center' })
+    doc.setFontSize(10)
+    doc.text('União Norte Nordeste — IASD Movimento de Reforma', w / 2, 42, { align: 'center' })
+
+    // Title
+    doc.setFontSize(28)
+    doc.setTextColor(22, 101, 52)
+    doc.text('CERTIFICADO DE CONCLUSÃO', w / 2, 65, { align: 'center' })
+
+    // Line
+    doc.setDrawColor(22, 163, 74)
+    doc.setLineWidth(0.8)
+    doc.line(60, 72, w - 60, 72)
+
+    // Body
+    doc.setFontSize(13)
+    doc.setTextColor(60, 60, 60)
+    doc.text('Certificamos que', w / 2, 88, { align: 'center' })
+
+    doc.setFontSize(24)
+    doc.setTextColor(30, 30, 30)
+    doc.text(nomeAluno, w / 2, 102, { align: 'center' })
+
+    doc.setFontSize(13)
+    doc.setTextColor(60, 60, 60)
+    doc.text(`concluiu com êxito o módulo`, w / 2, 118, { align: 'center' })
+
+    doc.setFontSize(18)
+    doc.setTextColor(22, 101, 52)
+    doc.text(`"${moduloTitulo}"`, w / 2, 130, { align: 'center' })
+
+    doc.setFontSize(11)
+    doc.setTextColor(100, 100, 100)
+    doc.text(`Turma: ${turmaNome}`, w / 2, 142, { align: 'center' })
+    doc.text(`Data de conclusão: ${new Date().toLocaleDateString('pt-BR')}`, w / 2, 150, { align: 'center' })
+
+    // Footer
+    doc.setDrawColor(200, 200, 200)
+    doc.line(50, 175, 130, 175)
+    doc.line(170, 175, 250, 175)
+    doc.setFontSize(9)
+    doc.setTextColor(120, 120, 120)
+    doc.text('Professor(a)', 90, 181, { align: 'center' })
+    doc.text('Coordenação', 210, 181, { align: 'center' })
+
+    doc.save(`certificado_${nomeAluno.replace(/\s+/g, '_')}.pdf`)
   }
 
   async function handleLogout() {
@@ -390,8 +465,15 @@ export default function PortalDashboardPage() {
                           <div className="flex gap-2">
                             <Link to={`/eb/${c.id}`}
                               className="flex-1 text-center bg-green-600 hover:bg-green-700 text-white text-xs font-medium py-2 rounded-lg transition-colors">
-                              Estudar
+                              {pct >= 100 ? 'Revisar' : 'Estudar'}
                             </Link>
+                            {pct >= 100 && (
+                              <button onClick={() => gerarCertificado(user?.nome || 'Aluno', c.modulo_titulo || 'Escola Bíblica', c.nome)}
+                                className="w-9 h-9 flex items-center justify-center border border-amber-300 bg-amber-50 rounded-lg text-amber-600 hover:bg-amber-100 transition-colors"
+                                title="Baixar certificado">
+                                <HiOutlineDownload className="w-4 h-4" />
+                              </button>
+                            )}
                             <button onClick={() => openChat(m)}
                               className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-green-600 hover:border-green-300 transition-colors"
                               title="Chat da turma">
@@ -420,10 +502,10 @@ export default function PortalDashboardPage() {
               <h3 className="text-sm font-bold text-gray-800 mb-3">Atalhos</h3>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: HiOutlineBookOpen, label: 'Meus Estudos', color: 'bg-blue-50 text-blue-600', action: () => {} },
-                  { icon: HiOutlineClipboardCheck, label: 'Questionários', color: 'bg-green-50 text-green-600', action: () => {} },
-                  { icon: HiOutlineTrendingUp, label: 'Progresso', color: 'bg-purple-50 text-purple-600', action: () => {} },
-                  { icon: HiOutlineStar, label: 'Certificados', color: 'bg-amber-50 text-amber-600', action: () => {} },
+                  { icon: HiOutlineBookOpen, label: 'Meus Estudos', color: 'bg-blue-50 text-blue-600', action: () => { if (classes[0]) window.location.href = `/eb/${(classes[0].classe as any)?.id}` } },
+                  { icon: HiOutlineClipboardCheck, label: 'Comunidade', color: 'bg-green-50 text-green-600', action: () => navigate('/portal/forum') },
+                  { icon: HiOutlineTrendingUp, label: 'Meu Perfil', color: 'bg-purple-50 text-purple-600', action: () => navigate('/portal/perfil') },
+                  { icon: HiOutlineStar, label: 'Certificados', color: 'bg-amber-50 text-amber-600', action: () => { const c = classes.find(m => m.licoes_concluidas >= ((m.classe as any)?.total_licoes || 999)); if (c) gerarCertificado(user?.nome || '', (c.classe as any)?.modulo_titulo || '', (c.classe as any)?.nome || ''); else alert('Complete um módulo para gerar seu certificado.') } },
                 ].map((item, i) => (
                   <button key={i} onClick={item.action}
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors">

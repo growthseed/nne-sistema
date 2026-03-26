@@ -348,14 +348,7 @@ export default function EBPublicPage() {
 
     function selectAnswer(perguntaId: string, opcaoId: string) {
       setRespostas(prev => ({ ...prev, [perguntaId]: opcaoId }))
-      // Auto-advance after 400ms
-      setTimeout(() => {
-        if (currentPerguntaIdx < ponto.perguntas.length - 1) {
-          setQuizStep(prev => prev + 1)
-        } else if (ponto.compromissos_fe?.length > 0) {
-          setQuizStep(introOffset + ponto.perguntas.length) // go to compromissos
-        }
-      }, 400)
+      // No auto-advance — student sees feedback first, then clicks "Próxima"
     }
 
     return (
@@ -403,8 +396,11 @@ export default function EBPublicPage() {
               </div>
             )}
 
-            {/* STEP: Pergunta (one at a time) */}
-            {!isIntro && !isCompromissos && currentPergunta && (
+            {/* STEP: Pergunta (one at a time with feedback) */}
+            {!isIntro && !isCompromissos && currentPergunta && (() => {
+              const answered = !!respostas[currentPergunta.id]
+              const isCorrect = respostas[currentPergunta.id] === currentPergunta.resposta_correta
+              return (
               <div className="space-y-6 animate-fade-in" key={currentPergunta.id}>
                 <div>
                   <p className="text-xs font-medium text-primary-600 uppercase tracking-wider mb-3">
@@ -416,38 +412,83 @@ export default function EBPublicPage() {
                 <div className="space-y-2.5">
                   {currentPergunta.opcoes.map((o, oi) => {
                     const isSelected = respostas[currentPergunta.id] === o.id
-                    const letter = String.fromCharCode(65 + oi) // A, B, C, D
+                    const isCorrectOption = o.id === currentPergunta.resposta_correta
+                    const letter = String.fromCharCode(65 + oi)
+
+                    let borderClass = 'border-gray-200 hover:border-primary-300 hover:bg-gray-50 active:scale-[0.98]'
+                    let badgeClass = 'bg-gray-100 text-gray-500'
+                    let textClass = 'text-gray-700'
+
+                    if (answered) {
+                      if (isCorrectOption) {
+                        borderClass = 'border-green-500 bg-green-50 scale-[1.02]'
+                        badgeClass = 'bg-green-500 text-white'
+                        textClass = 'text-green-700 font-medium'
+                      } else if (isSelected && !isCorrectOption) {
+                        borderClass = 'border-red-400 bg-red-50 opacity-75'
+                        badgeClass = 'bg-red-400 text-white'
+                        textClass = 'text-red-600 line-through'
+                      } else {
+                        borderClass = 'border-gray-100 opacity-50'
+                      }
+                    } else if (isSelected) {
+                      borderClass = 'border-primary-500 bg-primary-50 scale-[1.02] shadow-md shadow-primary-500/10'
+                      badgeClass = 'bg-primary-500 text-white'
+                      textClass = 'text-primary-700 font-medium'
+                    }
+
                     return (
-                      <button key={o.id} onClick={() => selectAnswer(currentPergunta.id, o.id)}
-                        className={`w-full text-left flex items-center gap-4 px-5 py-4 rounded-2xl border-2 transition-all duration-200 ${
-                          isSelected
-                            ? 'border-primary-500 bg-primary-50 scale-[1.02] shadow-md shadow-primary-500/10'
-                            : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50 active:scale-[0.98]'
-                        }`}>
-                        <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${
-                          isSelected ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {letter}
+                      <button key={o.id} onClick={() => !answered && selectAnswer(currentPergunta.id, o.id)}
+                        disabled={answered}
+                        className={`w-full text-left flex items-center gap-4 px-5 py-4 rounded-2xl border-2 transition-all duration-300 ${borderClass}`}>
+                        <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${badgeClass}`}>
+                          {answered && isCorrectOption ? '✓' : answered && isSelected && !isCorrectOption ? '✗' : letter}
                         </span>
-                        <span className={`text-sm leading-snug ${isSelected ? 'text-primary-700 font-medium' : 'text-gray-700'}`}>
-                          {o.texto}
-                        </span>
+                        <span className={`text-sm leading-snug ${textClass}`}>{o.texto}</span>
                       </button>
                     )
                   })}
                 </div>
 
-                {/* Navigation hint */}
-                <div className="flex items-center justify-between text-xs text-gray-400 pt-2">
-                  <button onClick={prevStep} className="hover:text-gray-600 transition-colors">
+                {/* Feedback after answering */}
+                {answered && (
+                  <div className={`p-4 rounded-2xl animate-fade-in ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+                    <p className={`text-sm font-semibold ${isCorrect ? 'text-green-700' : 'text-amber-700'}`}>
+                      {isCorrect ? 'Correto!' : 'Resposta incorreta'}
+                    </p>
+                    {currentPergunta.explicacao && (
+                      <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">{currentPergunta.explicacao}</p>
+                    )}
+                    {currentPergunta.referencias?.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {currentPergunta.referencias.map((r: any, ri: number) => (
+                          <p key={ri} className="text-[10px] text-gray-500 italic">
+                            {r.texto}: "{r.conteudo}"
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between pt-2">
+                  <button onClick={prevStep} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
                     Anterior
                   </button>
-                  {respostas[currentPergunta.id] && (
-                    <span className="text-primary-500 font-medium animate-fade-in">Avançando...</span>
+                  {answered && (
+                    <button onClick={nextStep}
+                      className="bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 animate-fade-in">
+                      {currentPerguntaIdx === ponto.perguntas.length - 1
+                        ? (ponto.compromissos_fe?.length > 0 ? 'Compromissos' : 'Finalizar')
+                        : 'Próxima'}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
                   )}
                 </div>
               </div>
-            )}
+              )
+            })()}
 
             {/* STEP: Compromissos de Fé */}
             {isCompromissos && ponto.compromissos_fe?.length > 0 && (
