@@ -795,13 +795,19 @@ function TabTurmas() {
   const [novaAula, setNovaAula] = useState({ ponto_numero: 0, ponto_titulo: '', presentes: [] as string[] })
   const [pontosDisponiveis, setPontosDisponiveis] = useState<{ ponto_numero: number; titulo: string }[]>([])
 
-  const [detailTab, setDetailTab] = useState<'alunos' | 'aulas' | 'interacoes'>('alunos')
+  const [detailTab, setDetailTab] = useState<'alunos' | 'aulas' | 'interacoes' | 'diario'>('alunos')
 
   // Professor interactions
   interface Interacao { id: string; aluno_id: string; tipo: string; descricao: string | null; pedido_oracao: boolean; data_interacao: string; professor_nome: string | null }
   const [interacoes, setInteracoes] = useState<Interacao[]>([])
-  const [showNovaInteracao, setShowNovaInteracao] = useState<string | null>(null) // aluno_id
+  const [showNovaInteracao, setShowNovaInteracao] = useState<string | null>(null)
   const [interacaoForm, setInteracaoForm] = useState({ tipo: 'visita', descricao: '', pedido_oracao: false })
+
+  // Diário de turma
+  interface DiarioEntry { id: string; data: string; ponto_numero: number | null; ponto_titulo: string | null; resumo: string; observacoes: string | null; presentes: number; ausentes: number; professor_nome: string | null }
+  const [diario, setDiario] = useState<DiarioEntry[]>([])
+  const [showNovoDiario, setShowNovoDiario] = useState(false)
+  const [diarioForm, setDiarioForm] = useState({ data: new Date().toISOString().slice(0, 10), ponto_numero: 0, ponto_titulo: '', resumo: '', observacoes: '', presentes: 0, ausentes: 0 })
 
   useEffect(() => { if (profile) loadTurmas() }, [profile])
 
@@ -860,14 +866,13 @@ function TabTurmas() {
     setAlunos(alunosRes.data || [])
     setAulas(aulasRes.data || [])
 
-    // Load interactions
-    const { data: interacoesData } = await supabase
-      .from('eb_interacoes')
-      .select('*')
-      .eq('classe_id', turma.id)
-      .order('created_at', { ascending: false })
-      .limit(100)
-    setInteracoes(interacoesData || [])
+    // Load interactions + diary
+    const [interacoesRes, diarioRes] = await Promise.all([
+      supabase.from('eb_interacoes').select('*').eq('classe_id', turma.id).order('created_at', { ascending: false }).limit(100),
+      supabase.from('eb_diario_turma').select('*').eq('classe_id', turma.id).order('data', { ascending: false }).limit(50),
+    ])
+    setInteracoes(interacoesRes.data || [])
+    setDiario(diarioRes.data || [])
 
     // Load available pontos from eb_pontos for this module
     if (turma.modulo_id) {
@@ -978,6 +983,26 @@ function TabTurmas() {
     if (selectedTurma) openTurma(selectedTurma)
   }
 
+  async function salvarDiario() {
+    if (!selectedTurma || !profile || !diarioForm.resumo.trim()) return
+    const { error } = await supabase.from('eb_diario_turma').upsert({
+      classe_id: selectedTurma.id,
+      data: diarioForm.data,
+      ponto_numero: diarioForm.ponto_numero || null,
+      ponto_titulo: diarioForm.ponto_titulo || null,
+      resumo: diarioForm.resumo,
+      observacoes: diarioForm.observacoes || null,
+      presentes: diarioForm.presentes,
+      ausentes: diarioForm.ausentes,
+      professor_id: profile.id,
+      professor_nome: profile.nome || null,
+    }, { onConflict: 'classe_id,data' })
+    if (error) { alert('Erro ao salvar diário.'); return }
+    setShowNovoDiario(false)
+    setDiarioForm({ data: new Date().toISOString().slice(0, 10), ponto_numero: 0, ponto_titulo: '', resumo: '', observacoes: '', presentes: 0, ausentes: 0 })
+    openTurma(selectedTurma)
+  }
+
   async function registrarInteracao(alunoId: string) {
     if (!selectedTurma || !profile || !interacaoForm.tipo) return
     const { error } = await supabase.from('eb_interacoes').insert({
@@ -1085,6 +1110,7 @@ function TabTurmas() {
             { id: 'alunos' as const, label: 'Alunos', icon: HiOutlineUserGroup },
             { id: 'aulas' as const, label: 'Aulas', icon: HiOutlineAcademicCap },
             { id: 'interacoes' as const, label: `Interações (${interacoes.length})`, icon: HiOutlineClipboardCheck },
+            { id: 'diario' as const, label: `Diário (${diario.length})`, icon: HiOutlineDocumentText },
           ].map(t => {
             const Icon = t.icon
             return (
@@ -1295,6 +1321,111 @@ function TabTurmas() {
                         <HiOutlineLockClosed className="w-3 h-3" /> Liberar
                       </button>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Diário de Turma */}
+        {detailTab === 'diario' && (
+          <div className="card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700">Diário de Turma</h3>
+              <button onClick={() => setShowNovoDiario(!showNovoDiario)}
+                className="btn-primary text-xs flex items-center gap-1">
+                <HiOutlinePlus className="w-3.5 h-3.5" /> Novo Registro
+              </button>
+            </div>
+
+            {/* Form novo diário */}
+            {showNovoDiario && (
+              <div className="p-4 bg-primary-50/30 border border-primary-200 rounded-xl space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-gray-400">Data</label>
+                    <input type="date" value={diarioForm.data}
+                      onChange={e => setDiarioForm(prev => ({ ...prev, data: e.target.value }))}
+                      className="input-field text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-400">Ponto estudado</label>
+                    <select value={diarioForm.ponto_numero}
+                      onChange={e => {
+                        const num = parseInt(e.target.value)
+                        const p = pontosDisponiveis.find(p => p.ponto_numero === num)
+                        setDiarioForm(prev => ({ ...prev, ponto_numero: num, ponto_titulo: p?.titulo || '' }))
+                      }}
+                      className="input-field text-sm">
+                      <option value={0}>Selecione...</option>
+                      {aulas.map(a => (
+                        <option key={a.ponto_numero} value={a.ponto_numero}>Ponto {a.ponto_numero} — {a.ponto_titulo}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-400">Resumo da aula *</label>
+                  <textarea value={diarioForm.resumo}
+                    onChange={e => setDiarioForm(prev => ({ ...prev, resumo: e.target.value }))}
+                    className="input-field text-sm min-h-[80px]"
+                    placeholder="O que foi estudado, discussões, pontos principais..." />
+                </div>
+                <div>
+                  <label className="text-[10px] text-gray-400">Observações (opcional)</label>
+                  <textarea value={diarioForm.observacoes}
+                    onChange={e => setDiarioForm(prev => ({ ...prev, observacoes: e.target.value }))}
+                    className="input-field text-sm"
+                    placeholder="Alunos que precisam de atenção, pendências..." rows={2} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-gray-400">Presentes</label>
+                    <input type="number" value={diarioForm.presentes} min={0}
+                      onChange={e => setDiarioForm(prev => ({ ...prev, presentes: parseInt(e.target.value) || 0 }))}
+                      className="input-field text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-400">Ausentes</label>
+                    <input type="number" value={diarioForm.ausentes} min={0}
+                      onChange={e => setDiarioForm(prev => ({ ...prev, ausentes: parseInt(e.target.value) || 0 }))}
+                      className="input-field text-sm" />
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setShowNovoDiario(false)} className="btn-secondary text-xs">Cancelar</button>
+                  <button onClick={salvarDiario} className="btn-primary text-xs" disabled={!diarioForm.resumo.trim()}>Salvar</button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista de registros */}
+            {diario.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">Nenhum registro no diário</p>
+            ) : (
+              <div className="space-y-3">
+                {diario.map(d => (
+                  <div key={d.id} className="border border-gray-100 rounded-xl p-4 hover:border-primary-200 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="text-xs text-gray-400">{formatDate(d.data)}</p>
+                        {d.ponto_titulo && (
+                          <p className="text-sm font-medium text-gray-800 mt-0.5">
+                            Ponto {d.ponto_numero}: {d.ponto_titulo}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs shrink-0">
+                        <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{d.presentes} presentes</span>
+                        {d.ausentes > 0 && <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{d.ausentes} ausentes</span>}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{d.resumo}</p>
+                    {d.observacoes && (
+                      <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg p-2 italic">{d.observacoes}</p>
+                    )}
+                    <p className="text-[10px] text-gray-300 mt-2">Prof. {d.professor_nome || '—'}</p>
                   </div>
                 ))}
               </div>
