@@ -2,11 +2,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTeacherGamification } from '@/hooks/useTeacherGamification'
 import {
   HiOutlineAcademicCap, HiOutlineUserGroup, HiOutlineTrendingUp,
   HiOutlineOfficeBuilding, HiOutlineClipboardCheck, HiOutlineStar,
   HiOutlineChevronDown, HiOutlineChevronUp, HiOutlineEye,
-  HiOutlineExclamation, HiOutlineChartBar,
+  HiOutlineExclamation, HiOutlineChartBar, HiOutlineFire,
+  HiOutlineChatAlt2, HiOutlineGlobe, HiOutlineLightningBolt,
 } from 'react-icons/hi'
 
 interface TurmaResumo {
@@ -48,6 +50,12 @@ export default function EBDashboardPage() {
   const [filtroAssoc, setFiltroAssoc] = useState('todas')
   const [expandedProf, setExpandedProf] = useState<string | null>(null)
   const [buscaAluno, setBuscaAluno] = useState('')
+
+  // Teacher gamification (for current logged-in user)
+  const teacherGam = useTeacherGamification(profile?.id || null)
+
+  // Forum/chat stats
+  const [forumStats, setForumStats] = useState({ topicos: 0, respostas: 0, mensagens: 0 })
 
   useEffect(() => { if (profile) loadData() }, [profile])
 
@@ -93,6 +101,18 @@ export default function EBDashboardPage() {
         })))
       }
     }
+
+    // Forum/chat stats
+    const [topicosRes, msgRes] = await Promise.all([
+      supabase.from('eb_forum_topicos').select('id', { count: 'exact', head: true }),
+      supabase.from('eb_mensagens').select('id', { count: 'exact', head: true }),
+    ])
+    const respostasCount = await supabase.from('eb_forum_respostas').select('id', { count: 'exact', head: true })
+    setForumStats({
+      topicos: topicosRes.count || 0,
+      respostas: respostasCount.count || 0,
+      mensagens: msgRes.count || 0,
+    })
 
     setLoading(false)
   }
@@ -338,6 +358,66 @@ export default function EBDashboardPage() {
 
       {/* ========== VIEW: PROFESSORES ========== */}
       {viewMode === 'professores' && <>
+        {/* My gamification (teacher) */}
+        {teacherGam.profile && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Minha Influência</h3>
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0">
+                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                  <circle cx="32" cy="32" r="28" fill="none" stroke={teacherGam.currentLevel.color_hex} strokeWidth="4"
+                    strokeDasharray={`${teacherGam.progressToNextLevel * 1.76} 176`} strokeLinecap="round" className="transition-all duration-700" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-black" style={{ color: teacherGam.currentLevel.color_hex }}>{teacherGam.currentLevel.level_number}</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base font-bold text-gray-800">{teacherGam.currentLevel.name}</h3>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: teacherGam.currentLevel.color_hex + '20', color: teacherGam.currentLevel.color_hex }}>
+                    Nível {teacherGam.currentLevel.level_number}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">{teacherGam.currentLevel.description}</p>
+                <div className="mt-2 grid grid-cols-3 gap-3">
+                  <div><p className="text-lg font-bold text-gray-800">{teacherGam.profile.xp_total.toLocaleString()}</p><p className="text-[10px] text-gray-400">XP Total</p></div>
+                  <div><p className="text-lg font-bold text-blue-600">{teacherGam.profile.xp_current_week}</p><p className="text-[10px] text-gray-400">XP Semana</p></div>
+                  <div><p className="text-lg font-bold text-green-600">{teacherGam.profile.xp_current_month}</p><p className="text-[10px] text-gray-400">XP Mês</p></div>
+                </div>
+              </div>
+            </div>
+            {/* Teacher badges */}
+            {teacherGam.badges.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex gap-1.5 overflow-x-auto">
+                {teacherGam.badges.map(b => (
+                  <span key={b.id} className={`shrink-0 text-[10px] px-2.5 py-1 rounded-full font-medium ${
+                    b.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' : b.rarity === 'rare' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'
+                  }`} title={b.description}>{b.name}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stats do professor */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { value: totalAlunos, label: 'Total Alunos', color: 'text-blue-600 bg-blue-50', icon: HiOutlineUserGroup },
+            { value: turmasAtivas, label: 'Turmas Ativas', color: 'text-green-600 bg-green-50', icon: HiOutlineAcademicCap },
+            { value: totalDecisoes, label: 'Decisões', color: 'text-amber-600 bg-amber-50', icon: HiOutlineStar },
+            { value: forumStats.topicos + forumStats.respostas, label: 'Interações Fórum', color: 'text-purple-600 bg-purple-50', icon: HiOutlineChatAlt2 },
+          ].map((s, i) => (
+            <div key={i} className="card p-4">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${s.color}`}><s.icon className="w-5 h-5" /></div>
+              <p className="text-2xl font-bold text-gray-800">{s.value}</p>
+              <p className="text-xs text-gray-400">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Ranking */}
         <div className="card p-5">
           <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
             <HiOutlineStar className="w-4 h-4 text-amber-500" /> Ranking de Professores
@@ -350,31 +430,44 @@ export default function EBDashboardPage() {
                 <div key={p.nome}>
                   <button onClick={() => setExpandedProf(expandedProf === p.nome ? null : p.nome)}
                     className="w-full flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-gray-50 transition-colors text-left">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      idx === 0 ? 'bg-amber-100 text-amber-700' : idx === 1 ? 'bg-gray-200 text-gray-600' : idx === 2 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                      idx === 0 ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300' : idx === 1 ? 'bg-gray-200 text-gray-600' : idx === 2 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'
                     }`}>{idx + 1}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800">{p.nome}</p>
-                      <p className="text-[10px] text-gray-400">{p.ativas} turma{p.ativas !== 1 ? 's' : ''} ativa{p.ativas !== 1 ? 's' : ''}</p>
+                      <p className="text-sm font-semibold text-gray-800">{p.nome}</p>
+                      <p className="text-[10px] text-gray-400">{p.ativas} turma{p.ativas !== 1 ? 's' : ''} ativa{p.ativas !== 1 ? 's' : ''} • {p.turmas} total</p>
                     </div>
-                    <div className="flex items-center gap-4 shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-5 shrink-0">
                       <div className="text-right"><p className="text-sm font-bold text-blue-600">{p.alunos}</p><p className="text-[10px] text-gray-400">alunos</p></div>
                       <div className="text-right"><p className="text-sm font-bold text-green-600">{p.decisoes}</p><p className="text-[10px] text-gray-400">decisões</p></div>
+                      <div className="text-right hidden sm:block"><p className="text-sm font-bold text-purple-600">{Math.round(p.alunos > 0 ? (p.decisoes / p.alunos) * 100 : 0)}%</p><p className="text-[10px] text-gray-400">conversão</p></div>
                       {expandedProf === p.nome ? <HiOutlineChevronUp className="w-4 h-4 text-gray-400" /> : <HiOutlineChevronDown className="w-4 h-4 text-gray-400" />}
                     </div>
                   </button>
                   {expandedProf === p.nome && (
-                    <div className="ml-11 mb-3 space-y-1">
+                    <div className="ml-12 mb-3 space-y-1.5">
                       {filteredTurmas.filter(t => t.instrutor_nome === p.nome).map(t => {
                         const tAlunos = alunos.filter(a => a.classe_id === t.id)
                         const nps = npsData.find(n => n.classe_id === t.id)
+                        const pctConcluido = t.total_licoes > 0 ? Math.round((tAlunos.reduce((s, a) => s + a.licoes_concluidas, 0) / (tAlunos.length * t.total_licoes || 1)) * 100) : 0
                         return (
-                          <div key={t.id} className="flex items-center gap-3 py-2 px-3 bg-gray-50 rounded-lg text-xs">
-                            <span className={`px-2 py-0.5 rounded-full font-medium ${t.status === 'ativa' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>{t.status}</span>
-                            <span className="font-medium text-gray-700 flex-1 truncate">{t.nome}</span>
-                            <span className="text-gray-500">{tAlunos.length} alunos</span>
-                            <span className="text-gray-500">{tAlunos.filter(a => a.decisao_batismo).length} decisões</span>
-                            {nps && <span className={`font-medium ${nps.media >= 8 ? 'text-green-600' : nps.media >= 6 ? 'text-amber-600' : 'text-red-600'}`}>NPS {nps.media}</span>}
+                          <div key={t.id} className="bg-gray-50 rounded-xl p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${t.status === 'ativa' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>{t.status}</span>
+                                <span className="text-xs font-medium text-gray-700">{t.nome}</span>
+                                <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{t.modulo_id === 'principios_fe' ? 'PF' : 'CF'}</span>
+                              </div>
+                              {nps && <span className={`text-xs font-bold ${nps.media >= 8 ? 'text-green-600' : nps.media >= 6 ? 'text-amber-600' : 'text-red-600'}`}>NPS {nps.media}</span>}
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>{tAlunos.length} alunos</span>
+                              <span>{tAlunos.filter(a => a.decisao_batismo).length} decisões</span>
+                              <span>Progresso médio: {pctConcluido}%</span>
+                            </div>
+                            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${pctConcluido}%` }} />
+                            </div>
                           </div>
                         )
                       })}
@@ -384,6 +477,31 @@ export default function EBDashboardPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Comunidade / Fórum monitoring */}
+        <div className="card p-5">
+          <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <HiOutlineChatAlt2 className="w-4 h-4 text-purple-600" /> Comunidade & Fórum
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center p-3 bg-purple-50 rounded-xl">
+              <p className="text-2xl font-bold text-purple-600">{forumStats.topicos}</p>
+              <p className="text-[10px] text-gray-500">Tópicos</p>
+            </div>
+            <div className="text-center p-3 bg-blue-50 rounded-xl">
+              <p className="text-2xl font-bold text-blue-600">{forumStats.respostas}</p>
+              <p className="text-[10px] text-gray-500">Respostas</p>
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-xl">
+              <p className="text-2xl font-bold text-green-600">{forumStats.mensagens}</p>
+              <p className="text-[10px] text-gray-500">Mensagens Chat</p>
+            </div>
+          </div>
+          <a href="/portal/forum" target="_blank" rel="noopener noreferrer"
+            className="mt-3 flex items-center justify-center gap-2 text-xs text-purple-600 hover:text-purple-700 font-medium bg-purple-50 hover:bg-purple-100 py-2.5 rounded-xl transition-colors">
+            <HiOutlineGlobe className="w-4 h-4" /> Abrir Fórum da Comunidade
+          </a>
         </div>
       </>}
 
