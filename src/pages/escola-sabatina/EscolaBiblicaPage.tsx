@@ -795,7 +795,13 @@ function TabTurmas() {
   const [novaAula, setNovaAula] = useState({ ponto_numero: 0, ponto_titulo: '', presentes: [] as string[] })
   const [pontosDisponiveis, setPontosDisponiveis] = useState<{ ponto_numero: number; titulo: string }[]>([])
 
-  const [detailTab, setDetailTab] = useState<'alunos' | 'aulas'>('alunos')
+  const [detailTab, setDetailTab] = useState<'alunos' | 'aulas' | 'interacoes'>('alunos')
+
+  // Professor interactions
+  interface Interacao { id: string; aluno_id: string; tipo: string; descricao: string | null; pedido_oracao: boolean; data_interacao: string; professor_nome: string | null }
+  const [interacoes, setInteracoes] = useState<Interacao[]>([])
+  const [showNovaInteracao, setShowNovaInteracao] = useState<string | null>(null) // aluno_id
+  const [interacaoForm, setInteracaoForm] = useState({ tipo: 'visita', descricao: '', pedido_oracao: false })
 
   useEffect(() => { if (profile) loadTurmas() }, [profile])
 
@@ -853,6 +859,15 @@ function TabTurmas() {
     ])
     setAlunos(alunosRes.data || [])
     setAulas(aulasRes.data || [])
+
+    // Load interactions
+    const { data: interacoesData } = await supabase
+      .from('eb_interacoes')
+      .select('*')
+      .eq('classe_id', turma.id)
+      .order('created_at', { ascending: false })
+      .limit(100)
+    setInteracoes(interacoesData || [])
 
     // Load available pontos from eb_pontos for this module
     if (turma.modulo_id) {
@@ -963,6 +978,30 @@ function TabTurmas() {
     if (selectedTurma) openTurma(selectedTurma)
   }
 
+  async function registrarInteracao(alunoId: string) {
+    if (!selectedTurma || !profile || !interacaoForm.tipo) return
+    const { error } = await supabase.from('eb_interacoes').insert({
+      classe_id: selectedTurma.id,
+      aluno_id: alunoId,
+      professor_id: profile.id,
+      professor_nome: profile.nome || null,
+      tipo: interacaoForm.tipo,
+      descricao: interacaoForm.descricao || null,
+      pedido_oracao: interacaoForm.pedido_oracao,
+    })
+    if (error) { alert('Erro ao registrar interação.'); return }
+    setShowNovaInteracao(null)
+    setInteracaoForm({ tipo: 'visita', descricao: '', pedido_oracao: false })
+    openTurma(selectedTurma)
+  }
+
+  function openWhatsApp(celular: string | null, nomeAluno: string) {
+    if (!celular) { alert('Este aluno não possui celular cadastrado.'); return }
+    const num = celular.replace(/\D/g, '')
+    const msg = encodeURIComponent(`Olá ${nomeAluno}, tudo bem? Estou entrando em contato sobre a Escola Bíblica.`)
+    window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
+  }
+
   function getNome(a: AlunoEB) {
     return Array.isArray(a.pessoa) ? a.pessoa[0]?.nome || '—' : (a.pessoa as any)?.nome || '—'
   }
@@ -1045,6 +1084,7 @@ function TabTurmas() {
           {[
             { id: 'alunos' as const, label: 'Alunos', icon: HiOutlineUserGroup },
             { id: 'aulas' as const, label: 'Aulas', icon: HiOutlineAcademicCap },
+            { id: 'interacoes' as const, label: `Interações (${interacoes.length})`, icon: HiOutlineClipboardCheck },
           ].map(t => {
             const Icon = t.icon
             return (
@@ -1257,6 +1297,131 @@ function TabTurmas() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Interações do Professor */}
+        {detailTab === 'interacoes' && (
+          <div className="card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700">Registro de Interações</h3>
+              <span className="text-xs text-gray-400">{interacoes.length} registros</span>
+            </div>
+
+            {/* Ações rápidas por aluno */}
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Selecione um aluno para registrar uma ação:</p>
+              {alunos.map(a => {
+                const nome = getNome(a)
+                const cel = getCelular(a)
+                const alunoInteracoes = interacoes.filter(i => i.aluno_id === a.id)
+                const isOpen = showNovaInteracao === a.id
+
+                return (
+                  <div key={a.id} className="border border-gray-100 rounded-xl overflow-hidden">
+                    <div className="flex items-center gap-3 py-3 px-4 hover:bg-gray-50">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        {nome.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 truncate">{nome}</p>
+                        <p className="text-[10px] text-gray-400">{alunoInteracoes.length} interações</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {cel && (
+                          <button onClick={() => openWhatsApp(cel, nome)}
+                            className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-colors" title="WhatsApp">
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.612l4.458-1.495A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.347 0-4.516-.803-6.235-2.15l-.436-.345-2.632.882.882-2.632-.345-.436A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                          </button>
+                        )}
+                        <button onClick={() => setShowNovaInteracao(isOpen ? null : a.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isOpen ? 'bg-primary-600 text-white' : 'bg-primary-50 text-primary-700 hover:bg-primary-100'}`}>
+                          {isOpen ? 'Fechar' : 'Registrar'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Formulário de interação */}
+                    {isOpen && (
+                      <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-gray-100 space-y-3">
+                        <div className="flex gap-2">
+                          {[
+                            { id: 'visita', label: 'Visita', emoji: '🏠' },
+                            { id: 'ligacao', label: 'Ligação', emoji: '📞' },
+                            { id: 'mensagem', label: 'Mensagem', emoji: '💬' },
+                            { id: 'oracao', label: 'Oração', emoji: '🙏' },
+                          ].map(t => (
+                            <button key={t.id} onClick={() => setInteracaoForm(prev => ({ ...prev, tipo: t.id }))}
+                              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                interacaoForm.tipo === t.id ? 'bg-primary-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                              }`}>
+                              {t.emoji} {t.label}
+                            </button>
+                          ))}
+                        </div>
+                        <textarea value={interacaoForm.descricao}
+                          onChange={e => setInteracaoForm(prev => ({ ...prev, descricao: e.target.value }))}
+                          className="input-field text-sm min-h-[60px]" placeholder="Descreva a interação (opcional)..." />
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={interacaoForm.pedido_oracao}
+                              onChange={e => setInteracaoForm(prev => ({ ...prev, pedido_oracao: e.target.checked }))}
+                              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                            <span className="text-xs text-gray-600">Pedido de oração</span>
+                          </label>
+                          <button onClick={() => registrarInteracao(a.id)}
+                            className="bg-primary-600 hover:bg-primary-700 text-white text-xs px-4 py-2 rounded-lg transition-colors">
+                            Salvar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Histórico rápido do aluno */}
+                    {alunoInteracoes.length > 0 && !isOpen && (
+                      <div className="px-4 pb-3 flex gap-1.5 overflow-x-auto">
+                        {alunoInteracoes.slice(0, 5).map(i => (
+                          <span key={i.id} className="shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                            {i.tipo === 'visita' ? '🏠' : i.tipo === 'ligacao' ? '📞' : i.tipo === 'mensagem' ? '💬' : '🙏'}
+                            {' '}{formatDate(i.data_interacao)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Histórico geral */}
+            {interacoes.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold text-gray-600 mb-2 mt-4">Histórico Completo</h4>
+                <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                  {interacoes.map(i => {
+                    const aluno = alunos.find(a => a.id === i.aluno_id)
+                    const nomeAluno = aluno ? getNome(aluno) : '—'
+                    return (
+                      <div key={i.id} className="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 text-xs">
+                        <span className="text-lg shrink-0">
+                          {i.tipo === 'visita' ? '🏠' : i.tipo === 'ligacao' ? '📞' : i.tipo === 'mensagem' ? '💬' : '🙏'}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-700">
+                            <span className="text-primary-600">{i.professor_nome || 'Professor'}</span>
+                            {' → '}
+                            <span>{nomeAluno}</span>
+                          </p>
+                          {i.descricao && <p className="text-gray-500 mt-0.5">{i.descricao}</p>}
+                          {i.pedido_oracao && <span className="text-[10px] text-amber-600">Pedido de oração</span>}
+                        </div>
+                        <span className="text-[10px] text-gray-400 shrink-0">{formatDate(i.data_interacao)}</span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             )}
           </div>
