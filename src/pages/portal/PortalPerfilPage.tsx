@@ -207,11 +207,34 @@ export default function PortalPerfilPage() {
               <label className="text-xs font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
                 <HiOutlineCalendar className="w-3.5 h-3.5 text-gray-400" /> Data de nascimento
               </label>
-              {editing ? (
-                <input type="date" value={perfil.data_nascimento || ''}
-                  onChange={e => updateField('data_nascimento', e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none" />
-              ) : (
+              {editing ? (() => {
+                const parts = (perfil.data_nascimento || '').split('-')
+                const yyyy = parts[0] || '', mm = parts[1] || '', dd = parts[2] || ''
+                const setDate = (d: string, m: string, y: string) => {
+                  if (d && m && y) updateField('data_nascimento', `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`)
+                }
+                const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+                const anoAtual = new Date().getFullYear()
+                return (
+                  <div className="flex gap-2">
+                    <select value={dd} onChange={e => setDate(e.target.value, mm, yyyy)}
+                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none">
+                      <option value="">Dia</option>
+                      {Array.from({length:31},(_,i)=>i+1).map(d => <option key={d} value={String(d).padStart(2,'0')}>{d}</option>)}
+                    </select>
+                    <select value={mm} onChange={e => setDate(dd, e.target.value, yyyy)}
+                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none">
+                      <option value="">Mês</option>
+                      {meses.map((m,i) => <option key={i} value={String(i+1).padStart(2,'0')}>{m}</option>)}
+                    </select>
+                    <select value={yyyy} onChange={e => setDate(dd, mm, e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none">
+                      <option value="">Ano</option>
+                      {Array.from({length:100},(_,i)=>anoAtual-i).map(y => <option key={y} value={String(y)}>{y}</option>)}
+                    </select>
+                  </div>
+                )
+              })() : (
                 <p className="text-sm text-gray-800 py-2.5">
                   {perfil.data_nascimento ? new Date(perfil.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}
                 </p>
