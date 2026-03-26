@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
+import { awardXP } from '@/lib/gamification'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   HiOutlineBookOpen, HiOutlineUserGroup, HiOutlineAcademicCap,
@@ -851,6 +852,8 @@ function TabTurmas() {
       associacao_id: profile.associacao_id || null,
       uniao_id: profile.uniao_id || null,
     })
+    // Teacher XP: create class
+    if (profile?.id) awardXP(profile.id, 'teacher', 'create_class')
     setShowNova(false)
     setNovaTurma({ nome: '', modulo_id: 'principios_fe', data_inicio: '' })
     loadTurmas()
@@ -908,6 +911,8 @@ function TabTurmas() {
     if (!selectedTurma) return
     await supabase.from('classe_biblica_alunos').insert({ classe_id: selectedTurma.id, pessoa_id: pessoaId })
     await supabase.from('pessoas').update({ etapa_funil: 'classe_biblica' }).eq('id', pessoaId)
+    // Teacher XP: new student
+    if (profile?.id) awardXP(profile.id, 'teacher', 'new_student', pessoaId, 'student')
     setShowAddAluno(false)
     setAlunoSearch('')
     setAlunoResults([])
@@ -1005,6 +1010,14 @@ function TabTurmas() {
         registrado_por: profile.id,
       }))
       await supabase.from('classe_biblica_aula_presenca').insert(rows)
+    }
+    // Teacher XP: activate lesson + record attendance
+    if (profile?.id) {
+      awardXP(profile.id, 'teacher', 'activate_lesson', data.id, 'aula')
+      awardXP(profile.id, 'teacher', 'record_attendance', data.id, 'aula')
+      if (novaAula.presentes.length === alunos.length && alunos.length > 0) {
+        awardXP(profile.id, 'teacher', 'attendance_full', data.id, 'aula')
+      }
     }
     setShowNovaAula(false)
     setNovaAula({ ponto_numero: novaAula.ponto_numero + 1, ponto_titulo: '', presentes: [] })

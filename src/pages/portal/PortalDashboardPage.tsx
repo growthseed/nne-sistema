@@ -10,6 +10,7 @@ import {
   HiOutlineFire, HiOutlineLightningBolt,
 } from 'react-icons/hi'
 import { useStudentGamification } from '@/hooks/useGamification'
+import { awardXP, logStreakDay } from '@/lib/gamification'
 
 // =============================================
 // TYPES
@@ -142,8 +143,9 @@ export default function PortalDashboardPage() {
       autor_tipo: 'aluno',
       mensagem: novaMensagem.trim(),
     })
+    // Gamification
+    awardXP(user.id, 'student', 'chat_message')
     setNovaMensagem('')
-    // No need to reload — realtime subscription handles new messages
   }
 
   function gerarCertificado(nomeAluno: string, moduloTitulo: string, turmaNome: string) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { awardXP, logStreakDay } from '@/lib/gamification'
 import {
   HiOutlineChatAlt2, HiOutlinePlus, HiOutlineChevronLeft,
   HiOutlineReply, HiOutlineClock, HiOutlineUser,
@@ -93,6 +94,8 @@ export default function PortalForumPage() {
       categoria: novoCategoria,
     })
     if (error) { alert('Erro ao publicar. Tente novamente.'); setCriando(false); return }
+    // Gamification
+    if (user) { await awardXP(user.id, 'student', 'forum_post'); await logStreakDay(user.id, 'forum') }
     setShowNovoTopico(false)
     setNovoTitulo('')
     setNovoConteudo('')
@@ -125,6 +128,8 @@ export default function PortalForumPage() {
       conteudo: novaResposta.trim(),
     })
     if (error) { alert('Erro ao responder. Tente novamente.'); setRespondendo(false); return }
+    // Gamification
+    if (user) { await awardXP(user.id, 'student', 'forum_reply'); await logStreakDay(user.id, 'forum') }
     // Update topic counts
     await supabase.from('eb_forum_topicos').update({
       total_respostas: (selectedTopico.total_respostas || 0) + 1,

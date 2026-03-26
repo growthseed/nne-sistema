@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { awardXP, logStreakDay } from '@/lib/gamification'
 import {
   HiOutlineAcademicCap, HiOutlineCheck, HiOutlineChevronLeft,
   HiOutlineBookOpen, HiOutlineStar, HiOutlineClipboardCheck,
@@ -175,6 +176,16 @@ export default function EBPublicPage() {
     await supabase.from('classe_biblica_alunos').update({
       licoes_concluidas: selectedAluno.licoes_concluidas + 1,
     }).eq('id', selectedAluno.id)
+
+    // Gamification: award XP
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user?.id) {
+      const uid = session.user.id
+      await awardXP(uid, 'student', 'lesson_complete', ponto.id, 'lesson')
+      if (percentual === 100) await awardXP(uid, 'student', 'quiz_perfect', ponto.id, 'quiz')
+      else if (percentual >= 80) await awardXP(uid, 'student', 'quiz_good', ponto.id, 'quiz')
+      await logStreakDay(uid, 'quiz')
+    }
 
     setScore({ corretas, total })
     setSubmitted(true)
