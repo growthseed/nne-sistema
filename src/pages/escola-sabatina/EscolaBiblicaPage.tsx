@@ -792,7 +792,8 @@ function TabTurmas() {
 
   // Activate lesson
   const [showNovaAula, setShowNovaAula] = useState(false)
-  const [novaAula, setNovaAula] = useState({ ponto_numero: 1, ponto_titulo: '', presentes: [] as string[] })
+  const [novaAula, setNovaAula] = useState({ ponto_numero: 0, ponto_titulo: '', presentes: [] as string[] })
+  const [pontosDisponiveis, setPontosDisponiveis] = useState<{ ponto_numero: number; titulo: string }[]>([])
 
   const [detailTab, setDetailTab] = useState<'alunos' | 'aulas'>('alunos')
 
@@ -852,8 +853,18 @@ function TabTurmas() {
     ])
     setAlunos(alunosRes.data || [])
     setAulas(aulasRes.data || [])
-    const maxAula = (aulasRes.data || []).reduce((mx, a) => Math.max(mx, a.ponto_numero), 0)
-    setNovaAula(prev => ({ ...prev, ponto_numero: maxAula + 1 }))
+
+    // Load available pontos from eb_pontos for this module
+    if (turma.modulo_id) {
+      const { data: pontos } = await supabase
+        .from('eb_pontos')
+        .select('ponto_numero, titulo')
+        .eq('modulo_id', turma.modulo_id)
+        .order('ponto_numero')
+      const aulasNums = new Set((aulasRes.data || []).map(a => a.ponto_numero))
+      setPontosDisponiveis((pontos || []).filter(p => !aulasNums.has(p.ponto_numero)))
+    }
+
     setLoadingDetail(false)
   }
 
@@ -1164,19 +1175,28 @@ function TabTurmas() {
 
             {showNovaAula && alunos.length > 0 && (
               <div className="p-4 bg-blue-50/50 border border-blue-200 rounded-xl space-y-3">
-                <div className="flex gap-2">
-                  <div className="w-20">
-                    <label className="text-[10px] text-gray-400">Ponto nº</label>
-                    <input type="number" value={novaAula.ponto_numero}
-                      onChange={e => setNovaAula(prev => ({ ...prev, ponto_numero: parseInt(e.target.value) || 1 }))}
-                      className="input-field text-sm" min={1} />
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-[10px] text-gray-400">Título</label>
-                    <input value={novaAula.ponto_titulo}
-                      onChange={e => setNovaAula(prev => ({ ...prev, ponto_titulo: e.target.value }))}
-                      className="input-field text-sm" placeholder="Título do ponto..." />
-                  </div>
+                <div>
+                  <label className="text-[10px] text-gray-400 mb-1 block">Selecione o ponto doutrinário</label>
+                  {pontosDisponiveis.length === 0 ? (
+                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2">Todos os pontos já foram ativados nesta turma.</p>
+                  ) : (
+                    <select
+                      value={novaAula.ponto_numero}
+                      onChange={e => {
+                        const num = parseInt(e.target.value)
+                        const ponto = pontosDisponiveis.find(p => p.ponto_numero === num)
+                        setNovaAula(prev => ({ ...prev, ponto_numero: num, ponto_titulo: ponto?.titulo || '' }))
+                      }}
+                      className="input-field text-sm"
+                    >
+                      <option value={0}>Selecione um ponto...</option>
+                      {pontosDisponiveis.map(p => (
+                        <option key={p.ponto_numero} value={p.ponto_numero}>
+                          Ponto {p.ponto_numero} — {p.titulo}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
@@ -1206,7 +1226,7 @@ function TabTurmas() {
                   <span>{novaAula.presentes.length} de {alunos.length} presentes</span>
                   <div className="flex gap-2">
                     <button onClick={() => setShowNovaAula(false)} className="btn-secondary text-xs">Cancelar</button>
-                    <button onClick={ativarAula} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg">Ativar</button>
+                    <button onClick={ativarAula} disabled={novaAula.ponto_numero === 0} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg disabled:opacity-40">Ativar</button>
                   </div>
                 </div>
               </div>

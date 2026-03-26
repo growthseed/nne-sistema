@@ -121,10 +121,10 @@ export default function App() {
 
         {/* Escola Bíblica (seção própria) */}
         <Route path="escola-biblica">
-          <Route index element={<EBDashboardPage />} />
+          <Route index element={<EBDashboardPage key="painel" />} />
           <Route path="conteudo" element={<EscolaBiblicaPage />} />
-          <Route path="professores" element={<EBDashboardPage />} />
-          <Route path="nps" element={<EBDashboardPage />} />
+          <Route path="professores" element={<EBDashboardPage key="prof" />} />
+          <Route path="nps" element={<EBDashboardPage key="nps" />} />
         </Route>
 
         {/* Escola Sabatina */}
