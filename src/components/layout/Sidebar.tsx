@@ -212,7 +212,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      end={item.to === '/' || item.to === '/escola-sabatina' || item.to === '/secretaria' || item.to === '/missoes'}
+                      end={item.to === '/' || item.to === '/escola-sabatina' || item.to === '/secretaria' || item.to === '/missoes' || item.to === '/escola-biblica'}
                       className={({ isActive }) => isActive ? 'sidebar-subitem-active' : 'sidebar-subitem'}
                       onClick={() => onClose?.()}
                     >

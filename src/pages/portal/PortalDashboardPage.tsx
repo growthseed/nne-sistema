@@ -66,10 +66,24 @@ export default function PortalDashboardPage() {
     if (!session) { navigate('/portal/inicio', { replace: true }); return }
 
     const u = session.user
+    // Try to get display name from multiple sources
+    let displayName = u.user_metadata?.nome || u.user_metadata?.full_name || ''
+    if (!displayName) {
+      // Try usuarios table
+      const { data: usuario } = await supabase.from('usuarios').select('nome').eq('id', u.id).limit(1)
+      if (usuario?.[0]?.nome) displayName = usuario[0].nome
+    }
+    if (!displayName) {
+      // Try eb_perfis_aluno
+      const { data: perfil } = await supabase.from('eb_perfis_aluno').select('nome').eq('id', u.id).limit(1)
+      if (perfil?.[0]?.nome) displayName = perfil[0].nome
+    }
+    if (!displayName) displayName = u.email?.split('@')[0] || 'Aluno'
+
     setUser({
       id: u.id,
       email: u.email || '',
-      nome: u.user_metadata?.nome || u.user_metadata?.full_name || u.email?.split('@')[0] || 'Aluno',
+      nome: displayName,
       avatar: u.user_metadata?.avatar_url || null,
     })
 
@@ -681,7 +695,7 @@ export default function PortalDashboardPage() {
       {/* Footer */}
       <footer className="mt-8 py-4 border-t border-gray-100">
         <p className="text-center text-[11px] text-gray-400">
-          Escola Bíblica NNE — União Norte Nordeste Brasileira — IASDMR
+          Escola Bíblica NNE — União Norte Nordeste Brasileira — IASDMR — {new Date().getFullYear()}
         </p>
       </footer>
     </div>

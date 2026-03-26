@@ -57,7 +57,13 @@ export default function PortalLoginPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError(error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos' : error.message)
+      const msg = error.message?.toLowerCase() || ''
+      if (msg.includes('invalid') || msg.includes('credentials') || msg.includes('unauthorized'))
+        setError('E-mail ou senha incorretos. Verifique seus dados.')
+      else if (msg.includes('email not confirmed'))
+        setError('E-mail não confirmado. Verifique sua caixa de entrada.')
+      else
+        setError(error.message || 'Erro ao fazer login. Tente novamente.')
     } else {
       navigate('/portal', { replace: true })
     }
