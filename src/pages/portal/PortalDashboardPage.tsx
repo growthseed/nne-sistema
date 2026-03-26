@@ -70,12 +70,12 @@ export default function PortalDashboardPage() {
     })
 
     // Find pessoa linked to this email
-    const { data: pessoa } = await supabase
+    const { data: pessoaArr } = await supabase
       .from('pessoas')
       .select('id')
       .eq('email', u.email!)
       .limit(1)
-      .single()
+    const pessoa = pessoaArr?.[0] || null
 
     if (pessoa) {
       const { data: matriculas } = await supabase
