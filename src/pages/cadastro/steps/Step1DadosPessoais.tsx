@@ -15,7 +15,7 @@ interface PossivelDuplicata {
 }
 
 export default function Step1DadosPessoais() {
-  const { register, formState: { errors }, getValues } = useFormContext()
+  const { register, formState: { errors }, getValues, watch, setValue } = useFormContext()
   const [duplicatas, setDuplicatas] = useState<PossivelDuplicata[]>([])
   const [checking, setChecking] = useState(false)
 
@@ -125,12 +125,30 @@ export default function Step1DadosPessoais() {
 
         <div>
           <label className="label-field">Data de Nascimento *</label>
-          <input
-            type="date"
-            {...register('data_nascimento')}
-            className="input-field"
-            onBlur={verificarDuplicata}
-          />
+          {(() => {
+            const val = watch('data_nascimento') || ''
+            const parts = val.split('-')
+            const yyyy = parts[0] || '', mm = parts[1] || '', dd = parts[2] || ''
+            const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+            const anoAtual = new Date().getFullYear()
+            const setD = (d: string, m: string, y: string) => { if (d && m && y) setValue('data_nascimento', `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`) }
+            return (
+              <div className="flex gap-2" onBlur={verificarDuplicata}>
+                <select value={dd} onChange={e => setD(e.target.value, mm, yyyy)} className="flex-1 input-field">
+                  <option value="">Dia</option>
+                  {Array.from({length:31},(_,i)=>i+1).map(d => <option key={d} value={String(d).padStart(2,'0')}>{d}</option>)}
+                </select>
+                <select value={mm} onChange={e => setD(dd, e.target.value, yyyy)} className="flex-1 input-field">
+                  <option value="">Mês</option>
+                  {meses.map((m,i) => <option key={i} value={String(i+1).padStart(2,'0')}>{m}</option>)}
+                </select>
+                <select value={yyyy} onChange={e => setD(dd, mm, e.target.value)} className="flex-1 input-field">
+                  <option value="">Ano</option>
+                  {Array.from({length:100},(_,i)=>anoAtual-i).map(y => <option key={y} value={String(y)}>{y}</option>)}
+                </select>
+              </div>
+            )
+          })()
           {errors.data_nascimento && <p className="text-sm text-red-600 mt-1">{errors.data_nascimento.message as string}</p>}
         </div>
 

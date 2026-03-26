@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { awardXP } from '@/lib/gamification'
+import DateDropdowns from '@/components/ui/DateDropdowns'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   HiOutlineBookOpen, HiOutlineUserGroup, HiOutlineAcademicCap,
@@ -1406,9 +1407,7 @@ function TabTurmas() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[10px] text-gray-400">Data</label>
-                    <input type="date" value={diarioForm.data}
-                      onChange={e => setDiarioForm(prev => ({ ...prev, data: e.target.value }))}
-                      className="input-field text-sm" />
+                    <DateDropdowns value={diarioForm.data} onChange={v => setDiarioForm(prev => ({ ...prev, data: v }))} yearRange={5} futureYears={1} />
                   </div>
                   <div>
                     <label className="text-[10px] text-gray-400">Ponto estudado</label>
@@ -1555,10 +1554,7 @@ function TabTurmas() {
                             ))}
                           </div>
                           <div className="shrink-0">
-                            <label className="text-[10px] text-gray-400 block mb-0.5">Data</label>
-                            <input type="date" value={interacaoForm.data}
-                              onChange={e => setInteracaoForm(prev => ({ ...prev, data: e.target.value }))}
-                              className="input-field text-xs w-32 py-2" />
+                            <DateDropdowns value={interacaoForm.data} onChange={v => setInteracaoForm(prev => ({ ...prev, data: v }))} yearRange={2} futureYears={0} />
                           </div>
                         </div>
                         <textarea value={interacaoForm.descricao}
@@ -1664,12 +1660,7 @@ function TabTurmas() {
           </div>
           <input value={novaTurma.nome} onChange={e => setNovaTurma(p => ({ ...p, nome: e.target.value }))}
             className="input-field" placeholder="Nome da turma (ex: Turma Sábado Manhã - Central)" autoFocus />
-          <div>
-            <label className="text-xs text-gray-500">Data de início</label>
-            <input type="date" value={novaTurma.data_inicio}
-              onChange={e => setNovaTurma(p => ({ ...p, data_inicio: e.target.value }))}
-              className="input-field" />
-          </div>
+          <DateDropdowns label="Data de início" value={novaTurma.data_inicio} onChange={v => setNovaTurma(p => ({ ...p, data_inicio: v }))} yearRange={2} futureYears={1} />
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowNova(false)} className="btn-secondary text-sm">Cancelar</button>
             <button onClick={criarTurma} className="btn-primary text-sm" disabled={!novaTurma.nome.trim()}>Criar Turma</button>

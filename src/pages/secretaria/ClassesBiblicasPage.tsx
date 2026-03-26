@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import DateDropdowns from '@/components/ui/DateDropdowns'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatDateBR } from '@/lib/secretaria-constants'
 import {
@@ -846,13 +847,7 @@ export default function ClassesBiblicasPage() {
           />
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="text-xs text-gray-400">Data de início</label>
-              <input
-                type="date"
-                value={novaClasse.data_inicio}
-                onChange={e => setNovaClasse(prev => ({ ...prev, data_inicio: e.target.value }))}
-                className="input-field"
-              />
+              <DateDropdowns label="Data de início" value={novaClasse.data_inicio} onChange={v => setNovaClasse(prev => ({ ...prev, data_inicio: v }))} yearRange={2} futureYears={1} />
             </div>
             <div className="w-28">
               <label className="text-xs text-gray-400">Total de pontos</label>

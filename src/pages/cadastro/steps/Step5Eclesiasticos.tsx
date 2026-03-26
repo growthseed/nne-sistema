@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form'
+import DateDropdowns from '@/components/ui/DateDropdowns'
 
 const formasRecepcao = [
   'Batismo',
@@ -8,14 +9,11 @@ const formasRecepcao = [
 ]
 
 export default function Step5Eclesiasticos() {
-  const { register, formState: { errors } } = useFormContext()
+  const { register, formState: { errors }, watch, setValue } = useFormContext()
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label className="label-field">Data do Batismo</label>
-        <input type="date" {...register('data_batismo')} className="input-field" />
-      </div>
+      <DateDropdowns label="Data do Batismo" value={watch('data_batismo')} onChange={v => setValue('data_batismo', v)} yearRange={80} futureYears={0} />
 
       <div>
         <label className="label-field">Forma de Recepção *</label>
@@ -27,8 +25,7 @@ export default function Step5Eclesiasticos() {
       </div>
 
       <div>
-        <label className="label-field">Data de Recepção *</label>
-        <input type="date" {...register('data_recepcao')} className="input-field" />
+        <DateDropdowns label="Data de Recepção *" value={watch('data_recepcao')} onChange={v => setValue('data_recepcao', v)} yearRange={80} futureYears={0} />
         {errors.data_recepcao && <p className="text-sm text-red-600 mt-1">{errors.data_recepcao.message as string}</p>}
       </div>
 
