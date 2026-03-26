@@ -374,13 +374,16 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           <HiOutlineChevronLeft className="w-4 h-4" /> Voltar aos pontos
         </button>
 
-        {/* Header do ponto */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
-          <div className="absolute top-4 right-4 w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-4xl font-black">
+        {/* Header do ponto (imagem como background) */}
+        <div className="relative overflow-hidden rounded-2xl min-h-[180px] text-white"
+          style={selectedPonto.imagem_url ? { backgroundImage: `url(${selectedPonto.imagem_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+          <div className={`absolute inset-0 ${selectedPonto.imagem_url ? 'bg-gradient-to-r from-black/70 via-black/50 to-black/30' : 'bg-gradient-to-r from-blue-600 to-indigo-600'}`} />
+          <div className="relative p-6">
+          <div className="absolute top-4 right-4 w-20 h-20 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-4xl font-black">
             {selectedPonto.ponto_numero}
           </div>
           <div className="pr-24">
-            <p className="text-blue-200 text-xs font-medium uppercase tracking-wider mb-1">
+            <p className="text-white/70 text-xs font-medium uppercase tracking-wider mb-1">
               {currentModulo?.titulo} • Ponto {selectedPonto.ponto_numero}
             </p>
             {editing ? (
@@ -420,10 +423,11 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
               )}
             </div>
           )}
+          </div>{/* close relative p-6 */}
         </div>
 
-        {/* Imagem do ponto (sempre visível) */}
-        {selectedPonto.imagem_url && !editing && (
+        {/* Imagem separada removida — agora é background do header */}
+        {selectedPonto.imagem_url && !editing && false && (
           <div className="rounded-xl overflow-hidden">
             <img src={selectedPonto.imagem_url} alt={selectedPonto.titulo} className="w-full h-48 object-cover" />
           </div>
