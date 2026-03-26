@@ -108,6 +108,8 @@ export default function CadastroDashboardPage() {
   const [showDetail, setShowDetail] = useState<CadastroRow | null>(null)
   const [pageTab, setPageTab] = useState<PageTab>('dashboard')
   const [filtroAssociacao, setFiltroAssociacao] = useState<string>('todas')
+  const [gestaoExpanded, setGestaoExpanded] = useState<string | null>(null)
+  const [gestaoStatus, setGestaoStatus] = useState<'todos' | 'completos' | 'parciais'>('todos')
 
   const publicUrl = `${window.location.origin}/formulario`
 
@@ -471,15 +473,12 @@ export default function CadastroDashboardPage() {
 
       {/* ========== TAB: GESTÃO POR ASSOCIAÇÃO ========== */}
       {pageTab === 'gestao' && (() => {
-        const [expandedAssoc, setExpandedAssoc] = [filtroAssociacao, setFiltroAssociacao]
-        const [statusFilter, setStatusFilter] = [tabFilter, setTabFilter]
-
         function getAssocRespostas(assocId: string | null) {
           const base = assocId === null
             ? respostas.filter(r => !r.associacao_id)
             : respostas.filter(r => r.associacao_id === assocId)
-          if (statusFilter === 'completos') return base.filter(r => r.completo)
-          if (statusFilter === 'parciais') return base.filter(r => !r.completo)
+          if (gestaoStatus === 'completos') return base.filter(r => r.completo)
+          if (gestaoStatus === 'parciais') return base.filter(r => !r.completo)
           return base
         }
 
@@ -494,8 +493,8 @@ export default function CadastroDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
               {([['todos', 'Todos'], ['completos', 'Completos'], ['parciais', 'Parciais']] as const).map(([key, label]) => (
-                <button key={key} onClick={() => setStatusFilter(key)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${statusFilter === key ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500'}`}>
+                <button key={key} onClick={() => setGestaoStatus(key)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${gestaoStatus === key ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500'}`}>
                   {label}
                 </button>
               ))}
@@ -528,12 +527,12 @@ export default function CadastroDashboardPage() {
               const completos = allAssocRespostas.filter(r => r.completo).length
               const parciais = allAssocRespostas.length - completos
               const pct = allAssocRespostas.length > 0 ? Math.round((completos / allAssocRespostas.length) * 100) : 0
-              const isExpanded = expandedAssoc === a.id
+              const isExpanded = gestaoExpanded === a.id
 
               return (
                 <div key={a.id} className="card overflow-hidden">
                   {/* Header */}
-                  <button onClick={() => setExpandedAssoc(isExpanded ? 'todas' : a.id)}
+                  <button onClick={() => setGestaoExpanded(isExpanded ? null : a.id)}
                     className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
                     <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0">{a.sigla}</span>
                     <div className="flex-1 min-w-0">
@@ -562,7 +561,7 @@ export default function CadastroDashboardPage() {
                   {isExpanded && (
                     <div className="border-t border-gray-100">
                       {searched.length === 0 ? (
-                        <p className="p-4 text-sm text-gray-400 text-center">Nenhuma resposta {statusFilter !== 'todos' ? `(${statusFilter})` : ''}</p>
+                        <p className="p-4 text-sm text-gray-400 text-center">Nenhuma resposta {gestaoStatus !== 'todos' ? `(${gestaoStatus})` : ''}</p>
                       ) : (
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm">
