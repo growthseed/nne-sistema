@@ -243,13 +243,13 @@ export default function PortalForumPage() {
         </button>
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Comunidade</h1>
             <p className="text-sm text-gray-500">Compartilhe, pergunte e aprenda com outros alunos</p>
           </div>
           <button onClick={() => setShowNovoTopico(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-green-600/20">
+            className="flex items-center gap-1.5 px-4 py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-green-600/20 shrink-0">
             <HiOutlinePlus className="w-4 h-4" /> Novo Tópico
           </button>
         </div>

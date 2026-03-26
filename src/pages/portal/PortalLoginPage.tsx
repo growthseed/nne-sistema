@@ -110,9 +110,9 @@ export default function PortalLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-white">
       {/* LEFT: Form */}
-      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-12">
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-8 sm:py-12">
         <div className="w-full max-w-sm mx-auto">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-10">
@@ -161,12 +161,12 @@ export default function PortalLoginPage() {
               {/* Social */}
               <div className="space-y-2.5 mb-6">
                 <button onClick={() => handleOAuth('google')} disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
                   <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z"/><path fill="#34A853" d="M16.04 18.013C14.95 18.72 13.56 19.09 12 19.09c-3.07 0-5.654-2.06-6.6-4.84L1.24 17.35C3.198 21.3 7.27 24 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987Z"/><path fill="#4A90D9" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21Z"/><path fill="#FBBC05" d="M5.4 14.25A7.12 7.12 0 0 1 4.909 12c0-.782.136-1.54.39-2.25L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.928.463 3.75 1.24 5.35l4.16-3.1Z"/></svg>
                   Entrar com Google
                 </button>
                 <button onClick={() => handleOAuth('facebook')} disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                   Entrar com Facebook
                 </button>
@@ -239,12 +239,12 @@ export default function PortalLoginPage() {
 
               <div className="space-y-2.5 mb-6">
                 <button onClick={() => handleOAuth('google')} disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
                   <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z"/><path fill="#34A853" d="M16.04 18.013C14.95 18.72 13.56 19.09 12 19.09c-3.07 0-5.654-2.06-6.6-4.84L1.24 17.35C3.198 21.3 7.27 24 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987Z"/><path fill="#4A90D9" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21Z"/><path fill="#FBBC05" d="M5.4 14.25A7.12 7.12 0 0 1 4.909 12c0-.782.136-1.54.39-2.25L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.928.463 3.75 1.24 5.35l4.16-3.1Z"/></svg>
                   Cadastrar com Google
                 </button>
                 <button onClick={() => handleOAuth('facebook')} disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                   Cadastrar com Facebook
                 </button>

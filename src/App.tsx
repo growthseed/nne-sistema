@@ -23,7 +23,7 @@ import FinanceiroPage from '@/pages/financeiro/FinanceiroPage'
 import LancamentosPage from '@/pages/financeiro/LancamentosPage'
 import ReceitaCampoPage from '@/pages/financeiro/ReceitaCampoPage'
 import ClassesPage from '@/pages/escola-sabatina/ClassesPage'
-// ClassesBatismaisPage removida - substituída por EscolaBiblicaPage em /missoes
+// ClassesBatismaisPage removida
 import PresencaPage from '@/pages/escola-sabatina/PresencaPage'
 import MissoesDashboardPage from '@/pages/missoes/MissoesDashboardPage'
 import RelatorioMissionarioPage from '@/pages/missoes/RelatorioMissionarioPage'
@@ -42,7 +42,7 @@ import AnalyticsPage from '@/pages/AnalyticsPage'
 import RelatoriosPage from '@/pages/RelatoriosPage'
 import ConfiguracoesPage from '@/pages/ConfiguracoesPage'
 import QualidadeDadosPage from '@/pages/secretaria/QualidadeDadosPage'
-import DuplicadosPage from '@/pages/secretaria/DuplicadosPage'
+// DuplicadosPage removida
 import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
 import DiretorioIgrejasPage from '@/pages/DiretorioIgrejasPage'
 import EBPublicPage from '@/pages/public/EBPublicPage'

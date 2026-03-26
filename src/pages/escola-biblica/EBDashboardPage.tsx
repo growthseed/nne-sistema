@@ -227,7 +227,7 @@ export default function EBDashboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
                   </div>
-                  <div className="flex items-center gap-6 shrink-0 text-right">
+                  <div className="flex items-center gap-3 sm:gap-6 shrink-0 text-right">
                     <div><p className="text-sm font-bold text-gray-700">{a.turmas}</p><p className="text-[10px] text-gray-400">turmas</p></div>
                     <div><p className="text-sm font-bold text-blue-600">{a.alunos}</p><p className="text-[10px] text-gray-400">alunos</p></div>
                     <div><p className="text-sm font-bold text-amber-600">{a.decisoes}</p><p className="text-[10px] text-gray-400">decisões</p></div>
@@ -266,7 +266,7 @@ export default function EBDashboardPage() {
         <div className="card p-5">
           <h2 className="text-sm font-bold text-gray-800 mb-4">Todas as Turmas ({filteredTurmas.length})</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className="text-left text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
                   <th className="pb-3 pr-4">Turma</th>

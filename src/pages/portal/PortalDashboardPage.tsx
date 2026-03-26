@@ -159,7 +159,7 @@ export default function PortalDashboardPage() {
             </div>
             <span className="text-sm font-bold text-gray-800 hidden sm:block">Escola Bíblica</span>
           </Link>
-          <nav className="hidden sm:flex items-center gap-1">
+          <nav className="flex items-center gap-1">
             <button onClick={() => setPageView('dashboard')}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 pageView === 'dashboard' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -322,7 +322,7 @@ export default function PortalDashboardPage() {
                     <s.icon className="w-5 h-5" />
                   </div>
                   <p className="text-xl font-bold text-gray-800">{s.value}</p>
-                  <p className="text-[11px] text-gray-400">{s.label}</p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 leading-tight">{s.label}</p>
                 </div>
               ))}
             </div>

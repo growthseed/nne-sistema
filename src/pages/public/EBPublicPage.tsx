@@ -282,7 +282,7 @@ export default function EBPublicPage() {
                 <div className="flex justify-center gap-1.5 mb-3 flex-wrap">
                   {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
                     <button key={n} onClick={() => setNpsNota(n)}
-                      className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
+                      className={`w-8 h-11 rounded-lg text-sm font-bold transition-all ${
                         npsNota === n
                           ? n <= 6 ? 'bg-red-500 text-white scale-110' : n <= 8 ? 'bg-yellow-500 text-white scale-110' : 'bg-green-500 text-white scale-110'
                           : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
