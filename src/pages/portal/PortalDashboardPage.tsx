@@ -215,6 +215,9 @@ export default function PortalDashboardPage() {
     navigate('/portal/login', { replace: true })
   }
 
+  // Gamification — MUST be before any conditional returns (React hooks rule)
+  const gam = useStudentGamification(user?.id || null)
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -224,9 +227,6 @@ export default function PortalDashboardPage() {
   }
 
   const initial = user?.nome?.charAt(0).toUpperCase() || 'A'
-
-  // Gamification
-  const gam = useStudentGamification(user?.id || null)
 
   // ===== TOP NAV (shared) =====
   const TopNav = () => (
