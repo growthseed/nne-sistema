@@ -160,23 +160,21 @@ export default function PortalDashboardPage() {
             <span className="text-sm font-bold text-gray-800 hidden sm:block">Escola Bíblica</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-1">
-            {[
-              { label: 'Início', active: pageView === 'dashboard', onClick: () => setPageView('dashboard') },
-            ].map(item => (
-              <button key={item.label} onClick={item.onClick}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  item.active ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                }`}>
-                {item.label}
-              </button>
-            ))}
+            <button onClick={() => setPageView('dashboard')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                pageView === 'dashboard' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}>Início</button>
+            <Link to="/portal/forum"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors">
+              Comunidade
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
           <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
             <HiOutlineBell className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
+          <Link to="/portal/perfil" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             {user?.avatar ? (
               <img src={user.avatar} alt="" className="w-8 h-8 rounded-full border-2 border-green-200" />
             ) : (
@@ -185,7 +183,7 @@ export default function PortalDashboardPage() {
               </div>
             )}
             <span className="text-sm font-medium text-gray-700 hidden sm:block">{user?.nome?.split(' ')[0]}</span>
-          </div>
+          </Link>
           <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Sair">
             <HiOutlineLogout className="w-5 h-5" />
           </button>

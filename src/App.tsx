@@ -49,6 +49,8 @@ import EBPublicPage from '@/pages/public/EBPublicPage'
 import EscolaBiblicaPage from '@/pages/escola-sabatina/EscolaBiblicaPage'
 import PortalLoginPage from '@/pages/portal/PortalLoginPage'
 import PortalDashboardPage from '@/pages/portal/PortalDashboardPage'
+import PortalPerfilPage from '@/pages/portal/PortalPerfilPage'
+import PortalForumPage from '@/pages/portal/PortalForumPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -61,6 +63,8 @@ export default function App() {
       <Route path="/eb/:classeId" element={<EBPublicPage />} />
       <Route path="/portal/login" element={<PortalLoginPage />} />
       <Route path="/portal" element={<PortalDashboardPage />} />
+      <Route path="/portal/perfil" element={<PortalPerfilPage />} />
+      <Route path="/portal/forum" element={<PortalForumPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
