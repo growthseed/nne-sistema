@@ -801,7 +801,7 @@ function TabTurmas() {
   interface Interacao { id: string; aluno_id: string; tipo: string; descricao: string | null; pedido_oracao: boolean; data_interacao: string; professor_nome: string | null }
   const [interacoes, setInteracoes] = useState<Interacao[]>([])
   const [showNovaInteracao, setShowNovaInteracao] = useState<string | null>(null)
-  const [interacaoForm, setInteracaoForm] = useState({ tipo: 'visita', descricao: '', pedido_oracao: false })
+  const [interacaoForm, setInteracaoForm] = useState({ tipo: 'visita', descricao: '', pedido_oracao: false, data: new Date().toISOString().slice(0, 10) })
 
   // Diário de turma
   interface DiarioEntry { id: string; data: string; ponto_numero: number | null; ponto_titulo: string | null; resumo: string; observacoes: string | null; presentes: number; ausentes: number; professor_nome: string | null }
@@ -1046,10 +1046,11 @@ function TabTurmas() {
       tipo: interacaoForm.tipo,
       descricao: interacaoForm.descricao || null,
       pedido_oracao: interacaoForm.pedido_oracao,
+      data_interacao: interacaoForm.data,
     })
     if (error) { alert('Erro ao registrar interação.'); return }
     setShowNovaInteracao(null)
-    setInteracaoForm({ tipo: 'visita', descricao: '', pedido_oracao: false })
+    setInteracaoForm({ tipo: 'visita', descricao: '', pedido_oracao: false, data: new Date().toISOString().slice(0, 10) })
     openTurma(selectedTurma)
   }
 
@@ -1520,20 +1521,28 @@ function TabTurmas() {
                     {/* Formulário de interação */}
                     {isOpen && (
                       <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-gray-100 space-y-3">
-                        <div className="flex gap-2">
-                          {[
-                            { id: 'visita', label: 'Visita', emoji: '🏠' },
-                            { id: 'ligacao', label: 'Ligação', emoji: '📞' },
-                            { id: 'mensagem', label: 'Mensagem', emoji: '💬' },
-                            { id: 'oracao', label: 'Oração', emoji: '🙏' },
-                          ].map(t => (
-                            <button key={t.id} onClick={() => setInteracaoForm(prev => ({ ...prev, tipo: t.id }))}
-                              className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
-                                interacaoForm.tipo === t.id ? 'bg-primary-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                              }`}>
-                              {t.emoji} {t.label}
-                            </button>
-                          ))}
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1 flex gap-2">
+                            {[
+                              { id: 'visita', label: 'Visita', emoji: '🏠' },
+                              { id: 'ligacao', label: 'Ligação', emoji: '📞' },
+                              { id: 'mensagem', label: 'Mensagem', emoji: '💬' },
+                              { id: 'oracao', label: 'Oração', emoji: '🙏' },
+                            ].map(t => (
+                              <button key={t.id} onClick={() => setInteracaoForm(prev => ({ ...prev, tipo: t.id }))}
+                                className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                  interacaoForm.tipo === t.id ? 'bg-primary-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                }`}>
+                                {t.emoji} {t.label}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="shrink-0">
+                            <label className="text-[10px] text-gray-400 block mb-0.5">Data</label>
+                            <input type="date" value={interacaoForm.data}
+                              onChange={e => setInteracaoForm(prev => ({ ...prev, data: e.target.value }))}
+                              className="input-field text-xs w-32 py-2" />
+                          </div>
                         </div>
                         <textarea value={interacaoForm.descricao}
                           onChange={e => setInteracaoForm(prev => ({ ...prev, descricao: e.target.value }))}
