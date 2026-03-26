@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import {
   HiOutlineAcademicCap, HiOutlineCheck, HiOutlineChevronLeft,
   HiOutlineBookOpen, HiOutlineStar, HiOutlineClipboardCheck,
-  HiOutlineLockClosed, HiOutlineUserCircle,
+  HiOutlineLockClosed, HiOutlineUserCircle, HiOutlineThumbUp,
 } from 'react-icons/hi'
 
 // =============================================
@@ -65,6 +65,11 @@ export default function EBPublicPage() {
   const [submitted, setSubmitted] = useState(false)
   const [score, setScore] = useState({ corretas: 0, total: 0 })
   const [submitting, setSubmitting] = useState(false)
+
+  // NPS state
+  const [npsNota, setNpsNota] = useState<number | null>(null)
+  const [npsComentario, setNpsComentario] = useState('')
+  const [npsSent, setNpsSent] = useState(false)
 
   useEffect(() => {
     if (classeId) loadClasse()
@@ -151,6 +156,19 @@ export default function EBPublicPage() {
     setSubmitting(false)
   }
 
+  async function submitNps() {
+    if (npsNota === null || !selectedAluno || !selectedAula || !classe) return
+    await supabase.from('eb_nps').insert({
+      classe_id: classe.id,
+      aluno_id: selectedAluno.id,
+      aula_id: selectedAula.id,
+      ponto_numero: selectedAula.ponto_numero,
+      nota: npsNota,
+      comentario: npsComentario || null,
+    })
+    setNpsSent(true)
+  }
+
   function getNome(a: AlunoInfo) {
     return Array.isArray(a.pessoa) ? a.pessoa[0]?.nome || '—' : (a.pessoa as any)?.nome || '—'
   }
@@ -225,7 +243,52 @@ export default function EBPublicPage() {
             })}
           </div>
 
-          <button onClick={() => { setSelectedAula(null); setPonto(null); setSubmitted(false) }}
+          {/* NPS */}
+          <div className="card p-5">
+            {npsSent ? (
+              <div className="text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-2">
+                  <HiOutlineCheck className="w-6 h-6" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Obrigado pela sua avaliação!</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-sm font-semibold text-gray-700 text-center mb-3">
+                  O quanto você gostou desta aula?
+                </h3>
+                <div className="flex justify-center gap-1.5 mb-3 flex-wrap">
+                  {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
+                    <button key={n} onClick={() => setNpsNota(n)}
+                      className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
+                        npsNota === n
+                          ? n <= 6 ? 'bg-red-500 text-white scale-110' : n <= 8 ? 'bg-yellow-500 text-white scale-110' : 'bg-green-500 text-white scale-110'
+                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-400 mb-4 px-1">
+                  <span>Não gostei</span>
+                  <span>Adorei!</span>
+                </div>
+                {npsNota !== null && (
+                  <>
+                    <textarea value={npsComentario} onChange={e => setNpsComentario(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-primary-500 mb-3"
+                      placeholder="Deixe um comentário (opcional)..." rows={2} />
+                    <button onClick={submitNps}
+                      className="w-full bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium py-2.5 rounded-xl transition-colors">
+                      Enviar avaliação
+                    </button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          <button onClick={() => { setSelectedAula(null); setPonto(null); setSubmitted(false); setNpsNota(null); setNpsSent(false); setNpsComentario('') }}
             className="w-full btn-primary py-3 text-center">
             Voltar às Aulas
           </button>

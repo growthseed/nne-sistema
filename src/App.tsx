@@ -47,6 +47,8 @@ import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
 import DiretorioIgrejasPage from '@/pages/DiretorioIgrejasPage'
 import EBPublicPage from '@/pages/public/EBPublicPage'
 import EscolaBiblicaPage from '@/pages/escola-sabatina/EscolaBiblicaPage'
+import PortalLoginPage from '@/pages/portal/PortalLoginPage'
+import PortalDashboardPage from '@/pages/portal/PortalDashboardPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -57,6 +59,8 @@ export default function App() {
       <Route path="/validar-cartao" element={<ValidarCartaoPage />} />
       <Route path="/diretorio" element={<DiretorioIgrejasPage />} />
       <Route path="/eb/:classeId" element={<EBPublicPage />} />
+      <Route path="/portal/login" element={<PortalLoginPage />} />
+      <Route path="/portal" element={<PortalDashboardPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />

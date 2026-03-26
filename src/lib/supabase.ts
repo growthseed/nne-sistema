@@ -16,6 +16,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     lock: noOpLock as any,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: true, // Required for OAuth redirects (Google, Facebook)
   },
 })
