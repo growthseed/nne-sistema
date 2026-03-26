@@ -859,112 +859,16 @@ export default function CadastroDashboardPage() {
         </div>
       </div>
 
-      {/* Responses Table with Filters */}
-      <div className="card p-0 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <h3 className="text-base font-semibold text-gray-800">Respostas ({filteredRespostas.length})</h3>
-            <div className="flex items-center gap-3">
-              {/* Export CSV */}
-              <button
-                onClick={() => exportCSV(filteredRespostas, `pesquisa_respostas_${tabFilter}_${new Date().toISOString().slice(0,10)}.csv`)}
-                disabled={filteredRespostas.length === 0}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Exportar CSV"
-              >
-                <HiOutlineDownload className="w-4 h-4" />
-                Exportar CSV
-              </button>
-              {/* Search */}
-              <div className="relative">
-                <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por nome, cidade..."
-                  className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-60"
-                />
-              </div>
-              {/* Tab filters */}
-              <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-                {([['todos', 'Todos'], ['completos', 'Completos'], ['parciais', 'Parciais']] as const).map(([key, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => setTabFilter(key)}
-                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                      tabFilter === key
-                        ? 'bg-primary-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        {filteredRespostas.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">
-            {searchTerm ? 'Nenhuma resposta encontrada para esta busca' : 'Nenhuma resposta registrada'}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                  <th className="px-4 py-3">Nome</th>
-                  <th className="px-4 py-3">Cidade</th>
-                  <th className="px-4 py-3">Contato</th>
-                  <th className="px-4 py-3 text-center">Etapa</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Data</th>
-                  <th className="px-4 py-3 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredRespostas.map((r) => (
-                  <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-800">{r.nome || '-'}</td>
-                    <td className="px-4 py-3 text-gray-600">{r.cidade ? `${r.cidade}${r.estado ? `/${r.estado}` : ''}` : '-'}</td>
-                    <td className="px-4 py-3 text-gray-600">
-                      <div className="text-xs">
-                        {r.telefone && <span className="block">{r.telefone}</span>}
-                        {r.email && <span className="block text-gray-400">{r.email}</span>}
-                        {!r.telefone && !r.email && '-'}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-xs font-medium text-gray-600">{r.etapa_atual}/11</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        r.completo
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {r.completo ? 'Completo' : 'Parcial'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-500 text-xs">
-                      {new Date(r.created_at).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => setShowDetail(r)}
-                        className="text-primary-600 hover:text-primary-800 p-1 rounded-lg hover:bg-primary-50 transition-colors"
-                        title="Ver detalhes"
-                      >
-                        <HiOutlineEye className="w-5 h-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Exportar CSV (sem tabela individual) */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => exportCSV(filteredRespostas, `censo_dashboard_${new Date().toISOString().slice(0,10)}.csv`)}
+          disabled={filteredRespostas.length === 0}
+          className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50"
+        >
+          <HiOutlineDownload className="w-4 h-4" />
+          Exportar CSV ({filteredRespostas.length})
+        </button>
       </div>
 
       </>}
