@@ -113,13 +113,14 @@ export default function EBPublicPage() {
     if (!classe?.modulo_id) return
     setSelectedAula(aula)
     setLoadingPonto(true)
-    const { data } = await supabase
+    const { data: pontoArr, error: pontoErr } = await supabase
       .from('eb_pontos')
       .select('*')
       .eq('modulo_id', classe.modulo_id)
       .eq('ponto_numero', aula.ponto_numero)
-      .single()
-    setPonto(data || null)
+      .limit(1)
+    if (pontoErr) { setError('Erro ao carregar conteúdo da aula.'); setLoadingPonto(false); return }
+    setPonto(pontoArr?.[0] || null)
     setRespostas({})
     setCompromissos({})
     setSubmitted(false)

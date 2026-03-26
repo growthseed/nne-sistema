@@ -54,8 +54,12 @@ export default function PortalDashboardPage() {
   const [novaMensagem, setNovaMensagem] = useState('')
   const [loadingChat, setLoadingChat] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const chatChannelRef = useRef<any>(null)
 
-  useEffect(() => { checkAuth() }, [])
+  useEffect(() => {
+    checkAuth()
+    return () => { if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current) }
+  }, [])
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -106,6 +110,11 @@ export default function PortalDashboardPage() {
   }
 
   async function openChat(m: MinhaClasse) {
+    // Clean up previous channel
+    if (chatChannelRef.current) {
+      supabase.removeChannel(chatChannelRef.current)
+      chatChannelRef.current = null
+    }
     setChatTurma(m)
     setPageView('turma-chat')
     setLoadingChat(true)
@@ -129,9 +138,7 @@ export default function PortalDashboardPage() {
         }
       )
       .subscribe()
-
-    // Cleanup on unmount or chat change
-    return () => { supabase.removeChannel(channel) }
+    chatChannelRef.current = channel
   }
 
   async function enviarMensagem() {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import {
@@ -20,18 +20,21 @@ export default function PortalLoginPage() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [newPassword, setNewPassword] = useState('')
   const [showResetForm, setShowResetForm] = useState(false)
+  const showResetRef = useRef(false)
 
   useEffect(() => {
     // Listen for PASSWORD_RECOVERY event (user clicked reset link in email)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
+        showResetRef.current = true
         setShowResetForm(true)
         setCheckingSession(false)
       }
     })
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && !showResetForm) navigate('/portal', { replace: true })
+      // Only redirect if NOT in password recovery flow (use ref to avoid stale closure)
+      if (session && !showResetRef.current) navigate('/portal', { replace: true })
       setCheckingSession(false)
     })
 
