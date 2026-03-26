@@ -71,6 +71,9 @@ export default function EBPublicPage() {
   const [npsComentario, setNpsComentario] = useState('')
   const [npsSent, setNpsSent] = useState(false)
 
+  // Typeform quiz step
+  const [quizStep, setQuizStep] = useState(0)
+
   useEffect(() => {
     if (classeId) loadClasse()
   }, [classeId])
@@ -119,6 +122,7 @@ export default function EBPublicPage() {
     setRespostas({})
     setCompromissos({})
     setSubmitted(false)
+    setQuizStep(0)
     setLoadingPonto(false)
   }
 
@@ -319,93 +323,187 @@ export default function EBPublicPage() {
     )
   }
 
-  // ---- QUIZ SCREEN ----
+  // ---- QUIZ SCREEN (Typeform style) ----
   if (selectedAula && ponto) {
+    const totalSteps = (ponto.introducao ? 1 : 0) + ponto.perguntas.length + (ponto.compromissos_fe?.length > 0 ? 1 : 0)
+    const introOffset = ponto.introducao ? 1 : 0
+    const currentPerguntaIdx = quizStep - introOffset
+    const currentPergunta = ponto.perguntas[currentPerguntaIdx]
+    const isIntro = ponto.introducao && quizStep === 0
+    const isCompromissos = quizStep >= introOffset + ponto.perguntas.length
+    const progressPct = Math.round((quizStep / totalSteps) * 100)
+    const canGoNext = isIntro
+      || (currentPergunta && respostas[currentPergunta.id])
+      || isCompromissos
+    const isLastQuestion = currentPerguntaIdx === ponto.perguntas.length - 1 && !ponto.compromissos_fe?.length
+
+    function nextStep() {
+      if (isLastQuestion || isCompromissos) return
+      setQuizStep(prev => prev + 1)
+    }
+
+    function prevStep() {
+      if (quizStep > 0) setQuizStep(prev => prev - 1)
+    }
+
+    function selectAnswer(perguntaId: string, opcaoId: string) {
+      setRespostas(prev => ({ ...prev, [perguntaId]: opcaoId }))
+      // Auto-advance after 400ms
+      setTimeout(() => {
+        if (currentPerguntaIdx < ponto.perguntas.length - 1) {
+          setQuizStep(prev => prev + 1)
+        } else if (ponto.compromissos_fe?.length > 0) {
+          setQuizStep(introOffset + ponto.perguntas.length) // go to compromissos
+        }
+      }, 400)
+    }
+
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-md mx-auto space-y-4">
-          <button onClick={() => { setSelectedAula(null); setPonto(null) }}
-            className="text-sm text-gray-500 hover:text-primary-600 flex items-center gap-1">
-            <HiOutlineChevronLeft className="w-4 h-4" /> Voltar
-          </button>
-
-          {/* Header */}
-          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-white">
-            <p className="text-blue-200 text-xs font-medium uppercase tracking-wider">
-              Ponto {ponto.ponto_numero}
-            </p>
-            <h2 className="text-lg font-bold mt-1">{ponto.titulo}</h2>
-            {ponto.subtitulo && <p className="text-blue-200 text-sm mt-0.5">{ponto.subtitulo}</p>}
-          </div>
-
-          {/* Conteúdo introdutório */}
-          {ponto.introducao && (
-            <div className="card p-4">
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{ponto.introducao}</p>
-            </div>
-          )}
-
-          {/* Perguntas */}
-          {ponto.perguntas.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <HiOutlineClipboardCheck className="w-4 h-4" /> Questionário
-              </h3>
-              {ponto.perguntas.map((p, idx) => (
-                <div key={p.id} className="card p-4 space-y-2">
-                  <p className="text-sm font-medium text-gray-800">
-                    <span className="text-primary-600 font-bold">{idx + 1}.</span> {p.texto}
-                  </p>
-                  <div className="space-y-1.5">
-                    {p.opcoes.map(o => (
-                      <button key={o.id} onClick={() => setRespostas(prev => ({ ...prev, [p.id]: o.id }))}
-                        className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all text-sm ${
-                          respostas[p.id] === o.id
-                            ? 'border-primary-500 bg-primary-50 text-primary-700 font-medium'
-                            : 'border-gray-200 text-gray-600 hover:border-primary-300 hover:bg-gray-50'
-                        }`}>
-                        <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                          respostas[p.id] === o.id ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {o.id.toUpperCase()}
-                        </span>
-                        {o.texto}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Compromissos */}
-          {ponto.compromissos_fe && ponto.compromissos_fe.length > 0 && (
-            <div className="card p-4 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <HiOutlineStar className="w-4 h-4" /> Compromissos de Fé
-              </h3>
-              {ponto.compromissos_fe.map(c => (
-                <label key={c.id} className="flex items-start gap-3 cursor-pointer">
-                  <input type="checkbox" checked={compromissos[c.id] || false}
-                    onChange={e => setCompromissos(prev => ({ ...prev, [c.id]: e.target.checked }))}
-                    className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                  <span className="text-sm text-gray-700">{c.texto}</span>
-                </label>
-              ))}
-            </div>
-          )}
-
-          {/* Submit */}
-          {ponto.perguntas.length > 0 && (
-            <button onClick={submitQuiz} disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
-              className={`w-full py-3 rounded-xl text-sm font-medium transition-all ${
-                Object.keys(respostas).length >= ponto.perguntas.length
-                  ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-600/25'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}>
-              {submitting ? 'Enviando...' : `Enviar Respostas (${Object.keys(respostas).length}/${ponto.perguntas.length})`}
+      <div className="min-h-screen bg-white flex flex-col">
+        {/* Top bar with progress */}
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
+          <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+            <button onClick={() => { if (quizStep === 0) { setSelectedAula(null); setPonto(null) } else prevStep() }}
+              className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors shrink-0">
+              <HiOutlineChevronLeft className="w-5 h-5" />
             </button>
-          )}
+            <div className="flex-1">
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-primary-500 to-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPct}%` }} />
+              </div>
+            </div>
+            <span className="text-xs text-gray-400 shrink-0 w-12 text-right">{quizStep + 1}/{totalSteps}</span>
+          </div>
+        </div>
+
+        {/* Content area */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg">
+
+            {/* STEP: Intro */}
+            {isIntro && (
+              <div className="space-y-6 animate-fade-in">
+                <div>
+                  <p className="text-xs font-medium text-primary-600 uppercase tracking-wider mb-2">
+                    Ponto {ponto.ponto_numero}
+                  </p>
+                  <h1 className="text-2xl font-bold text-gray-900">{ponto.titulo}</h1>
+                  {ponto.subtitulo && <p className="text-gray-500 mt-1">{ponto.subtitulo}</p>}
+                </div>
+                {ponto.imagem_url && (
+                  <img src={ponto.imagem_url} alt="" className="w-full h-48 object-cover rounded-2xl" />
+                )}
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{ponto.introducao}</p>
+                <button onClick={nextStep}
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-primary-600/20 flex items-center justify-center gap-2">
+                  Iniciar Questionário
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            )}
+
+            {/* STEP: Pergunta (one at a time) */}
+            {!isIntro && !isCompromissos && currentPergunta && (
+              <div className="space-y-6 animate-fade-in" key={currentPergunta.id}>
+                <div>
+                  <p className="text-xs font-medium text-primary-600 uppercase tracking-wider mb-3">
+                    Pergunta {currentPerguntaIdx + 1} de {ponto.perguntas.length}
+                  </p>
+                  <h2 className="text-xl font-bold text-gray-900 leading-snug">{currentPergunta.texto}</h2>
+                </div>
+
+                <div className="space-y-2.5">
+                  {currentPergunta.opcoes.map((o, oi) => {
+                    const isSelected = respostas[currentPergunta.id] === o.id
+                    const letter = String.fromCharCode(65 + oi) // A, B, C, D
+                    return (
+                      <button key={o.id} onClick={() => selectAnswer(currentPergunta.id, o.id)}
+                        className={`w-full text-left flex items-center gap-4 px-5 py-4 rounded-2xl border-2 transition-all duration-200 ${
+                          isSelected
+                            ? 'border-primary-500 bg-primary-50 scale-[1.02] shadow-md shadow-primary-500/10'
+                            : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50 active:scale-[0.98]'
+                        }`}>
+                        <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${
+                          isSelected ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {letter}
+                        </span>
+                        <span className={`text-sm leading-snug ${isSelected ? 'text-primary-700 font-medium' : 'text-gray-700'}`}>
+                          {o.texto}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Navigation hint */}
+                <div className="flex items-center justify-between text-xs text-gray-400 pt-2">
+                  <button onClick={prevStep} className="hover:text-gray-600 transition-colors">
+                    Anterior
+                  </button>
+                  {respostas[currentPergunta.id] && (
+                    <span className="text-primary-500 font-medium animate-fade-in">Avançando...</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* STEP: Compromissos de Fé */}
+            {isCompromissos && ponto.compromissos_fe?.length > 0 && (
+              <div className="space-y-6 animate-fade-in">
+                <div>
+                  <p className="text-xs font-medium text-amber-600 uppercase tracking-wider mb-3">
+                    Compromissos de Fé
+                  </p>
+                  <h2 className="text-xl font-bold text-gray-900">Seus compromissos</h2>
+                  <p className="text-sm text-gray-500 mt-1">Marque os compromissos que deseja assumir com Deus</p>
+                </div>
+
+                <div className="space-y-3">
+                  {ponto.compromissos_fe.map(c => (
+                    <label key={c.id}
+                      className={`flex items-start gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                        compromissos[c.id]
+                          ? 'border-green-400 bg-green-50'
+                          : 'border-gray-200 hover:border-green-300'
+                      }`}>
+                      <input type="checkbox" checked={compromissos[c.id] || false}
+                        onChange={e => setCompromissos(prev => ({ ...prev, [c.id]: e.target.checked }))}
+                        className="mt-0.5 rounded border-gray-300 text-green-600 focus:ring-green-500 w-5 h-5" />
+                      <span className="text-sm text-gray-700 leading-relaxed">{c.texto}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <button onClick={submitQuiz}
+                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
+                  className="w-full bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-primary-600/20 disabled:opacity-50 text-sm flex items-center justify-center gap-2">
+                  {submitting ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>Enviar Respostas</>
+                  )}
+                </button>
+
+                {error && (
+                  <p className="text-xs text-red-500 text-center bg-red-50 rounded-lg p-2">{error}</p>
+                )}
+              </div>
+            )}
+
+            {/* If no compromissos, show submit after last question */}
+            {!isIntro && !isCompromissos && currentPerguntaIdx === ponto.perguntas.length - 1 && !ponto.compromissos_fe?.length && respostas[currentPergunta?.id] && (
+              <div className="mt-6 animate-fade-in">
+                <button onClick={submitQuiz}
+                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
+                  className="w-full bg-gradient-to-r from-primary-600 to-emerald-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-primary-600/20 disabled:opacity-50">
+                  {submitting ? 'Enviando...' : 'Enviar Respostas'}
+                </button>
+                {error && <p className="text-xs text-red-500 text-center mt-2">{error}</p>}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     )
