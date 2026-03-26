@@ -49,6 +49,7 @@ import EBPublicPage from '@/pages/public/EBPublicPage'
 import EscolaBiblicaPage from '@/pages/escola-sabatina/EscolaBiblicaPage'
 import EBDashboardPage from '@/pages/escola-biblica/EBDashboardPage'
 import PortalLoginPage from '@/pages/portal/PortalLoginPage'
+import PortalLandingPage from '@/pages/portal/PortalLandingPage'
 import PortalDashboardPage from '@/pages/portal/PortalDashboardPage'
 import PortalPerfilPage from '@/pages/portal/PortalPerfilPage'
 import PortalForumPage from '@/pages/portal/PortalForumPage'
@@ -63,6 +64,7 @@ export default function App() {
       <Route path="/diretorio" element={<DiretorioIgrejasPage />} />
       <Route path="/eb/:classeId" element={<EBPublicPage />} />
       <Route path="/portal/login" element={<PortalLoginPage />} />
+      <Route path="/portal/inicio" element={<PortalLandingPage />} />
       <Route path="/portal" element={<PortalDashboardPage />} />
       <Route path="/portal/perfil" element={<PortalPerfilPage />} />
       <Route path="/portal/forum" element={<PortalForumPage />} />

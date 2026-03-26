@@ -55,7 +55,7 @@ export default function PortalDashboardPage() {
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) { navigate('/portal/login', { replace: true }); return }
+    if (!session) { navigate('/portal/inicio', { replace: true }); return }
 
     const u = session.user
     setUser({
