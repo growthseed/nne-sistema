@@ -64,7 +64,8 @@ export default function PortalPerfilPage() {
     const complete = !!(perfil.nome && perfil.data_nascimento && perfil.sexo && perfil.telefone)
     const updated = { ...perfil, perfil_completo: complete, updated_at: new Date().toISOString() }
 
-    await supabase.from('eb_perfis_aluno').update(updated).eq('id', perfil.id)
+    const { error } = await supabase.from('eb_perfis_aluno').update(updated).eq('id', perfil.id)
+    if (error) { alert('Erro ao salvar perfil. Tente novamente.'); setSaving(false); return }
     setPerfil({ ...perfil, perfil_completo: complete })
     setEditing(false)
     setSaving(false)
@@ -85,14 +86,7 @@ export default function PortalPerfilPage() {
 
     const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
     if (error) {
-      // If bucket doesn't exist, use base64 URL
-      const reader = new FileReader()
-      reader.onload = async () => {
-        const url = reader.result as string
-        setPerfil({ ...perfil, foto_url: url })
-        await supabase.from('eb_perfis_aluno').update({ foto_url: url }).eq('id', perfil.id)
-      }
-      reader.readAsDataURL(file)
+      alert('Erro ao enviar foto. Verifique sua conexão e tente novamente.')
       return
     }
 

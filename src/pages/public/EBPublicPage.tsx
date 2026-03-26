@@ -126,6 +126,21 @@ export default function EBPublicPage() {
     if (!ponto || !selectedAluno || !selectedAula || !classe) return
     setSubmitting(true)
 
+    // Check if already submitted (prevent duplicate)
+    const { data: existing } = await supabase
+      .from('classe_biblica_respostas')
+      .select('id')
+      .eq('classe_id', classe.id)
+      .eq('aluno_id', selectedAluno.id)
+      .eq('ponto_numero', ponto.ponto_numero)
+      .limit(1)
+
+    if (existing && existing.length > 0) {
+      setError('Você já respondeu este questionário.')
+      setSubmitting(false)
+      return
+    }
+
     let corretas = 0
     const total = ponto.perguntas.length
     for (const p of ponto.perguntas) {
@@ -133,7 +148,7 @@ export default function EBPublicPage() {
     }
     const percentual = total > 0 ? Math.round((corretas / total) * 100) : 0
 
-    await supabase.from('classe_biblica_respostas').insert({
+    const { error: insertErr } = await supabase.from('classe_biblica_respostas').insert({
       classe_id: classe.id,
       aluno_id: selectedAluno.id,
       aluno_nome: getNome(selectedAluno),
@@ -145,6 +160,12 @@ export default function EBPublicPage() {
       respostas,
       compromissos,
     })
+
+    if (insertErr) {
+      setError('Erro ao enviar respostas. Tente novamente.')
+      setSubmitting(false)
+      return
+    }
 
     // Update licoes_concluidas
     await supabase.from('classe_biblica_alunos').update({
@@ -158,14 +179,15 @@ export default function EBPublicPage() {
 
   async function submitNps() {
     if (npsNota === null || !selectedAluno || !selectedAula || !classe) return
-    await supabase.from('eb_nps').insert({
+    // Upsert to prevent duplicate NPS
+    await supabase.from('eb_nps').upsert({
       classe_id: classe.id,
       aluno_id: selectedAluno.id,
       aula_id: selectedAula.id,
       ponto_numero: selectedAula.ponto_numero,
       nota: npsNota,
       comentario: npsComentario || null,
-    })
+    }, { onConflict: 'classe_id,aluno_id,aula_id' })
     setNpsSent(true)
   }
 

@@ -149,10 +149,11 @@ export default function MembroDetalhePage() {
       const p = pessoaRes.data
       if (p) {
         const conditions: string[] = []
-        if (p.nome) conditions.push(`nome.ilike.%${p.nome.split(' ')[0]}%`)
+        // Prioritize email/phone match; use full name as fallback
         if (p.email) conditions.push(`email.eq.${p.email}`)
         if (p.celular) conditions.push(`telefone.eq.${p.celular}`)
         if (p.telefone) conditions.push(`telefone.eq.${p.telefone}`)
+        if (p.nome && !p.email && !p.celular && !p.telefone) conditions.push(`nome.ilike.%${p.nome}%`)
 
         if (conditions.length > 0) {
           const { data: censoData } = await supabase

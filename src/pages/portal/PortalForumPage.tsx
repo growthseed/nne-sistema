@@ -83,7 +83,7 @@ export default function PortalForumPage() {
   async function criarTopico() {
     if (!novoTitulo.trim() || !novoConteudo.trim() || !user) return
     setCriando(true)
-    await supabase.from('eb_forum_topicos').insert({
+    const { error } = await supabase.from('eb_forum_topicos').insert({
       titulo: novoTitulo.trim(),
       conteudo: novoConteudo.trim(),
       autor_id: user.id,
@@ -92,6 +92,7 @@ export default function PortalForumPage() {
       autor_email: user.email,
       categoria: novoCategoria,
     })
+    if (error) { alert('Erro ao publicar. Tente novamente.'); setCriando(false); return }
     setShowNovoTopico(false)
     setNovoTitulo('')
     setNovoConteudo('')
@@ -102,6 +103,7 @@ export default function PortalForumPage() {
 
   async function openTopico(t: Topico) {
     setSelectedTopico(t)
+    setRespostas([])
     setLoadingRespostas(true)
     const { data } = await supabase
       .from('eb_forum_respostas')
@@ -115,13 +117,14 @@ export default function PortalForumPage() {
   async function enviarResposta() {
     if (!novaResposta.trim() || !selectedTopico || !user) return
     setRespondendo(true)
-    await supabase.from('eb_forum_respostas').insert({
+    const { error } = await supabase.from('eb_forum_respostas').insert({
       topico_id: selectedTopico.id,
       autor_id: user.id,
       autor_nome: user.nome,
       autor_foto: user.foto,
       conteudo: novaResposta.trim(),
     })
+    if (error) { alert('Erro ao responder. Tente novamente.'); setRespondendo(false); return }
     // Update topic counts
     await supabase.from('eb_forum_topicos').update({
       total_respostas: (selectedTopico.total_respostas || 0) + 1,

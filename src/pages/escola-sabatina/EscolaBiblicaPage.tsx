@@ -171,7 +171,7 @@ function RenderConteudo({ blocos }: { blocos: ConteudoBloco[] }) {
 
 export default function EscolaBiblicaPage() {
   const { profile } = useAuth()
-  const [activeTab, setActiveTab] = useState<TabType>('turmas')
+  const [activeTab, setActiveTab] = useState<TabType>('conteudo')
   const userPapel = profile?.papel || 'membro'
   const master = isMaster(userPapel)
   const manager = canManage(userPapel)
@@ -249,7 +249,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
   const [novoPonto, setNovoPonto] = useState({ titulo: '', subtitulo: '' })
 
   useEffect(() => { loadModulos() }, [])
-  useEffect(() => { loadPontos() }, [selectedModulo])
+  useEffect(() => { setSelectedPonto(null); setEditing(false); loadPontos() }, [selectedModulo])
 
   async function loadModulos() {
     const { data } = await supabase.from('eb_modulos').select('*').eq('ativo', true)

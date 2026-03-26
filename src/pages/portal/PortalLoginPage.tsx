@@ -18,13 +18,35 @@ export default function PortalLoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [checkingSession, setCheckingSession] = useState(true)
+  const [newPassword, setNewPassword] = useState('')
+  const [showResetForm, setShowResetForm] = useState(false)
 
   useEffect(() => {
+    // Listen for PASSWORD_RECOVERY event (user clicked reset link in email)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowResetForm(true)
+        setCheckingSession(false)
+      }
+    })
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate('/portal', { replace: true })
+      if (session && !showResetForm) navigate('/portal', { replace: true })
       setCheckingSession(false)
     })
+
+    return () => subscription.unsubscribe()
   }, [])
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword.length < 6) { setError('A senha deve ter pelo menos 6 caracteres'); return }
+    setLoading(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) { setError(error.message); setLoading(false); return }
+    setShowResetForm(false)
+    navigate('/portal', { replace: true })
+  }
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -105,8 +127,31 @@ export default function PortalLoginPage() {
             </div>
           </div>
 
+          {/* ===== RESET PASSWORD (from email link) ===== */}
+          {showResetForm && (
+            <>
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">Nova senha</h2>
+                <p className="text-sm text-gray-500 mt-1">Defina sua nova senha para acessar o portal</p>
+              </div>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Nova senha</label>
+                  <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-green-500/30 focus:border-green-500 transition-all outline-none"
+                    placeholder="Mínimo 6 caracteres" autoFocus />
+                </div>
+                {error && <div className="bg-red-50 border border-red-100 rounded-xl p-3"><span className="text-xs text-red-600">{error}</span></div>}
+                <button type="submit" disabled={loading}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-green-600/20 disabled:opacity-50 text-sm">
+                  {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" /> : 'Salvar nova senha'}
+                </button>
+              </form>
+            </>
+          )}
+
           {/* ===== LOGIN ===== */}
-          {view === 'login' && (
+          {view === 'login' && !showResetForm && (
             <>
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Bem-vindo de volta</h2>

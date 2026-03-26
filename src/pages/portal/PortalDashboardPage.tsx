@@ -231,7 +231,7 @@ export default function PortalDashboardPage() {
                 </div>
               ) : (
                 mensagens.map(m => {
-                  const isMe = m.autor_nome === user?.nome
+                  const isMe = (m as any).autor_email === user?.email || m.autor_nome === user?.nome
                   return (
                     <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] ${isMe ? 'order-2' : ''}`}>

@@ -354,7 +354,8 @@ export default function EBDashboardPage() {
           {(() => {
             const allNps = npsData
             const totalAval = allNps.reduce((s, n) => s + n.total, 0)
-            const mediaGeral = allNps.length > 0 ? Math.round(allNps.reduce((s, n) => s + n.media, 0) / allNps.length * 10) / 10 : 0
+            const totalPeso = allNps.reduce((s, n) => s + n.total, 0)
+            const mediaGeral = totalPeso > 0 ? Math.round(allNps.reduce((s, n) => s + n.media * n.total, 0) / totalPeso * 10) / 10 : 0
             return [
               { value: totalAval, label: 'Avaliações', color: 'text-blue-600' },
               { value: mediaGeral, label: 'Média Geral', color: mediaGeral >= 8 ? 'text-green-600' : mediaGeral >= 6 ? 'text-amber-600' : 'text-red-600' },
