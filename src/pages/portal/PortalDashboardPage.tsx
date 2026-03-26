@@ -7,7 +7,9 @@ import {
   HiOutlineChevronRight, HiOutlineTrendingUp, HiOutlineBell,
   HiOutlineStar, HiOutlineClipboardCheck, HiOutlineChatAlt2,
   HiOutlinePaperAirplane, HiOutlineChevronLeft, HiOutlineDownload,
+  HiOutlineFire, HiOutlineLightningBolt,
 } from 'react-icons/hi'
+import { useStudentGamification } from '@/hooks/useGamification'
 
 // =============================================
 // TYPES
@@ -221,6 +223,9 @@ export default function PortalDashboardPage() {
 
   const initial = user?.nome?.charAt(0).toUpperCase() || 'A'
 
+  // Gamification
+  const gam = useStudentGamification(user?.id || null)
+
   // ===== TOP NAV (shared) =====
   const TopNav = () => (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-30">
@@ -384,6 +389,92 @@ export default function PortalDashboardPage() {
                 </div>
               </div>
             </div>
+
+            {/* Gamification Widget */}
+            {gam.profile && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                <div className="flex items-center gap-4">
+                  {/* Level circle */}
+                  <div className="relative shrink-0">
+                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                      <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                      <circle cx="32" cy="32" r="28" fill="none" stroke={gam.currentLevel.color_hex} strokeWidth="4"
+                        strokeDasharray={`${gam.progressToNextLevel * 1.76} 176`} strokeLinecap="round" className="transition-all duration-700" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-black" style={{ color: gam.currentLevel.color_hex }}>{gam.currentLevel.level_number}</span>
+                    </div>
+                  </div>
+
+                  {/* Level info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-gray-800">{gam.currentLevel.name}</h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: gam.currentLevel.color_hex + '20', color: gam.currentLevel.color_hex }}>
+                        Nível {gam.currentLevel.level_number}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">{gam.currentLevel.description}</p>
+                    {gam.currentLevel.bible_ref && (
+                      <p className="text-[10px] text-gray-300 italic mt-0.5">{gam.currentLevel.bible_ref}</p>
+                    )}
+
+                    {/* XP bar */}
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
+                        <span>{gam.profile.xp_total.toLocaleString()} XP</span>
+                        {gam.nextLevel && <span>{gam.nextLevel.xp_min.toLocaleString()} XP</span>}
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${gam.progressToNextLevel}%`, backgroundColor: gam.currentLevel.color_hex }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Streak */}
+                  <div className="shrink-0 text-center">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${gam.profile.streak_current > 0 ? 'bg-orange-50' : 'bg-gray-50'}`}>
+                      <HiOutlineFire className={`w-6 h-6 ${gam.profile.streak_current > 0 ? 'text-orange-500' : 'text-gray-300'}`} />
+                    </div>
+                    <p className={`text-lg font-bold mt-1 ${gam.profile.streak_current > 0 ? 'text-orange-600' : 'text-gray-300'}`}>
+                      {gam.profile.streak_current}
+                    </p>
+                    <p className="text-[9px] text-gray-400">dias</p>
+                    {gam.streakMultiplier > 1 && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full mt-0.5">
+                        <HiOutlineLightningBolt className="w-2.5 h-2.5" /> {gam.streakMultiplier}x
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Badges preview */}
+                {gam.badges.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[10px] text-gray-400 font-medium">Conquistas ({gam.badges.length}/{gam.allBadges.length})</p>
+                    </div>
+                    <div className="flex gap-1.5 overflow-x-auto">
+                      {gam.badges.slice(0, 8).map(b => (
+                        <div key={b.id} className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold ${
+                          b.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' :
+                          b.rarity === 'rare' ? 'bg-purple-100 text-purple-700' :
+                          b.rarity === 'uncommon' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`} title={`${b.name}: ${b.description}`}>
+                          {b.name.charAt(0)}
+                        </div>
+                      ))}
+                      {gam.badges.length > 8 && (
+                        <div className="shrink-0 w-9 h-9 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center text-[10px] font-medium">
+                          +{gam.badges.length - 8}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-3">
