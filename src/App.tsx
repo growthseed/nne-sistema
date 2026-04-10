@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from '@/components/layout/Layout'
 import Login from '@/pages/Login'
+import ResetPasswordPage from '@/pages/ResetPasswordPage'
 import Dashboard from '@/pages/Dashboard'
 import CadastroPage from '@/pages/cadastro/CadastroPage'
 import CadastroPublicoPage from '@/pages/cadastro/CadastroPublicoPage'
@@ -16,6 +17,7 @@ import AniversariantesPage from '@/pages/secretaria/AniversariantesPage'
 import FunilConversaoPage from '@/pages/secretaria/FunilConversaoPage'
 import SaudeMembrosPage from '@/pages/secretaria/SaudeMembrosPage'
 import ClassesBiblicasPage from '@/pages/secretaria/ClassesBiblicasPage'
+import SegmentacaoPage from '@/pages/secretaria/SegmentacaoPage'
 import UnioesPage from '@/pages/organizacao/UnioesPage'
 import AssociacoesPage from '@/pages/organizacao/AssociacoesPage'
 import IgrejasPage from '@/pages/organizacao/IgrejasPage'
@@ -41,6 +43,7 @@ import MapasPage from '@/pages/MapasPage'
 import AnalyticsPage from '@/pages/AnalyticsPage'
 import RelatoriosPage from '@/pages/RelatoriosPage'
 import ConfiguracoesPage from '@/pages/ConfiguracoesPage'
+import UsuarioDetalhePage from '@/pages/admin/UsuarioDetalhePage'
 import QualidadeDadosPage from '@/pages/secretaria/QualidadeDadosPage'
 // DuplicadosPage removida
 import ValidarCartaoPage from '@/pages/ValidarCartaoPage'
@@ -52,7 +55,7 @@ import PortalLoginPage from '@/pages/portal/PortalLoginPage'
 import PortalLandingPage from '@/pages/portal/PortalLandingPage'
 import PortalDashboardPage from '@/pages/portal/PortalDashboardPage'
 import PortalPerfilPage from '@/pages/portal/PortalPerfilPage'
-import PortalForumPage from '@/pages/portal/PortalForumPage'
+// PortalForumPage removida na simplificação
 import NotFoundPage from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -67,8 +70,9 @@ export default function App() {
       <Route path="/portal/inicio" element={<PortalLandingPage />} />
       <Route path="/portal" element={<PortalDashboardPage />} />
       <Route path="/portal/perfil" element={<PortalPerfilPage />} />
-      <Route path="/portal/forum" element={<PortalForumPage />} />
+      {/* forum removido na simplificação */}
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="cadastro" element={<CadastroPage />} />
@@ -103,6 +107,7 @@ export default function App() {
           <Route path="funil" element={<FunilConversaoPage />} />
           <Route path="saude" element={<SaudeMembrosPage />} />
           <Route path="classes-biblicas" element={<ClassesBiblicasPage />} />
+          <Route path="segmentacao" element={<SegmentacaoPage />} />
           <Route path="qualidade-dados" element={<QualidadeDadosPage />} />
           {/* duplicados removido */}
         </Route>
@@ -126,7 +131,7 @@ export default function App() {
           <Route index element={<EBDashboardPage key="painel" />} />
           <Route path="conteudo" element={<EscolaBiblicaPage />} />
           <Route path="professores" element={<EBDashboardPage key="prof" />} />
-          <Route path="nps" element={<EBDashboardPage key="nps" />} />
+          {/* nps removido na simplificação */}
         </Route>
 
         {/* Escola Sabatina */}
@@ -143,6 +148,7 @@ export default function App() {
 
         {/* Admin */}
         <Route path="configuracoes" element={<ConfiguracoesPage />} />
+        <Route path="configuracoes/usuario/:id" element={<UsuarioDetalhePage />} />
 
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />

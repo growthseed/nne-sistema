@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserProfile, UserRole, TermoCompromissoContent } from '@/types'
@@ -292,6 +293,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 }
 
 function GerenciarUsuariosSection() {
+  const navigate = useNavigate()
   const [usuarios, setUsuarios] = useState<UsuarioComIgreja[]>([])
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
@@ -300,7 +302,6 @@ function GerenciarUsuariosSection() {
   const PAGE_SIZE = 20
 
   const [showCreate, setShowCreate] = useState(false)
-  const [editUser, setEditUser] = useState<UsuarioComIgreja | null>(null)
 
   const [igrejas, setIgrejas] = useState<IgrejaOption[]>([])
   const [associacoes, setAssociacoes] = useState<AssociacaoOption[]>([])
@@ -423,7 +424,7 @@ function GerenciarUsuariosSection() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button onClick={() => setEditUser(u)} className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-primary-600" title="Editar">
+                        <button onClick={() => navigate(`/configuracoes/usuario/${u.id}`)} className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-primary-600" title="Editar">
                           <FiEdit className="w-4 h-4" />
                         </button>
                       </td>
@@ -452,7 +453,7 @@ function GerenciarUsuariosSection() {
                       </span>
                     </div>
                   </div>
-                  <button onClick={() => setEditUser(u)} className="p-2 rounded hover:bg-gray-100 text-gray-400 hover:text-primary-600 shrink-0">
+                  <button onClick={() => navigate(`/configuracoes/usuario/${u.id}`)} className="p-2 rounded hover:bg-gray-100 text-gray-400 hover:text-primary-600 shrink-0">
                     <FiEdit className="w-4 h-4" />
                   </button>
                 </div>
@@ -470,25 +471,14 @@ function GerenciarUsuariosSection() {
         )}
       </div>
 
-      {/* Modal editar */}
-      {editUser && (
-        <EditUserModal
-          user={editUser}
-          igrejas={igrejas}
-          associacoes={associacoes}
-          unioes={unioes}
-          onClose={() => setEditUser(null)}
-          onSaved={() => { setEditUser(null); fetchUsuarios() }}
-        />
-      )}
     </div>
   )
 }
 
-// ========== EDIT USER MODAL ==========
+// EditUserModal removido — agora é página completa em /configuracoes/usuario/:id
 
-// EditUserModal v2 — com abas Acesso/Perfil/Segurança/Sessões
-function EditUserModal({
+/* LEGACY — keeping only CreateUserModal below */
+function _EditUserModal_REMOVED({
   user, igrejas, associacoes, unioes, onClose, onSaved,
 }: {
   user: UsuarioComIgreja
