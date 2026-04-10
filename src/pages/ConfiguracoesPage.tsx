@@ -487,6 +487,7 @@ function GerenciarUsuariosSection() {
 
 // ========== EDIT USER MODAL ==========
 
+// EditUserModal v2 — com abas Acesso/Perfil/Segurança/Sessões
 function EditUserModal({
   user, igrejas, associacoes, unioes, onClose, onSaved,
 }: {
