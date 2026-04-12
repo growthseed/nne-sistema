@@ -1,5 +1,23 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+﻿import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import TurnstileWidget from '@/components/public/TurnstileWidget'
+import {
+  HiOutlineCursorClick,
+  HiOutlineClock,
+  HiOutlineLockClosed,
+  HiOutlineSparkles,
+  HiOutlineUser,
+  HiOutlineIdentification,
+  HiOutlineClipboardList,
+  HiOutlineCalendar,
+  HiOutlineChatAlt2,
+  HiOutlineLocationMarker,
+  HiOutlineCheckCircle,
+  HiOutlineEmojiHappy,
+  HiOutlineStar,
+  HiOutlineLightBulb,
+} from 'react-icons/hi'
+import type { IconType } from 'react-icons'
 
 // ========== TYPES ==========
 interface FormData {
@@ -75,15 +93,35 @@ export default function CadastroPublicoPage() {
   const [error, setError] = useState('')
   const [showLgpd, setShowLgpd] = useState(false)
   const [responseId, setResponseId] = useState<string | null>(null)
+  const [draftToken, setDraftToken] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
   const [stepError, setStepError] = useState('')
   const savingRef = useRef(false)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaResetKey, setCaptchaResetKey] = useState(0)
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
+  const captchaEnabled = Boolean(turnstileSiteKey)
 
   useEffect(() => {
     fetchIgrejas()
     checkSavedDraft()
+  }, [])
+
+  const handleCaptchaSuccess = useCallback((token: string) => {
+    setCaptchaToken(token)
+    setError('')
+  }, [])
+
+  const handleCaptchaExpire = useCallback(() => {
+    setCaptchaToken('')
+  }, [])
+
+  const handleCaptchaError = useCallback(() => {
+    setCaptchaToken('')
+    setCaptchaResetKey(current => current + 1)
+    setError('Não foi possível validar a proteção anti-bot. Tente novamente.')
   }, [])
 
   function checkSavedDraft() {
@@ -91,7 +129,7 @@ export default function CadastroPublicoPage() {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
         const draft = JSON.parse(saved)
-        if (draft.responseId && draft.form && draft.step > 0) {
+        if (draft.responseId && draft.draftToken && draft.form && draft.step > 0) {
           setShowResumePrompt(true)
         }
       }
@@ -104,6 +142,7 @@ export default function CadastroPublicoPage() {
       if (saved) {
         const draft = JSON.parse(saved)
         setResponseId(draft.responseId)
+        setDraftToken(draft.draftToken)
         setForm(draft.form)
         setStep(draft.step)
         if (draft.igrejaSearch) setIgrejaSearch(draft.igrejaSearch)
@@ -114,6 +153,8 @@ export default function CadastroPublicoPage() {
 
   function discardDraft() {
     localStorage.removeItem(STORAGE_KEY)
+    setResponseId(null)
+    setDraftToken(null)
     setShowResumePrompt(false)
   }
 
@@ -128,6 +169,16 @@ export default function CadastroPublicoPage() {
 
   function set(field: string, value: any) {
     setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  function persistDraftLocally(nextResponseId: string, nextDraftToken: string, targetStep: number) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      responseId: nextResponseId,
+      draftToken: nextDraftToken,
+      form,
+      step: targetStep,
+      igrejaSearch,
+    }))
   }
 
   async function buscarCep(cepRaw: string) {
@@ -182,6 +233,9 @@ export default function CadastroPublicoPage() {
       nome: form.nome || null,
       email: form.email || null,
       telefone: form.telefone || null,
+      whatsapp_parente: form.whatsappParente || null,
+      whatsapp_parente_nome: form.whatsappParenteNome || null,
+      whatsapp_parente_parentesco: form.whatsappParenteParentesco || null,
       cep: form.cep || null,
       rua: form.endereco || null,
       numero: form.numero || null,
@@ -209,6 +263,7 @@ export default function CadastroPublicoPage() {
       prioridades: form.enfases || [],
       participacao,
       influencias: form.influencias || [],
+      influencias_outro: form.influenciasOutro || null,
       tempo_deslocamento: form.tempoDeslocamento || null,
       opiniao_estrutura: form.opiniaoEstrutura || null,
       sugestoes: [form.sugestao1, form.sugestao2, form.sugestao3].filter(Boolean),
@@ -231,40 +286,23 @@ export default function CadastroPublicoPage() {
 
     try {
       const payload = buildPayload(targetStep)
-
-      if (!responseId) {
-        // First save - INSERT
-        const { data, error: dbError } = await supabase
-          .from('cadastro_respostas')
-          .insert(payload)
-          .select('id')
-          .single()
-
-        if (dbError) throw dbError
-        if (data) {
-          setResponseId(data.id)
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            responseId: data.id,
-            form,
-            step: targetStep,
-            igrejaSearch,
-          }))
-        }
-      } else {
-        // Subsequent saves - UPDATE (RLS allows update on completo=false)
-        const { error: dbError } = await supabase
-          .from('cadastro_respostas')
-          .update(payload)
-          .eq('id', responseId)
-
-        if (dbError) throw dbError
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      const { data, error: functionError } = await supabase.functions.invoke('save-public-cadastro', {
+        body: {
           responseId,
-          form,
-          step: targetStep,
-          igrejaSearch,
-        }))
+          draftToken,
+          payload,
+          complete: false,
+        },
+      })
+
+      if (functionError) throw functionError
+      if (!data?.success || !data?.id || !data?.draftToken) {
+        throw new Error(data?.message || 'Não foi possível salvar o rascunho.')
       }
+
+      setResponseId(data.id)
+      setDraftToken(data.draftToken)
+      persistDraftLocally(data.id, data.draftToken, targetStep)
 
       setLastSaved(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }))
     } catch (err) {
@@ -307,6 +345,11 @@ export default function CadastroPublicoPage() {
         if (!form.nome?.trim()) return 'Preencha seu nome completo'
         if (!form.telefone?.trim()) return 'Preencha seu WhatsApp'
         if (!form.email?.trim()) return 'Preencha seu e-mail'
+        if (form.usarWhatsappParente) {
+          if (!form.whatsappParente?.trim()) return 'Preencha o WhatsApp do parente'
+          if (!form.whatsappParenteNome?.trim()) return 'Preencha o nome do parente'
+          if (!form.whatsappParenteParentesco) return 'Selecione o parentesco'
+        }
         return ''
       case 2:
         if (!form.dataNascimento) return 'Informe sua data de nascimento'
@@ -356,7 +399,9 @@ export default function CadastroPublicoPage() {
         return ''
       }
       case 11:
-        if (!form.opiniaoEstrutura) return 'Selecione sua opinião sobre a estrutura'
+        // Etapa final: opinião sobre estrutura é OPCIONAL.
+        // Antes era obrigatória e causava travamento - 25 usuários chegaram até aqui
+        // mas não puderam finalizar por não quererem opinar. Agora é opcional.
         return ''
       default:
         return ''
@@ -371,26 +416,36 @@ export default function CadastroPublicoPage() {
       return
     }
 
+    if (captchaEnabled && !captchaToken) {
+      setError('Confirme que você não é um robô para enviar o formulário.')
+      return
+    }
+
     setSubmitting(true)
     setError('')
     try {
       const payload = buildPayload(TOTAL_STEPS, true)
+      const { data, error: functionError } = await supabase.functions.invoke('save-public-cadastro', {
+        body: {
+          responseId,
+          draftToken,
+          payload,
+          complete: true,
+          captchaToken,
+        },
+      })
 
-      if (responseId) {
-        // Complete existing record - UPDATE
-        const { error: dbError } = await supabase
-          .from('cadastro_respostas')
-          .update(payload)
-          .eq('id', responseId)
-        if (dbError) throw dbError
-      } else {
-        // Fallback: insert as new complete record
-        const { error: dbError } = await supabase.from('cadastro_respostas').insert(payload)
-        if (dbError) throw dbError
+      if (functionError) throw functionError
+      if (!data?.success) {
+        throw new Error(data?.message || 'Não foi possível enviar o formulário.')
       }
 
       // Clear draft from localStorage
       localStorage.removeItem(STORAGE_KEY)
+      setResponseId(null)
+      setDraftToken(null)
+      setCaptchaToken('')
+      setCaptchaResetKey(current => current + 1)
       setSuccess(true)
     } catch (err: any) {
       setError(err.message || 'Erro ao enviar formulário')
@@ -446,7 +501,7 @@ export default function CadastroPublicoPage() {
           </div>
           <h2 className="text-2xl font-bold text-[#006D43] mb-3">Cadastro Enviado!</h2>
           <p className="text-gray-500 mb-6">Em breve entraremos em contato. Obrigado por participar!</p>
-          <button onClick={() => { setSuccess(false); setStep(0); setForm({}); setResponseId(null); setLastSaved(null) }} className="bg-[#006D43] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#005535] transition-colors">
+          <button onClick={() => { setSuccess(false); setStep(0); setForm({}); setResponseId(null); setDraftToken(null); setLastSaved(null); setCaptchaToken(''); setCaptchaResetKey(current => current + 1); setError(''); setStepError('') }} className="bg-[#006D43] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#005535] transition-colors">
             Fazer Novo Cadastro
           </button>
         </div>
@@ -521,26 +576,26 @@ export default function CadastroPublicoPage() {
 
               {/* Gatilhos - Benefit Cards */}
               <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl mb-1">🎯</div>
-                  <p className="font-bold text-gray-800 text-sm">Sua voz importa</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Cada resposta ajuda a moldar o futuro da sua igreja</p>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl mb-1">⏱</div>
-                  <p className="font-bold text-gray-800 text-sm">5 a 8 minutos</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Rápido e fácil de responder</p>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl mb-1">🔒</div>
-                  <p className="font-bold text-gray-800 text-sm">100% Confidencial</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Dados protegidos pela LGPD</p>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl mb-1">🌱</div>
-                  <p className="font-bold text-gray-800 text-sm">Impacto real</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Resultados aplicados diretamente nas congregações</p>
-                </div>
+                <BenefitCard
+                  Icon={HiOutlineCursorClick}
+                  title="Sua voz importa"
+                  desc="Cada resposta ajuda a moldar o futuro da sua igreja"
+                />
+                <BenefitCard
+                  Icon={HiOutlineClock}
+                  title="5 a 8 minutos"
+                  desc="Rápido e fácil de responder"
+                />
+                <BenefitCard
+                  Icon={HiOutlineLockClosed}
+                  title="100% Confidencial"
+                  desc="Dados protegidos pela LGPD"
+                />
+                <BenefitCard
+                  Icon={HiOutlineSparkles}
+                  title="Impacto real"
+                  desc="Resultados aplicados diretamente nas congregações"
+                />
               </div>
 
               {/* How it works */}
@@ -662,7 +717,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 1: IDENTIFICAÇÃO E CONTATO ===== */}
           {step === 1 && (
             <div>
-              <StepHeader icon="👤" title="Identificação e Contato" subtitle="Informe seus dados pessoais e de contato" />
+              <StepHeader Icon={HiOutlineUser} title="Identificação e Contato" subtitle="Informe seus dados pessoais e de contato" />
 
               <Field label="Nome Completo *">
                 <input type="text" value={form.nome || ''} onChange={e => set('nome', e.target.value)} placeholder="Seu nome completo" className="inp" />
@@ -675,6 +730,44 @@ export default function CadastroPublicoPage() {
                 <Field label="E-mail *">
                   <input type="email" value={form.email || ''} onChange={e => set('email', e.target.value)} placeholder="seu@email.com" className="inp" />
                 </Field>
+              </div>
+
+              {/* WhatsApp de parente/responsável */}
+              <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!form.usarWhatsappParente}
+                    onChange={e => set('usarWhatsappParente', e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-700">Não tenho WhatsApp - usar o de um parente/responsável</span>
+                </label>
+
+                {form.usarWhatsappParente && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <Field label="WhatsApp do parente *">
+                      <input type="tel" value={form.whatsappParente || ''} onChange={e => set('whatsappParente', e.target.value)} placeholder="(00) 00000-0000" className="inp" />
+                    </Field>
+                    <Field label="Nome do parente *">
+                      <input type="text" value={form.whatsappParenteNome || ''} onChange={e => set('whatsappParenteNome', e.target.value)} placeholder="Nome completo" className="inp" />
+                    </Field>
+                    <Field label="Parentesco *">
+                      <select value={form.whatsappParenteParentesco || ''} onChange={e => set('whatsappParenteParentesco', e.target.value)} className="inp">
+                        <option value="">Selecione</option>
+                        <option value="filho_a">Filho(a)</option>
+                        <option value="neto_a">Neto(a)</option>
+                        <option value="esposo_a">Esposo(a)</option>
+                        <option value="irmao_a">Irmão/Irmã</option>
+                        <option value="sobrinho_a">Sobrinho(a)</option>
+                        <option value="pai_mae">Pai/Mãe</option>
+                        <option value="genro_nora">Genro/Nora</option>
+                        <option value="amigo">Amigo(a)</option>
+                        <option value="outro">Outro</option>
+                      </select>
+                    </Field>
+                  </div>
+                )}
               </div>
 
               <div className="border-t-2 border-gray-100 my-5 pt-5">
@@ -707,7 +800,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 2: IDENTIFICAÇÃO BÁSICA ===== */}
           {step === 2 && (
             <div>
-              <StepHeader icon="🪪" title="I. Identificação" subtitle="Informações básicas sobre você" />
+              <StepHeader Icon={HiOutlineIdentification} title="I. Identificação" subtitle="Informações básicas sobre você" />
 
               <Field label="1. Data de Nascimento">
                 <div className="grid grid-cols-3 gap-2">
@@ -743,10 +836,10 @@ export default function CadastroPublicoPage() {
             </div>
           )}
 
-          {/* ===== STEP 3: ESTADO CIVIL / ESCOLARIDADE / PROFISSÃO ===== */}
+          {/* ===== STEP 3: ESTADO CIVIL / ESCOLARIDADE / PROFISSÒO ===== */}
           {step === 3 && (
             <div>
-              <StepHeader icon="📋" title="Continuação" subtitle="Mais informações sobre seu perfil" />
+              <StepHeader Icon={HiOutlineClipboardList} title="Continuação" subtitle="Mais informações sobre seu perfil" />
 
               <Field label="3. Estado Civil">
                 <div className="grid grid-cols-2 gap-2">
@@ -760,7 +853,7 @@ export default function CadastroPublicoPage() {
 
               <Field label="4. Escolaridade" className="mt-4">
                 <div className="grid grid-cols-2 gap-2">
-                  {[['fundamental','Ensino Fundamental'],['medio_incompleto','Ensino Médio Incompleto'],['medio_completo','Ensino Médio Completo'],['superior_incompleto','Ensino Superior Incompleto'],['superior_completo','Ensino Superior Completo'],['pos','Pós/Mestrado/Doutorado']].map(([v, l]) => (
+                  {[['fundamental_incompleto','Ensino Fundamental Incompleto'],['fundamental','Ensino Fundamental'],['medio_incompleto','Ensino Médio Incompleto'],['medio_completo','Ensino Médio Completo'],['superior_incompleto','Ensino Superior Incompleto'],['superior_completo','Ensino Superior Completo'],['pos','Pós/Mestrado/Doutorado']].map(([v, l]) => (
                     <OptionCard key={v} selected={form.escolaridade === v} onClick={() => set('escolaridade', v)}>{l}</OptionCard>
                   ))}
                 </div>
@@ -780,11 +873,11 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 4: TEMPO DE MEMBRO ===== */}
           {step === 4 && (
             <div>
-              <StepHeader icon="⏳" title="Sua Jornada" subtitle="Tempo de caminhada na igreja" />
+              <StepHeader Icon={HiOutlineClock} title="Sua Jornada" subtitle="Tempo de caminhada na igreja" />
 
               <Field label="5. Há quanto tempo sou membro desta igreja? (em anos)">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {[['menos1','Menos de 1 ano'],['1a5','1 a 5'],['6a10','6 a 10'],['11a20','11 a 20'],['21a30','21 a 30'],['mais30','Mais de 30']].map(([v, l]) => (
+                  {[['interessado','Sou interessado/visitante'],['menos1','Menos de 1 ano'],['1a5','1 a 5'],['6a10','6 a 10'],['11a20','11 a 20'],['21a30','21 a 30'],['mais30','Mais de 30']].map(([v, l]) => (
                     <OptionCard key={v} selected={form.tempoMembro === v} onClick={() => set('tempoMembro', v)}>{l}</OptionCard>
                   ))}
                 </div>
@@ -797,7 +890,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 5: AVALIAÇÃO - PRIMEIRO CONTATO ===== */}
           {step === 5 && (
             <div>
-              <StepHeader icon="💬" title="II. Avaliação" subtitle="Como você conheceu e chegou à igreja" />
+              <StepHeader Icon={HiOutlineChatAlt2} title="II. Avaliação" subtitle="Como você conheceu e chegou à igreja" />
 
               <Field label="6. Como foi seu primeiro contato com esta igreja?">
                 <p className="text-xs text-gray-400 mb-2">Marque apenas uma opção</p>
@@ -814,10 +907,13 @@ export default function CadastroPublicoPage() {
               <Field label="7. O que influenciou você a pertencer a esta igreja?" className="mt-5">
                 <p className="text-xs text-gray-400 mb-2">Marque quantas opções desejar</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {[['perto_casa','É perto de minha casa'],['igreja_familia','É a igreja de minha família'],['filhos','Meus filhos'],['trabalho_missionario','O trabalho missionário'],['receptividade','A receptividade da igreja'],['gosto_cultos','Gosto dos cultos'],['estrutura_conforto','A estrutura e o conforto'],['doutrina_biblica','Doutrina Bíblica diferente']].map(([v, l]) => (
+                  {[['perto_casa','É perto de minha casa'],['igreja_familia','É a igreja de minha família'],['filhos','Meus filhos'],['trabalho_missionario','O trabalho missionário'],['receptividade','A receptividade da igreja'],['gosto_cultos','Gosto dos cultos'],['estrutura_conforto','A estrutura e o conforto'],['doutrina_biblica','Doutrina Bíblica diferente'],['outro','Outro']].map(([v, l]) => (
                     <CheckCard key={v} checked={(form.influencias || []).includes(v)} onClick={() => toggle('influencias', v)}>{l}</CheckCard>
                   ))}
                 </div>
+                {(form.influencias || []).includes('outro') && (
+                  <input type="text" value={form.influenciasOutro || ''} onChange={e => set('influenciasOutro', e.target.value)} placeholder="Especifique o que influenciou você" className="inp mt-2" />
+                )}
               </Field>
 
               <Nav onPrev={prev} onNext={next} onSave={handleSaveDraft} saving={saving} error={stepError} />
@@ -827,7 +923,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 6: LOCALIZAÇÃO / TRANSPORTE / IGREJA ===== */}
           {step === 6 && (
             <div>
-              <StepHeader icon="📍" title="Localização" subtitle="Como você chega à igreja" />
+              <StepHeader Icon={HiOutlineLocationMarker} title="Localização" subtitle="Como você chega à igreja" />
 
               <Field label="Qual a distância da sua casa até a igreja?">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -884,17 +980,17 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 7: PONTOS FORTES/FRACOS + CARGOS ===== */}
           {step === 7 && (
             <div>
-              <StepHeader icon="✅" title="Sua Opinião" subtitle="11. Destaque três pontos fortes e três pontos fracos da igreja atualmente" />
+              <StepHeader Icon={HiOutlineCheckCircle} title="Sua Opinião" subtitle="11. Destaque três pontos fortes e três pontos fracos da igreja atualmente" />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <label className="font-semibold text-gray-800 text-sm block mb-2">👍 Três Pontos Fortes</label>
+                  <label className="font-semibold text-gray-800 text-sm block mb-2">Três Pontos Fortes</label>
                   <input type="text" value={form.pontoForte1 || ''} onChange={e => set('pontoForte1', e.target.value)} placeholder="1º ponto forte" className="inp mb-2" />
                   <input type="text" value={form.pontoForte2 || ''} onChange={e => set('pontoForte2', e.target.value)} placeholder="2º ponto forte" className="inp mb-2" />
                   <input type="text" value={form.pontoForte3 || ''} onChange={e => set('pontoForte3', e.target.value)} placeholder="3º ponto forte" className="inp" />
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <label className="font-semibold text-gray-800 text-sm block mb-2">👎 Três Pontos Fracos</label>
+                  <label className="font-semibold text-gray-800 text-sm block mb-2">Três Pontos Fracos</label>
                   <input type="text" value={form.pontoFraco1 || ''} onChange={e => set('pontoFraco1', e.target.value)} placeholder="1º ponto fraco" className="inp mb-2" />
                   <input type="text" value={form.pontoFraco2 || ''} onChange={e => set('pontoFraco2', e.target.value)} placeholder="2º ponto fraco" className="inp mb-2" />
                   <input type="text" value={form.pontoFraco3 || ''} onChange={e => set('pontoFraco3', e.target.value)} placeholder="3º ponto fraco" className="inp" />
@@ -917,7 +1013,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 8: SATISFAÇÃO ===== */}
           {step === 8 && (
             <div>
-              <StepHeader icon="😊" title="Satisfação" subtitle="12. Indique seu grau de satisfação com as seguintes atividades" />
+              <StepHeader Icon={HiOutlineEmojiHappy} title="Satisfação" subtitle="12. Indique seu grau de satisfação com as seguintes atividades" />
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
@@ -955,7 +1051,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 9: ÊNFASES / PRIORIDADES ===== */}
           {step === 9 && (
             <div>
-              <StepHeader icon="⭐" title="Prioridades" subtitle="13. Assinale itens que deveriam receber maior ênfase por parte da igreja" />
+              <StepHeader Icon={HiOutlineStar} title="Prioridades" subtitle="13. Assinale itens que deveriam receber maior ênfase por parte da igreja" />
               <p className="text-xs text-gray-400 mb-3">Marque no mínimo 3 opções</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -976,7 +1072,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 10: FREQUÊNCIA + CONTRIBUIÇÃO ===== */}
           {step === 10 && (
             <div>
-              <StepHeader icon="📅" title="Participação" subtitle="14. Em um mês normal, qual sua frequência para participar das seguintes atividades?" />
+              <StepHeader Icon={HiOutlineCalendar} title="Participação" subtitle="14. Em um mês normal, qual sua frequência para participar das seguintes atividades?" />
               <p className="text-xs text-gray-400 mb-3">0 = nunca | 1 = uma vez/mês | 2 = duas vezes | 3 = três vezes | 4 = quatro vezes</p>
 
               <div className="overflow-x-auto mb-6">
@@ -1031,7 +1127,7 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 11: SUGESTÕES FINAIS ===== */}
           {step === 11 && (
             <div>
-              <StepHeader icon="💡" title="Sugestões" subtitle="Sua opinião é muito importante para o crescimento da igreja" />
+              <StepHeader Icon={HiOutlineLightBulb} title="Sugestões" subtitle="Sua opinião é muito importante para o crescimento da igreja" />
 
               <Field label="17. Qual a sua opinião sobre a estrutura dos departamentos da sua igreja?">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1057,7 +1153,7 @@ export default function CadastroPublicoPage() {
                   <input type="text" value={form.criar3 || ''} onChange={e => set('criar3', e.target.value)} placeholder="3." className="inp" />
                 </div>
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <label className="font-semibold text-amber-600 text-sm block mb-2">✏ Coisas que devem ser alteradas</label>
+                  <label className="font-semibold text-amber-600 text-sm block mb-2">Coisas que devem ser alteradas</label>
                   <input type="text" value={form.alterar1 || ''} onChange={e => set('alterar1', e.target.value)} placeholder="1." className="inp mb-2" />
                   <input type="text" value={form.alterar2 || ''} onChange={e => set('alterar2', e.target.value)} placeholder="2." className="inp mb-2" />
                   <input type="text" value={form.alterar3 || ''} onChange={e => set('alterar3', e.target.value)} placeholder="3." className="inp" />
@@ -1069,8 +1165,21 @@ export default function CadastroPublicoPage() {
               </Field>
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 mt-4 text-sm text-green-800">
-                <strong>🛡 Seus dados estão protegidos!</strong> Conforme os termos aceitos, suas informações serão tratadas com sigilo e segurança.
+                <strong>Seus dados estão protegidos!</strong> Conforme os termos aceitos, suas informações serão tratadas com sigilo e segurança.
               </div>
+
+              {captchaEnabled && turnstileSiteKey && (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold text-gray-600 mb-2">Confirme a validação para concluir o envio</p>
+                  <TurnstileWidget
+                    siteKey={turnstileSiteKey}
+                    resetKey={captchaResetKey}
+                    onSuccess={handleCaptchaSuccess}
+                    onExpire={handleCaptchaExpire}
+                    onError={handleCaptchaError}
+                  />
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 mt-3 text-sm text-red-700">{error}</div>
@@ -1094,7 +1203,7 @@ export default function CadastroPublicoPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6 mb-4">
-          🛡 Seus dados estão seguros conosco
+          Seus dados estão seguros conosco
         </p>
       </div>
     </div>
@@ -1103,13 +1212,24 @@ export default function CadastroPublicoPage() {
 
 // ========== HELPER COMPONENTS ==========
 
-function StepHeader({ icon, title, subtitle }: { icon: string; title: string; subtitle: string }) {
+function StepHeader({ Icon, title, subtitle }: { Icon: IconType; title: string; subtitle: string }) {
   return (
     <div className="mb-5">
       <h3 className="text-xl font-bold text-[#006D43] flex items-center gap-2">
-        <span>{icon}</span> {title}
+        <Icon className="w-6 h-6" aria-hidden="true" />
+        {title}
       </h3>
       <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
+    </div>
+  )
+}
+
+function BenefitCard({ Icon, title, desc }: { Icon: IconType; title: string; desc: string }) {
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center flex flex-col items-center">
+      <Icon className="w-7 h-7 text-[#006D43] mb-1" aria-hidden="true" />
+      <p className="font-bold text-gray-800 text-sm">{title}</p>
+      <p className="text-gray-500 text-xs mt-0.5">{desc}</p>
     </div>
   )
 }
@@ -1183,3 +1303,7 @@ function Nav({ onPrev, onNext, onSave, saving, error }: { onPrev?: () => void; o
     </div>
   )
 }
+
+
+
+
