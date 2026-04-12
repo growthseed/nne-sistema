@@ -6,6 +6,14 @@
 **Objetivo**: Sistema unificado de gestao eclesiastica que consolida funcionalidades de 4 sistemas existentes em uma unica plataforma moderna.
 **Idioma**: Portugues (Brasil)
 
+### 1.0.1 Operacao e continuidade
+
+Documentacao operacional complementar gerada na fase de estabilizacao:
+
+- `docs/QA_POS_DEPLOY.md`
+- `docs/SPRINT_2_PLANO.md`
+- `docs/RUNBOOK_TECNICO.md`
+
 ### 1.1 Stack Tecnologico
 
 | Camada | Tecnologia |
@@ -30,7 +38,7 @@
 
 ### 1.2 Supabase
 
-- **URL**: `https://gbuygmwyrnubnebrzkyd.supabase.co`
+- **URL**: `https://prqxiqykkijzpwdpqujv.supabase.co`
 - **Funcionalidades**: Auth, Database, Storage, Row Level Security (RLS)
 
 ---
@@ -967,13 +975,15 @@ Pastor, Anciao, Diacono, Diaconisa, Diretor ES, Professor ES, Secretario, Tesour
 ## 14. Variaveis de Ambiente
 
 ```env
-VITE_SUPABASE_URL=https://gbuygmwyrnubnebrzkyd.supabase.co
+VITE_SUPABASE_URL=https://prqxiqykkijzpwdpqujv.supabase.co
 VITE_SUPABASE_ANON_KEY=<chave_anonima>
-VITE_GOOGLE_MAPS_KEY=<chave_google_maps>  # opcional
 VITE_APP_NAME=NNE Sistema
 VITE_APP_VERSION=1.0.0
+VITE_MVP_ONLY=false
+VITE_TURNSTILE_SITE_KEY=<turnstile_site_key>
+VITE_PORTAL_SELF_SIGNUP_ENABLED=false
 ```
 
 ---
 
-*Documento gerado em 19/02/2026 - NNE Sistema v1.0*
+*Documento atualizado em 12/04/2026 - NNE Sistema v1.0*
