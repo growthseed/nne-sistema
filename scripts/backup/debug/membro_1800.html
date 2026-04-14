@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="https://www.w3.org/1999/xhtml" xml:lang="pt" lang="pt"><head>
+        <title>Secretaria 4.1</title>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"> 
+        <!-- <meta http-equiv="content-type" content="text/html; charset=utf-8" /> -->
+        <meta http-equiv="content-style-type" content="text/css">
+        <meta http-equiv="pragma" content="no-cache">
+        <meta http-equiv="expires" content="0">
+        <meta name="resource-type" content="document">
+        <meta name="revisit-after" content="7">
+        <meta name="language" content="pt-br">
+
+        <style type="text/css">
+            input[type=submit] {
+                padding: 2px;
+                color: #009ad8;
+                font-weight: bolder;
+                background-color: #b2dfee;
+                border: 2px #28a5e1 solid;
+            }
+
+            input[type=button][name="back"] {
+                BORDER: #f90 2px solid;
+                PADDING: 2px;
+                FONT-WEIGHT: bold;
+                CURSOR: pointer;
+                COLOR: #c60;
+                BACKGROUND-COLOR: #fc6
+            }
+            input[type=button] {
+                padding: 2px;
+                color: #009ad8;
+                font-weight: bolder;
+                background-color: #b2dfee;
+                border: 2px #28a5e1 solid;
+            }
+        </style>
+
+        <link rel="stylesheet" href="arquivos/style.css" type="text/css" media="screen, projection">
+        <!--[if IE]>
+        <link rel="stylesheet" href="arquivos/style-ie.css" type="text/css" media="screen, projection" />
+        <![endif]-->
+
+        
+        <link rel="stylesheet" href="arquivos/print.css" type="text/css" media="print">
+        <link rel="shortcut icon" href="/favicon.ico">
+
+        <script type="text/javascript" src="arquivos/jquery.js"></script>
+        <script type="text/javascript" src="arquivos/base2.js"></script>
+        <script src="arquivos/jquery-ui.min.js" type="text/javascript"></script>
+
+        <script type="text/javascript" src="arquivos/mensagem.js"></script>        <script type="text/javascript" src="arquivos/jquery.maskedinput-1.3.min.js"></script>
+
+        <script>
+            $(function () {
+                $(".dataa").mask("99/99/9999");
+                $(".cpff").mask("999.999.999-99");
+
+                //$( "#accordion" ).accordion();
+            });
+        </script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('#hierarquias').hide();
+            });
+        </script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                basics();
+            });
+        </script>
+
+
+    </head>
+
+    <body style="background-color: #F7F7F7">
+        
+        <div id="container">
+
+        <ul class="main_menu">
+  <li>
+     <a href="index.php?action=pendencia&amp;option=index" title=""><b>Início</b></a>
+  </li>
+<li><a href="#" title=""><b>Cadastros</b></a>
+<ul><li><a href="index.php?action=cadastro&amp;option=membro" title="">Membros</a></li><li><a href="index.php?action=cadastro&amp;option=associacao" title="">Associação</a></li><li><a href="index.php?action=cadastro&amp;option=missionario" title="">Missionários</a></li><li><a href="index.php?action=cadastro&amp;option=igreja" title="">Igrejas</a></li><li><a href="index.php?action=cadastro&amp;option=familia" title="">Famílias</a></li><li><a href="index.php?action=cadastro&amp;option=login" title="">Logins</a></li><li><a href="index.php?action=cadastro&amp;option=interessado" title="">Interessados</a></li><li><a href="index.php?action=cadastro&amp;option=colportor" title="">Colportores</a></li><li><a href="index.php?action=cadastro&amp;option=uniao" title="">Uniões</a></li></ul>
+</li><li><a href="#" title=""><b>Relatórios</b></a>
+<ul><li><a href="index.php?action=relatorio&amp;option=missionario" title="">Missionários</a></li><li><a href="index.php?action=relatorio&amp;option=inserir" title="">Inserir</a></li><li><a href="index.php?action=relatorio&amp;option=visualizar" title="">Visualizar</a></li><li><a href="index.php?action=relatorio&amp;option=financeiro" title="">Financeiro</a></li></ul>
+</li><li><a href="#" title=""><b>Ajuda</b></a>
+<ul><li><a href="index.php?action=ajuda&amp;option=acesso" title="">Seus Acessos</a></li><li><a href="index.php?action=ajuda&amp;option=senha" title="">Alterar Senha</a></li><li><a href="index.php?action=ajuda&amp;option=sistema" title="">Sobre o Sistema</a></li></ul>
+
+ </li><li>
+     <form action="index.php" name="procurar" method="get">
+        <input type="hidden" name="action" value="cadastro">
+        <input type="hidden" name="option" value="membro">
+        <input type="hidden" name="sub" value="procurar">
+        &nbsp;<input type="text" name="palavra" value=" Procurar Membro" onclick="this.value=''" style="height:22px; font: italic 12px Verdana" size="20">
+        <input type="submit" name="Procurar" value="Ok">&nbsp;
+     </form>
+  </li>
+
+  <li>
+     <a href="#" title=""><b>2_ANOB</b></a><ul><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=39" title=""></a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=40" title=""></a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=3" title="">1_ABA</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=1" title="">1_ASCENBRA</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=2" title="">1_ASMIN</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=33" title="">1_CAMIT</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=19" title="">2_AMAPI</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=6" title="">2_ANOB</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=5" title="">2_ARAM</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=20" title="">2_ASCE</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=4" title="">2_ASPAR</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=34" title="">2_CAMAP</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=28" title="">2_CAMISE</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=15" title="">DIFERENCA SENSO</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=14" title="">OUTRAS</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=35" title="">PORTUGAL</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=24" title="">UNINORTE</a></li></ul>
+
+  </li>
+
+  <li>
+    <a href="ctrl_mensagem.php" title="Caixa de Mensagens"><img id="imagem_correio" src="arquivos/correio.png"> <span class="aviso" id="new_msg"></span></a>
+    <!--     
+    <a href="#" title=""><span class="aviso">3°/2012</span></a>
+       <ul>
+        <li><a href="ctrl_mensagem.php" title="Caixa de Mensagens"></a></li>
+    </ul> -->
+  </li>
+  <li>
+     <a href="logout.php" title="Sair do Sistema"><b>Sair</b></a>
+  </li></ul>
+        
+   
+      <div id="content"> 
+
+               <ul class="aviso" id="erros">  
+
+                  
+               </ul> 
+
+                   <fieldset>   
+
+                       
+                       
+    <p style="margin-bottom:0; padding:0; padding-left: 10px"><font size="4">ABILENE CARVALHO SANTOS FERNANDES</font> [<a href="imprimir.php?action=cadastro&amp;option=membro&amp;sub=visualizar&amp;membro=1800" target="_blank">Imprimir</a>]</p>    <table border="0" style="width:760px; margin-top: 0">
+        <!--<tr><td colspan="2"><font size="4">ABILENE CARVALHO SANTOS FERNANDES</font>[<a href="imprimir.php?action=cadastro&option=membro&sub=visualizar&membro=1800" target="_blank">Imprimir</a>]</p></td></tr>-->
+        <tbody><tr><td style="width:390px; vertical-align: top">
+                <table border="0" style="margin-top: 0; padding-top: 0">
+                    <tbody><tr><td><font color="#a0a0a0"><i><b>Membro:</b></i></font>&nbsp;Ativo</td></tr><tr><td><font color="#a0a0a0"><i><b>Igreja:</b></i></font>&nbsp;SANTA INÊS - MA</td></tr><tr><td><font color="#a0a0a0"><i><b>Associação:</b></i></font>&nbsp;2_AMAPI - UNINORTE</td></tr><tr><td>&nbsp;</td></tr><tr><td><font color="#FF8e0d" size="3">Dados Pessoais</font></td></tr><tr><td><font color="#a0a0a0"><i><b>Sexo:</b></i></font>&nbsp;Feminino</td></tr><tr><td><font color="#a0a0a0"><i><b>Nascimento:</b></i></font>&nbsp;21/05/1986</td></tr><tr><td><font color="#a0a0a0"><i><b>Cidade:</b></i></font>&nbsp;BELEM - PA</td></tr><tr><td><font color="#a0a0a0"><i><b>Nacionalidade:</b></i></font>&nbsp;BRASILEIRA</td></tr><tr><td><font color="#a0a0a0"><i><b>RG/Origem:</b></i></font>&nbsp;13.297.702-0 PR</td></tr><tr><td><font color="#a0a0a0"><i><b>Profissão:</b></i></font>&nbsp;DO LAR</td></tr><tr><td><font color="#a0a0a0"><i><b>Escolaridade:</b></i></font>&nbsp;Técnico</td></tr><tr><td><font color="#a0a0a0"><i><b>Pai:</b></i></font>&nbsp;JOSUÉ NASCIMENTO DOS SANTOS</td></tr><tr><td><font color="#a0a0a0"><i><b>Mãe:</b></i></font>&nbsp;MEIRE OLIVEIRA CARVALHO DOS SANTOS</td></tr><tr><td><font color="#a0a0a0"><i><b>Estado Civil:</b></i></font>&nbsp;Casado(a)</td></tr><tr><td><font color="#a0a0a0"><i><b>Conjuge:</b></i></font>&nbsp;JESSÉ NOGUEIRA FERNANDES</td></tr><tr><td><font color="#a0a0a0"><i><b>Casamento:</b></i></font>&nbsp;23/01/2011</td></tr><tr><td>&nbsp;</td></tr><tr><td><font color="#FF8e0d" size="3">Endereço</font></td></tr><tr><td> RUA TABAJARA 480<br><font color="#a0a0a0"><i><b>B.</b></i></font>&nbsp;GUARITA <br>PARNAÍBA  - PI&nbsp; &nbsp; &nbsp;<font color="#a0a0a0"><i><b>CEP:</b></i></font>&nbsp;64215210</td></tr>                </tbody></table>
+            </td><td>
+                <table border="0">
+                  <!-- <tr><td><img src="img/mbr/mbr.jpg" border="0"></td></tr> -->
+                    <tbody><tr><td><font color="#FF8e0d" size="3">Dados para Contato</font></td></tr><tr><td><font color="#a0a0a0"><i><b>Telefone:</b></i></font>&nbsp;</td></tr><tr><td><font color="#a0a0a0"><i><b>Celular:</b></i></font>&nbsp;(86) 9444-7299</td></tr><tr><td><font color="#a0a0a0"><i><b>E-mail:</b></i></font>&nbsp;fernandesabilenecs@gmail.com</td></tr><tr><td>&nbsp;</td></tr><tr><td><font color="#FF8e0d" size="3">Dados Religiosos</font></td></tr><tr><td><font color="#a0a0a0"><i><b>Religião Anterior:</b></i></font>&nbsp;REFORMISTA DE BERÇO</td></tr><tr><td><font color="#a0a0a0"><i><b>Desde:</b></i></font>&nbsp;1980</td></tr><tr><td><font color="#a0a0a0"><i><b>Cargo que Ocupava:</b></i></font>&nbsp;XXXX</td></tr><tr><td><font color="#a0a0a0"><i><b>Admitido na Igreja por:</b></i></font>&nbsp;Batismo</td></tr><tr><td><font color="#a0a0a0"><i><b>Data:</b></i></font>&nbsp;15/09/2005</td></tr><tr><td><font color="#a0a0a0"><i><b>Cidade:</b></i></font>&nbsp;FORTALEZA - CE</td></tr><tr><td><font color="#a0a0a0"><i><b>Oficiante:</b></i></font>&nbsp;PR. IVAN DA SILVA LIMA</td></tr><tr><td>&nbsp;</td></tr></tbody></table>                        <table> 
+                            <tbody><tr><td>
+
+                                    <!-- TESTE DE MENU -->
+                                    <script language="JavaScript">
+
+                                        function loadPage(list) {
+                                            location.href = list.options[list.selectedIndex].value
+                                        }
+                                    </script>
+                                                                        <form>
+
+                                        
+                                        <font color="#FF8e0d" size="3">Opções</font><br>
+                                            <select name="file" size="1" onchange="loadPage(this.form.elements[0])" target="_parent._top" onmouseclick="this.focus()" style="background-color:#ffffff">
+
+                                                <option value="">Escolha ...</option>
+                                                <option value="index.php?action=cadastro&amp;option=colportor&amp;sub=incluir&amp;membro=1800">Cadastrar Colportor</option><option value="ctrl_membro.php?action=carta_transferencia&amp;membro=1800">Cartas de Transferência</option>                                            </select><br>
+
+                                            <script type="text/javascript">
+
+                                                function ajaxInit() {
+
+                                                    var xmlhttp;
+                                                    //verifica se o browser tem suporte a ajax
+                                                    try {
+                                                        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                                                    } catch (e) {
+                                                        try {
+                                                            xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+                                                        } catch (ex) {
+                                                            try {
+                                                                xmlhttp = new XMLHttpRequest();
+                                                            } catch (exc) {
+                                                                alert("Esse browser não tem recursos para uso do Ajax. Por favor atualize seu Navegador!");
+                                                                xmlhttp = null;
+                                                            }
+                                                        }
+                                                    }
+                                                    return xmlhttp;
+                                                }
+
+                                                function LoadAjax(obj) {
+                                                    ajax = ajaxInit();
+                                                    if (ajax) {
+                                                        ajax.onreadystatechange = function () {
+                                                            if (ajax.readyState == 1) {
+                                                                document.getElementById(obj).innerHTML = 'carregando...';
+                                                            }
+                                                            if (ajax.readyState == 4) {
+                                                                if (ajax.responseText) {
+                                                                    processTEXT(ajax.responseText, obj);
+                                                                } else {
+                                                                    //caso não seja um arquivo XML emite a mensagem abaixo
+                                                                    document.getElementById(obj).innerHTML = "Erro ao carregar!";
+                                                                }
+                                                            }
+                                                        }
+                                                        ajax.open('GET', "inc/telas/cadastro/membro/visualizar/form.php?id=" + document.form1.id.value, true);
+                                                        ajax.send(null);
+                                                    }
+                                                }
+
+                                                function processTEXT(retorno) {
+                                                    document.getElementById("resultado").innerHTML = retorno;
+                                                }
+
+                                                //function q chama o ajax
+
+                                                function Ajuda(obj) {
+                                                    LoadAjax(obj);
+                                                }
+
+                                            </script>
+                                            <!-- TESTE DE MENU -->
+                                                                                <p><input type="button" name="back" onclick="parent.location.href = 'javascript:history.go(-1)'" value="Voltar"></p>
+
+                                </form></td>
+
+                            </tr>
+                        </tbody></table>
+                                            </td><td><a href="img/mbr/1800.jpg" target="_blank"><img src="img/mbr/1800.jpg" border="0" width="80px"></a>
+            </td></tr></tbody></table>
+            <p style="margin: 0; text-align: right; font-size: 7pt; font-style: italic"><b>Última Atualização:</b> 22/05/2022 03:33hrs, por JESSÉ NOGUEIRA FERNANDES </p>
+        <hr>
+                   </fieldset>
+           </div>
+      
+  <div id="footer">
+    <address>GS 4.1 / ASD-MR</address>
+    <!--<address style="color: red"><b>Atenção! </b> O sistema estará em manutenção das 19:00 às 20:00 horas.</address>-->
+  </div>
+</div>
+<!--<div style="float:left; width: 100">-->
+
+</body></html>

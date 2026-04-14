@@ -1,0 +1,2203 @@
+[
+  {
+    "nome": "ABRAÃO OLIVEIRA DOS REIS",
+    "categoria": "",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "03/05/2000",
+    "nascCidade": "SALVADOR",
+    "nascUF": "BA",
+    "nacionalidade": "BRASILEIRO.",
+    "profissao": "MISSIONÁRIO.",
+    "escolaridade": "2º Grau Completo",
+    "pai": "ALLAN PEREIRA DOS REIS",
+    "mae": "PATRÍCIA OLIVEIRA DOS REIS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "18/12/2022",
+    "endereco": "RUA: EPITÁCIO CAFETEIRA, QUADRA 49, NÚMERO 21",
+    "bairro": "VILA JANAINA",
+    "cidade": "SÃO LUÍS",
+    "uf": "MA",
+    "cep": "65080-160",
+    "celular": "(41) 9.96623265",
+    "email": "missionarioabraaoreis@gmail.com",
+    "conjuge": "TATIANA SOUSA REIS",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "15226452-33 -SSP BA.",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "nitNumero": "20023138178",
+    "cpf": "86217071525",
+    "raNome": "REFORMISTA DE BERÇO.",
+    "batData": "29/12/2013",
+    "batOficiante": "PASTOR GILSON DE MELO.",
+    "batCidade": "LAURO DE FREITAS",
+    "batUF": "BA",
+    "histID1": "3907",
+    "histData1": "01/02/2026",
+    "histCidade1": "SÃO LUIS",
+    "histFuncao1": "MISSIONARIO APRENDIZ",
+    "histDecisao1": "ASSEMBLEIA",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ABRAÃO OLIVEIRA DOS REISMembro: Ativo, Missionário: AtivoIgreja: JANAÍNA - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ABRAÃO OLIVEIRA DOS REIS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: JANAÍNA - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA: EPITÁCIO CAFETEIRA, QUADRA 49, NÚMERO 21"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "ANTÔNIO DE PÁDUA DA SILVA MEIRELES",
+    "categoria": "Ministro",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "13/09/1972",
+    "nascCidade": "SÃO  BERNARDO",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "2º Grau Completo",
+    "pai": "JOÃO DA SILVA MEIRELES",
+    "mae": "MARIA DE NAZARÉ DA SILVA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "29/09/1996",
+    "endereco": "RUA 2A NUMERO 06  QUADRA 2G",
+    "bairro": "IPEM SÃO CRISTOVÃO",
+    "cidade": "SÃO LUIS",
+    "uf": "MA",
+    "cep": "65055-288",
+    "celular": " 99 9 8129 3853",
+    "email": "meirelespadua@hotmail.com",
+    "conjuge": "KELYJANE ALVES MEIRELES",
+    "conjugeNascData": "07/04/1979",
+    "conjugeNascCidade": "Bacabal",
+    "conjugeNascUF": "ma",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "2º Grau Completo",
+    "filhoID1": "435",
+    "filhoNome1": "WELLYSON ALVES MEIRELES",
+    "filhoNascData1": "16/08/1997",
+    "filhoNascCidade1": "BACABAL",
+    "filhoNascUF1": "MA",
+    "filhoID2": "436",
+    "filhoNome2": "ELLYNE ALVES MEIRELES",
+    "filhoNascData2": "29/08/1999",
+    "filhoNascCidade2": "SÃO BERNARDO ",
+    "filhoNascUF2": "MA",
+    "rg": "2008658467-1",
+    "rgOrigem": "ssp/pi",
+    "rgData": "04/12/1992",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "74567063368",
+    "tituloNumero": "40345221104",
+    "tituloOrigem": "ma",
+    "tituloData": "03/04/2000",
+    "cnhNumero": "05029855669",
+    "cnhOrigem": "am",
+    "cnhData": "13/09/2010",
+    "raNome": "CATÓLICA",
+    "batData": "29/09/1996",
+    "batOficiante": "LOURIVAL SANTANA",
+    "batCidade": "BACABAL",
+    "batUF": "MA",
+    "colportagemData": "01/01/2009",
+    "colportagemOficiante": "wando cravel",
+    "colportagemLocal": "manaus",
+    "colportagemUF": "am",
+    "preAspiranteData": "15/03/2011",
+    "preAspiranteOficiante": "mariano santana",
+    "preAspiranteLocal": "quixada ",
+    "preAspiranteUF": "ce",
+    "aspiranteData": "19/12/2015",
+    "aspiranteOficiante": "Conselho ",
+    "aspiranteLocal": "Brasilia ",
+    "aspiranteUF": "DF",
+    "biblicoData": "23/11/2018",
+    "biblicoOficiante": "assembleia",
+    "biblicoLocal": "RECIFE",
+    "biblicoUF": "PE",
+    "pastorData": "14/11/2020",
+    "pastorOficiante": "jairo nizio",
+    "pastorLocal": "Palmas",
+    "pastorUF": "To",
+    "ministroData": "21/12/2024",
+    "ministroOficiante": "MARCOS WAGNER, ISAÍAS REIS",
+    "ministroLocal": "VILA UNIÃO",
+    "ministroUF": "MA",
+    "histID1": "2220",
+    "histData1": "15/03/2011",
+    "histCidade1": "QUIXADA-CE",
+    "histFuncao1": "OBREIRO PRÉ ASPIRANTE",
+    "histID2": "2911",
+    "histData2": "01/01/2014",
+    "histCidade2": "CARUARU-PE",
+    "histFuncao2": "OBREIRO PRÉ-ASPIRANTE ",
+    "histID3": "2912",
+    "histData3": "01/01/2016",
+    "histCidade3": "CARUARU-PE",
+    "histFuncao3": "OBREIRO/ASPIRANTE",
+    "histID4": "3188",
+    "histData4": "01/02/2019",
+    "histCidade4": "PALMAS-TO",
+    "histFuncao4": "OBREIRO BIBLICO ",
+    "histID5": "3391",
+    "histData5": "14/11/2020",
+    "histCidade5": "PALMAS-TO",
+    "histFuncao5": "PASTOR ",
+    "histID6": "3539",
+    "histData6": "01/01/2022",
+    "histCidade6": "IMPERATRIZ - MA",
+    "histFuncao6": "PASTOR",
+    "histID7": "3834",
+    "histData7": "01/01/2025",
+    "histCidade7": "IMPERATRIZ - MA",
+    "histFuncao7": "MINISTRO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ANTÔNIO DE PÁDUA DA SILVA MEIRELESMembro: Ativo, Missionário: AtivoIgreja: SÃO CRISTOVÃO - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ANTÔNIO DE PÁDUA DA SILVA MEIRELES",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SÃO CRISTOVÃO - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA 2A NUMERO 06  QUADRA 2G"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "JESSÉ NOGUEIRA FERNANDES",
+    "categoria": "Obreiro Bíblico",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "03/10/1984",
+    "nascCidade": "BOA VISTA ",
+    "nascUF": "RR",
+    "nacionalidade": "BRASILEIR0",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "Superior Completo",
+    "pai": "MOISEIS DA CUNHA FERNANDES",
+    "mae": "MARIA DE JESUS NOGUEIRA FERNANDES",
+    "estCivil": "Casado(a)",
+    "casamentoData": "23/01/2011",
+    "endereco": "RUA TABAJARA, 480",
+    "bairro": "SÃO FRANCISCO - GUARITA",
+    "cidade": "PARNAÍBA",
+    "uf": "PI",
+    "cep": "64215-210",
+    "celular": "(86) 99414-3338",
+    "email": "jesse841003@gmail.com",
+    "conjuge": "ABILENE CARVALHO SANTOS FERNANDES",
+    "conjugeNascData": "21/01/1980",
+    "conjugeNascCidade": "feira de santana",
+    "conjugeNascUF": "ba",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "2º Grau Completo",
+    "filhoID1": "584",
+    "filhoNome1": "DAVID GABRIEL SANTOS FERNANDES",
+    "filhoNascData1": "20/05/2012",
+    "filhoNascCidade1": "SAO JOSE DO RIO PRETO",
+    "filhoNascUF1": "SP",
+    "filhoID2": "672",
+    "filhoNome2": "ALICE GABRIELLA SANTOS FERNANDES",
+    "filhoNascData2": "24/06/2016",
+    "filhoNascCidade2": "BALSAS",
+    "filhoNascUF2": "MA",
+    "rg": "103918138 SSP-PR",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "13216969524",
+    "cpf": "06703078904",
+    "raNome": "REFORMISTA NATO",
+    "batData": "24/04/2004",
+    "batOficiante": "PR. MOISES DA CUNHA FERNANDES",
+    "batCidade": "JOHANNESBURGO",
+    "batUF": "SA",
+    "preAspiranteData": "24/06/2014",
+    "preAspiranteOficiante": "MATHEUS SOUZA",
+    "preAspiranteLocal": "SÃO PAULO",
+    "preAspiranteUF": "SP",
+    "aspiranteData": "20/11/2017",
+    "aspiranteOficiante": "moisés fernandes",
+    "aspiranteLocal": "brasília",
+    "aspiranteUF": "df",
+    "biblicoData": "08/11/2022",
+    "biblicoOficiante": "PR ISAÍAS REIS",
+    "biblicoLocal": "BRASÍLIA",
+    "biblicoUF": "DF",
+    "histID1": "2694",
+    "histData1": "01/06/2014",
+    "histCidade1": "BALSAS-MA",
+    "histFuncao1": "0BREIRO PRE-ASPIRANTE",
+    "histID2": "2662",
+    "histData2": "01/06/2014",
+    "histCidade2": "BALSAS-MA",
+    "histFuncao2": "OBREIRO PRE-ASPIRANTE",
+    "histID3": "2818",
+    "histData3": "01/01/2015",
+    "histCidade3": "BALSAS-MA",
+    "histFuncao3": "OBREIRO PRE-ASPIRANTE",
+    "histID4": "3146",
+    "histData4": "01/01/2016",
+    "histCidade4": "BALSAS-MA",
+    "histFuncao4": "OBREIRO PRE-ASPIRANTE",
+    "histDecisao4": " ",
+    "histID5": "3147",
+    "histData5": "01/01/2017",
+    "histCidade5": "BALSAS-MA",
+    "histFuncao5": "OBREIRO PRE-ASPIRANTE",
+    "histID6": "3148",
+    "histData6": "01/01/2018",
+    "histCidade6": "BALSAS-MA",
+    "histFuncao6": "OBREIRO ASPIRANTE",
+    "histID7": "3388",
+    "histData7": "01/02/2019",
+    "histCidade7": "RIBEIRA DO POMBAL",
+    "histFuncao7": "OBREIRO ASPIRANTE",
+    "histID8": "3544",
+    "histData8": "01/01/2022",
+    "histCidade8": "PARNAÍBA - PI",
+    "histFuncao8": "OBREIRO ASPIRANTE",
+    "histID9": "3703",
+    "histData9": "01/01/2023",
+    "histCidade9": "PARNAÍBA - PI",
+    "histFuncao9": "OBREIRO BÍBLICO",
+    "histDecisao9": "CONSELHO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO JESSÉ NOGUEIRA FERNANDESMembro: Ativo, Missionário: AtivoIgreja: SANTA INÊS - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "JESSÉ NOGUEIRA FERNANDES",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SANTA INÊS - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA TABAJARA, 480"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "JORDAN OLIVEIRA DOS SANTOS",
+    "categoria": "",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "23/06/1996",
+    "nascCidade": "SÃO LUÍS ",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "PROFESSOR",
+    "escolaridade": "Superior Completo",
+    "pai": "ANTONIO CARLOS DOS SANTOS",
+    "mae": "JOSANA REIS OLIVEIRA DOS SANTOS",
+    "estCivil": "Solteiro(a)",
+    "endereco": "RUA BENJAMIN REIS, 155",
+    "bairro": "CATUMBI",
+    "cidade": "FLORIANO",
+    "uf": "PI",
+    "cep": "64806-280",
+    "celular": "(98) 988705789",
+    "email": "jordansanntos@gmail.com",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "037446202009-4 PC-MA",
+    "rgOrigem": "SSP MA",
+    "rgData": "20/03/2019",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "21038425052",
+    "nitNumero": "21038425052",
+    "cpf": "61515065375",
+    "tituloNumero": "074155531198",
+    "reservistaNumero": "543259",
+    "reservistaData": "08/07/2015",
+    "raNome": "REFORMISTA DE BERÇO",
+    "batData": "23/10/2011",
+    "batOficiante": "PR. DAVI PAES SILVA",
+    "batCidade": "SANTA ISABEL ",
+    "batUF": "PA",
+    "histID1": "3772",
+    "histData1": "01/02/2024",
+    "histCidade1": "SÃO LUÍS - MA",
+    "histFuncao1": "OBREIRO CONTRATADO",
+    "histDecisao1": "DIRETORIA ",
+    "histID2": "3838",
+    "histData2": "01/01/2025",
+    "histCidade2": "FLORIANO - PI",
+    "histFuncao2": "MISSIONÁRIO APRENDIZ",
+    "histDecisao2": "DIRETORIA",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO JORDAN OLIVEIRA DOS SANTOSMembro: Ativo, Missionário: AtivoIgreja: TERESINA - PIAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "JORDAN OLIVEIRA DOS SANTOS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: TERESINA - PI",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA BENJAMIN REIS, 155"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "JOSÉ ANTÔNIO NUNES PEREIRA",
+    "categoria": "Obreiro Pré-Aspirante",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "02/02/1982",
+    "nascCidade": "DUQUE BACELAR",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "2º Grau Completo",
+    "pai": "GERALDO PEREIRA DA SILVA",
+    "mae": "MARIA DO ROSÁRIO NUNES PEREIRA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "24/07/2022",
+    "endereco": "RUA DOUTORA BRUNA DE OLIVEIRA RODRIGUES, 5072",
+    "bairro": "ALTO ALEGRE",
+    "cidade": "TERESINA",
+    "uf": "PI",
+    "celular": "(98) 98193 6860",
+    "email": "JOSEANTONIONUNES09@GMAIL.COM",
+    "conjuge": "SUZANA OLIVEIRA DE ARAÚJO",
+    "conjugeNascData": "14/07/1988",
+    "conjugeNascCidade": "MONÇÃO",
+    "conjugeNascUF": "MA",
+    "conjugeNacionalidade": "BRASILEIRA",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "726",
+    "filhoNome1": "JUAN KRYSTOFER OLIVEIRA NUNES ",
+    "filhoNascData1": "27/08/2024",
+    "filhoNascCidade1": "SÃO LUÍS",
+    "filhoNascUF1": "MA",
+    "rg": "027824742004-6 SSP-MA",
+    "rgOrigem": "SSP-MA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "nitNumero": "2672457765-7",
+    "cpf": "02364674336",
+    "raNome": "ASD",
+    "batData": "31/12/1998",
+    "batOficiante": "LOURIVAL JOSÉ DE SANTANA",
+    "batCidade": "SÃO LUIS",
+    "batUF": "MA",
+    "preAspiranteData": "23/01/2012",
+    "preAspiranteOficiante": "MATEUS SOUZA ",
+    "preAspiranteLocal": "CURITIBA ",
+    "preAspiranteUF": "PR",
+    "histID1": "2125",
+    "histData1": "01/02/2011",
+    "histCidade1": "CURITIBA-PR (2011-2012)",
+    "histFuncao1": "ESCOLA MISSIONARIA",
+    "histID2": "2126",
+    "histData2": "01/02/2013",
+    "histCidade2": "MARABÁ-PA ",
+    "histFuncao2": "OBREIRO ",
+    "histID3": "2663",
+    "histData3": "01/01/2014",
+    "histCidade3": "MARABÁ-PA",
+    "histFuncao3": "OBREIRO ",
+    "histID4": "2819",
+    "histData4": "01/01/2015",
+    "histCidade4": "BACABAL-MA",
+    "histFuncao4": "OBREIRO ",
+    "histID5": "3820",
+    "histData5": "04/10/2024",
+    "histCidade5": "TERESINA - PI",
+    "histFuncao5": "OBREIRO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO JOSÉ ANTÔNIO NUNES PEREIRAMembro: Ativo, Missionário: AtivoIgreja: BALSAS - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "JOSÉ ANTÔNIO NUNES PEREIRA",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: BALSAS - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA DOUTORA BRUNA DE OLIVEIRA RODRIGUES, 5072"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "MOISÉS LIMA TRINDADE",
+    "categoria": "",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "22/04/2003",
+    "nascCidade": "BELÉM",
+    "nascUF": "PA",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "ESTUDANTE",
+    "escolaridade": "2º Grau Completo",
+    "pai": "PAULO SÉRGIO LIMA TRINDADE",
+    "mae": "SOCORRO LIMA TRINDADE",
+    "estCivil": "Solteiro(a)",
+    "endereco": "RUA DA FORMIGA",
+    "bairro": "TAMANCÃO",
+    "cidade": "CAJARI",
+    "uf": "MA",
+    "celular": "91 992140250",
+    "email": "mltrindade2020@gmail.com",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "9320167",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "23605037174",
+    "nitNumero": "23605037174",
+    "cpf": "04893278266",
+    "raNome": "ASD-MR",
+    "batData": "15/10/2017",
+    "batOficiante": "PAULO SÉRGIO LIMA TRINDADE",
+    "batCidade": "SANTA ISABEL DO PARÁ",
+    "batUF": "PA",
+    "histID1": "3856",
+    "histData1": "01/03/2025",
+    "histCidade1": "CAJARI",
+    "histFuncao1": "OBREIRO CONTRATADO",
+    "histDecisao1": "COMISSÃO",
+    "histID2": "3906",
+    "histData2": "01/02/2026",
+    "histCidade2": "SÃO JOÃO DOS PATOS",
+    "histFuncao2": "MISSIONÁRIO APRENDIZ",
+    "histDecisao2": "ASSEMBLEIA",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO MOISÉS LIMA TRINDADEMembro: Ativo, Missionário: AtivoIgreja: SÃO JOÃO DOS PATOS - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "MOISÉS LIMA TRINDADE",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SÃO JOÃO DOS PATOS - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA DA FORMIGA"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "NELDSON DINIZ CALDAS",
+    "categoria": "Pastor",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "03/03/1985",
+    "nascCidade": "HUMBERTO DE CAMPOS",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "LAVRADOR",
+    "escolaridade": "1º Grau Completo",
+    "pai": "NELSON SANTOS CALDAS",
+    "mae": "ROSA MARIA RODRIGUES DINIZ",
+    "estCivil": "Casado(a)",
+    "casamentoData": "28/07/2004",
+    "endereco": "RUA CASSIANO PEREIRA N 107",
+    "bairro": "LIBERTDADE ",
+    "cidade": "CAMPINA GRANDE ",
+    "uf": "PB",
+    "cep": "58415-295",
+    "celular": "83 996552671",
+    "email": "luki156@outlook.com",
+    "conjuge": "KATIA CILENE PEREIRA  CALDAS",
+    "conjugeNascData": "13/09/1985",
+    "conjugeNascCidade": "humberto de campos",
+    "conjugeNascUF": "ma",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "2º Grau Completo",
+    "filhoID1": "650",
+    "filhoNome1": "ELDSON PEREIRA CALDAS",
+    "filhoNascData1": "16/02/2004",
+    "filhoNascCidade1": "HUBERTO DE CAMPOS",
+    "filhoNascUF1": "MA",
+    "filhoID2": "649",
+    "filhoNome2": "KELY JANE PEREIRA CALDAS",
+    "filhoNascData2": "06/07/2006",
+    "filhoNascCidade2": "SÃO BERNARDO ",
+    "filhoNascUF2": "MA",
+    "rg": "2769660-0",
+    "rgOrigem": "SEGUP-MA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "2676867998-6",
+    "nitNumero": "2676867998-6",
+    "cpf": "03609516356",
+    "raNome": "ADVENTISTA",
+    "batData": "28/11/2007",
+    "batOficiante": "PR. LOURIVAL JOSÉ DE SANTANA",
+    "batCidade": "SANTANA DO MARANHÃO",
+    "batUF": "MA",
+    "preAspiranteData": "01/01/2016",
+    "preAspiranteOficiante": "silvan paulo",
+    "preAspiranteLocal": "recife",
+    "preAspiranteUF": "pe",
+    "aspiranteData": "01/02/2021",
+    "aspiranteOficiante": "PR. ERIVALDO DOMINGOS",
+    "aspiranteLocal": "CAMPINA GRANDE",
+    "aspiranteUF": "PB",
+    "biblicoData": "30/06/2023",
+    "biblicoOficiante": "erivaldo domingos",
+    "biblicoLocal": "campina grande",
+    "biblicoUF": "pe",
+    "pastorData": "01/02/2024",
+    "pastorOficiante": "erivaldo domingos",
+    "pastorLocal": "arapiraca",
+    "pastorUF": "al",
+    "histID1": "2907",
+    "histData1": "11/02/2014",
+    "histCidade1": "CHÃ GRANDE",
+    "histFuncao1": "OBREIRO AJUDADO",
+    "histID2": "2908",
+    "histData2": "01/07/2015",
+    "histCidade2": "MADRE DE DEUS - PE",
+    "histFuncao2": "OBREIRO CONTRATADO",
+    "histID3": "3235",
+    "histData3": "01/01/2016",
+    "histCidade3": "PETROLÂNDIA",
+    "histFuncao3": "OBREIRO PRÉ-ASPIRANTE",
+    "histID4": "3240",
+    "histData4": "01/02/2019",
+    "histCidade4": "CAMPINA GRANDE - PB",
+    "histFuncao4": "OBREIRO PRÉ-ASPIRANTE",
+    "histID5": "3456",
+    "histData5": "01/02/2021",
+    "histCidade5": "CAMPINA GRANDE - PB",
+    "histFuncao5": "OBREIRO ASPIRANTE",
+    "histID6": "3780",
+    "histData6": "30/06/2023",
+    "histCidade6": "CAMPINA GRANDE",
+    "histFuncao6": "OBREIRO BIBLICO",
+    "histID7": "3781",
+    "histData7": "02/01/2024",
+    "histCidade7": "ARAPIRACA",
+    "histFuncao7": "PASTOR",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO NELDSON DINIZ CALDASMembro: Ativo, Missionário: AtivoIgreja: IMPERATRIZ - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "NELDSON DINIZ CALDAS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: IMPERATRIZ - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA CASSIANO PEREIRA N 107"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "OTAVIO RODRIGO LISBOA CAMPOS",
+    "categoria": "",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "27/09/1995",
+    "nascCidade": "RIO DE JANEIRO",
+    "nascUF": "RJ",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "AUTÔNOMO",
+    "escolaridade": "2º Grau Completo",
+    "pai": "CARLOS ALBERTO CRUZ CAMPOS",
+    "mae": "MARIA LISBOA CAMPOS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "14/06/2021",
+    "endereco": "RUA PERU CASA 36 \n",
+    "bairro": "RODOVIÁRIA",
+    "cidade": "PARNAÍBA",
+    "uf": "PI",
+    "cep": "64212205",
+    "telefone": "XX",
+    "celular": "62 996777281",
+    "email": "otaviocnc@gmail.com",
+    "conjuge": "JANAINA DE FÁTIMA DOS SANTOS FIGUEREDO",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "2964229",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "13909896669",
+    "raNome": "ASDMR",
+    "batData": "23/01/2011",
+    "batOficiante": "HERMES DOS SANTOS BARBOSA",
+    "batCidade": "SAO FRANCISCO",
+    "batUF": "MG",
+    "histID1": "3893",
+    "histData1": "01/02/2026",
+    "histCidade1": "PARNAÍBA-PI",
+    "histFuncao1": "MISS CONTRATADO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO OTAVIO RODRIGO LISBOA CAMPOSMembro: Ativo, Missionário: AtivoIgreja: PARNAÍBA - PIAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "OTAVIO RODRIGO LISBOA CAMPOS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: PARNAÍBA - PI",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA PERU CASA 36"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "REGINALDO DE SOUZA MORAES",
+    "categoria": "Obreiro Pré-Aspirante",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "19/12/1981",
+    "nascCidade": "SANTA ISABEL",
+    "nascUF": "PA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO ",
+    "escolaridade": "1º Grau Completo",
+    "pai": "LOURIVAL DE SOUZA MORAES",
+    "mae": "MARIA LEOPOLDINA DE SOUZA MORAES",
+    "estCivil": "Casado(a)",
+    "casamentoData": "18/07/2010",
+    "endereco": "AVENIDA MAZAGÃO, 388",
+    "bairro": "MALVINAS",
+    "cidade": "PORTO GRANDE ",
+    "uf": "AP",
+    "cep": "68997000",
+    "celular": "(96) 98410-9359",
+    "email": "reginaldosouzaa1981@gmail.com",
+    "conjuge": "LÉIA GOMES DE SOUZA ",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "587",
+    "filhoNome1": "LARA RHIZYA GOMES DE SOUZA",
+    "filhoNascData1": "17/08/2012",
+    "filhoNascCidade1": "CONCEIÇAO DO ARAGUAIA",
+    "filhoNascUF1": "PA",
+    "filhoID2": "588",
+    "filhoNome2": "LIZYA RHAYLA GOMES DE SOUZA",
+    "filhoNascData2": "24/04/2014",
+    "filhoNascCidade2": "CONCEIÇAO DO ARAGUAIA",
+    "filhoNascUF2": "PA",
+    "rg": "4302689 PA",
+    "rgOrigem": "PA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "20614456074",
+    "nitNumero": "20614456074",
+    "cpf": "80685056287",
+    "raNome": "XXXX",
+    "batData": "20/02/2000",
+    "batOficiante": "PR. LOURIVAL SANTANA",
+    "batCidade": "BELÉM",
+    "batUF": "PA",
+    "preAspiranteOficiante": "Comissão ex. união ",
+    "preAspiranteLocal": "brasília ",
+    "preAspiranteUF": "df",
+    "histID1": "2668",
+    "histData1": "01/07/2014",
+    "histCidade1": "FLORIANO-PI (S.J.PATOS)",
+    "histFuncao1": "MISSIONÁRIO",
+    "histID2": "2822",
+    "histData2": "01/01/2015",
+    "histCidade2": "FLORIANO-PI (S.JPATOS)",
+    "histID3": "3298",
+    "histData3": "01/03/2019",
+    "histCidade3": "PORTO GRANDE AP",
+    "histFuncao3": "MISSIONÁRIO",
+    "histDecisao3": "COMISSÃO",
+    "histID4": "3578",
+    "histData4": "01/02/2022",
+    "histCidade4": "MACAPÁ -AP",
+    "histFuncao4": "OBREIRO ",
+    "histDecisao4": "  UNIÃO ",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO REGINALDO DE SOUZA MORAESMembro: Ativo, Missionário: AtivoIgreja: BACABAL - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "REGINALDO DE SOUZA MORAES",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: BACABAL - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "AVENIDA MAZAGÃO, 388"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "THIAGO VASCONCELOS BASTOS",
+    "categoria": "Obreiro Pré-Aspirante",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "29/05/1993",
+    "nascCidade": "MANAUS",
+    "nascUF": "AM",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "Contador",
+    "escolaridade": "Superior Completo",
+    "mae": "MARLY VASCONCELOS BASTOS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "10/07/2020",
+    "endereco": "RUA JOSE PEDRO DA COSTA, QD 33A, LT 12/13",
+    "bairro": "SETOR CENTRO OESTE",
+    "cidade": "GOIANIA",
+    "uf": "GO",
+    "cep": "74560-465",
+    "celular": "(62) 982619967",
+    "email": "THIAGO.CAMIN@HOTMAIL.COM",
+    "conjuge": "ISLANE NASCIMENTO AGUIAR BASTOS",
+    "conjugeNascData": "25/06/1994",
+    "conjugeNascCidade": "São domingos do araguaia",
+    "conjugeNascUF": "pa",
+    "conjugeNacionalidade": "Brasileira",
+    "conjugeEscolaridade": "Superior Incompleto",
+    "rg": "24544248 SSP/AM",
+    "rgOrigem": "ssp/am",
+    "rgData": "19/07/2007",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "20427776257",
+    "nitNumero": "20427776257",
+    "cpf": "00584881207",
+    "batData": "18/10/2020",
+    "batOficiante": "PR. OLDAC OLIVEIRA DE QUEIROZ",
+    "batCidade": "SÃO DOMINGOS DO ARAGUAIA",
+    "batUF": "PA",
+    "preAspiranteData": "01/02/2024",
+    "preAspiranteOficiante": "Pr jairo nizio",
+    "preAspiranteLocal": "Goiania ",
+    "preAspiranteUF": "Go",
+    "histID1": "3059",
+    "histData1": "01/03/2011",
+    "histCidade1": "MANAUS-AM",
+    "histFuncao1": "CLT - AUX. TESOURARIA-CAMIN",
+    "histID2": "3461",
+    "histData2": "01/02/2013",
+    "histCidade2": "CURITIBA-PR",
+    "histFuncao2": "60% PRÉ - TESOUREIRO-SETE",
+    "histID3": "3462",
+    "histData3": "01/03/2015",
+    "histCidade3": "SÃO LUÍS-MA",
+    "histFuncao3": "60% PRÉ - MISSIONÁRIO-CAMAPI",
+    "histID4": "3463",
+    "histData4": "01/06/2015",
+    "histCidade4": "SÃO DOMINGOS DO ARAGUIA-PA",
+    "histFuncao4": "80% PRÉ -TESOUREIRO-CERPA",
+    "histID5": "3464",
+    "histData5": "01/04/2016",
+    "histCidade5": "BRASÍLIA-DF",
+    "histFuncao5": "50% PRÉ - AUX. TESOURARIA-CER",
+    "histID6": "3465",
+    "histData6": "01/08/2016",
+    "histCidade6": "RECIFE-PE",
+    "histFuncao6": "80% PRÉ -TESOUREIRO-CENOPE",
+    "histID7": "3466",
+    "histData7": "30/04/2017",
+    "histCidade7": "RECIFE-PE",
+    "histFuncao7": "DISPENSADO",
+    "histID8": "3467",
+    "histData8": "01/03/2021",
+    "histCidade8": "GOIÂNIA-GO",
+    "histFuncao8": "AUX. TESOURARIA-ASCENBRA - 60% PRÉ",
+    "histDecisao8": "COMISSSÃO",
+    "histID9": "3731",
+    "histData9": "01/09/2021",
+    "histCidade9": "GOIÂNIA-GO",
+    "histFuncao9": "AUX. TESOURARIA-ASCENBRA - 70% PRÉ",
+    "histDecisao9": "COMISSSÃO",
+    "histID10": "3732",
+    "histData10": "01/04/2022",
+    "histCidade10": "GOIÂNIA-GO",
+    "histFuncao10": "AUX. TESOURARIA-ASCENBRA - 90% PRÉ",
+    "histDecisao10": "COMISSSÃO",
+    "histID11": "3750",
+    "histData11": "01/01/2024",
+    "histCidade11": "GOIÂNIA-GO",
+    "histFuncao11": "AUX. TES. / OB. IG ALICE BARBOSA",
+    "histDecisao11": "COMISSSÃO",
+    "histID12": "3892",
+    "histData12": "01/02/2026",
+    "histCidade12": "SÃO LUÍS-MA",
+    "histFuncao12": "TESOUREIRO DA AMAPI",
+    "histDecisao12": "ASSEMBLEIA",
+    "acesso_gd": "Somente Consulta",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO THIAGO VASCONCELOS BASTOSMembro: Ativo, Missionário: AtivoIgreja: SÃO CRISTOVÃO - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "THIAGO VASCONCELOS BASTOS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SÃO CRISTOVÃO - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA JOSE PEDRO DA COSTA, QD 33A, LT 12/13"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "ARNALDO SANTOS DE SOUSA",
+    "categoria": "Obreiro Aspirante",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "16/12/1980",
+    "nascCidade": "FORT. DOS NOGUEIRAS",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "1º Grau Completo",
+    "pai": "DORALICE SANTOS DE SOusA",
+    "mae": "EUZÉBIO GOMES DE SOUsA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "27/04/2014",
+    "endereco": "RUA 28, Nº 256",
+    "bairro": "SÃO LUIZ",
+    "cidade": "BALSAS",
+    "uf": "MA",
+    "cep": "65800-000",
+    "celular": "(099) 98209-2001",
+    "email": "arnaldo.sousa-@hotmail.com",
+    "conjuge": "JOELMA DA SILVA REIS DE SOUSA",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "107133299-3 ",
+    "rgOrigem": "MA",
+    "ctpsNumero": "63979 - 0016",
+    "ctpsSerie": "MA ",
+    "ctpsUF": "UF",
+    "nitNumero": "1173253791-1",
+    "cpf": "95165223353",
+    "cnhNumero": "643083486",
+    "raNome": "CATOLICA",
+    "batData": "21/06/2001",
+    "batOficiante": "MARIANO SANTANA",
+    "batCidade": "BALSAS",
+    "batUF": "MA",
+    "colportagemOficiante": "adair cunha",
+    "preAspiranteData": "03/03/2009",
+    "preAspiranteOficiante": "edson meireles",
+    "preAspiranteLocal": "ji-paraná",
+    "preAspiranteUF": "ro",
+    "aspiranteData": "10/12/2014",
+    "aspiranteOficiante": "cons delib 1998/2014",
+    "aspiranteLocal": "itu",
+    "aspiranteUF": "sp",
+    "histID1": "608",
+    "histData1": "01/08/2001",
+    "histCidade1": "BALSAS - MA",
+    "histFuncao1": "COLPORTOR",
+    "histID2": "609",
+    "histData2": "23/03/2007",
+    "histCidade2": "ALM. TAMANDARÉ - PR",
+    "histFuncao2": "ESCOLA MISSIONÁRIA",
+    "histID3": "610",
+    "histData3": "03/03/2009",
+    "histCidade3": "JI-PARANÁ - RO",
+    "histFuncao3": "DIR. COLPORTAGEM",
+    "histID4": "2265",
+    "histData4": "01/02/2013",
+    "histCidade4": "PORTO ALEGRE",
+    "histFuncao4": "DIR. COLPORTAGEM",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ARNALDO SANTOS DE SOUSAMembro: Ativo, Missionário: InativoIgreja: BALSAS - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ARNALDO SANTOS DE SOUSA",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: BALSAS - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA 28, Nº 256"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "CALEBE CARDOSO MEIRELES",
+    "categoria": "Obreiro Aspirante",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "28/09/1996",
+    "nascCidade": "SÃO BERNARDO ",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA ",
+    "profissao": "MISSIONARIO",
+    "escolaridade": "2º Grau Completo",
+    "pai": "LUÍS GONZAGA DA SILVA MEIRELES ",
+    "mae": "ALZENIR CARDOSO MEIRELES ",
+    "estCivil": "Casado(a)",
+    "casamentoData": "18/07/2021",
+    "endereco": "RUA TEIXEIRA DE FREITAS 375",
+    "bairro": "CENTRO",
+    "cidade": "BACABAL",
+    "uf": "MA",
+    "cep": "65700-000",
+    "telefone": "XX",
+    "celular": "99-98234 6898",
+    "email": "calebecardosomeireles51@gmail.com",
+    "conjuge": "NAYELLEM FERREIRAS DE ARRUDA MEIRELES",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "050032492013-0",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "06914614300",
+    "raNome": "XX",
+    "batData": "14/07/2013",
+    "batOficiante": "PR. MOISÉS FERNANDES ",
+    "batCidade": "SÃO BERNARDO ",
+    "batUF": "MA",
+    "preAspiranteData": "01/02/2019",
+    "preAspiranteOficiante": "PR.mATHEUS SOUZA",
+    "preAspiranteLocal": "BACABAL",
+    "preAspiranteUF": "MA",
+    "aspiranteData": "05/06/2024",
+    "aspiranteOficiante": "PR. ISAÍAS REIS",
+    "aspiranteLocal": "BRASÍLIA",
+    "aspiranteUF": "DF",
+    "histID1": "3249",
+    "histData1": "01/02/2019",
+    "histCidade1": "BACABAL-MA",
+    "histFuncao1": "OBR.PRÉ ASPIRANTE",
+    "histID2": "3542",
+    "histData2": "01/01/2022",
+    "histCidade2": "BACABAL - MA",
+    "histFuncao2": "OBR. PRÉ ASPIRANTE",
+    "histID3": "3817",
+    "histData3": "05/06/2024",
+    "histCidade3": "BACABAL - MA",
+    "histFuncao3": "OBREIRO ASPIRANTE",
+    "histID4": "3835",
+    "histData4": "21/12/2024",
+    "histCidade4": "BACABAL - MA",
+    "histFuncao4": "ANCIÃO DE IGREJA",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO CALEBE CARDOSO MEIRELESMembro: Ativo, Missionário: InativoIgreja: BACABAL - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "CALEBE CARDOSO MEIRELES",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: BACABAL - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA TEIXEIRA DE FREITAS 375"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "ISAÍAS SOARES DE CASTRO",
+    "categoria": "Obreiro Pré-Aspirante",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "29/05/1972",
+    "nascCidade": "ZÉ DOCA",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "missionario",
+    "escolaridade": "2º Grau Incompleto",
+    "pai": "MARIA FRANCISCA SOARES CASTRO",
+    "mae": "JOSÉ EUDES MUNIZ DE CASTRO",
+    "estCivil": "Casado(a)",
+    "casamentoData": "19/10/1999",
+    "endereco": "RUA LATERAL SUL 222 BAIRRO JARDIM NOVA ERA",
+    "cidade": "SANTA INÊS",
+    "uf": "MA",
+    "cep": "65300-000",
+    "telefone": "98 981826087 - TIM",
+    "celular": "(98) 8184-3531",
+    "email": "isaias_muniz@hotmail.com",
+    "conjuge": "GRACILENE DOS SANTOS S. CASTRO",
+    "conjugeNascData": "04/02/1981",
+    "conjugeNascCidade": "SANTA INES",
+    "conjugeNascUF": "MA",
+    "conjugeNacionalidade": "BRASILEIRA",
+    "conjugeEscolaridade": "2º Grau Completo",
+    "filhoID1": "13",
+    "filhoNome1": "DANIEL SANTOS DE SOUSA DE CASTRO",
+    "filhoNascData1": "12/09/2000",
+    "filhoNascCidade1": "SANTA INES",
+    "filhoNascUF1": "MA",
+    "rg": "040942042010-0",
+    "rgOrigem": "SSP-PA",
+    "rgData": "13/01/1992",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "41412044200",
+    "tituloNumero": "295354211/71",
+    "raNome": "ASD-MR",
+    "batData": "16/01/2000",
+    "batOficiante": "PR. HERMES BARBOSA",
+    "batCidade": "ZÉ DOCA",
+    "batUF": "MA",
+    "colportagemData": "02/05/2002",
+    "colportagemOficiante": "PEDRO VIANA",
+    "colportagemLocal": "SANTA INES",
+    "colportagemUF": "MA",
+    "preAspiranteData": "01/01/2010",
+    "preAspiranteOficiante": "PR. LOURIVAL SANTANA",
+    "preAspiranteLocal": "SANTA INES",
+    "preAspiranteUF": "MA",
+    "histID1": "45",
+    "histData1": "01/04/2009",
+    "histCidade1": "SANTA INÊS-MA",
+    "histFuncao1": "CONTRATADO",
+    "histID2": "46",
+    "histData2": "01/01/2010",
+    "histCidade2": "SANTA INES-MA (2010-2012)",
+    "histFuncao2": "OBREIRO PRÉ ASPIRANTE",
+    "histID3": "2052",
+    "histData3": "01/01/2013",
+    "histCidade3": "LICENÇA ",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ISAÍAS SOARES DE CASTROMembro: Ativo, Missionário: InativoIgreja: SANTA INÊS - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ISAÍAS SOARES DE CASTRO",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: SANTA INÊS - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA LATERAL SUL 222 BAIRRO JARDIM NOVA ERA"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "LUIS SANTOS DE SOUSA",
+    "categoria": "Pastor",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "25/05/1979",
+    "nascCidade": "BALSAS",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSINÁRIO",
+    "escolaridade": "1º Grau Incompleto",
+    "pai": "EUZÉBIO GOMES DE SOUSA",
+    "mae": "DORALICE SANTOS DE SOUSA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "04/08/2010",
+    "endereco": "RUA PERNAMBUCO, 939",
+    "bairro": "SETOR INDUSTRIAL",
+    "cidade": "BALSAS ",
+    "uf": "MA",
+    "cep": "65903-320",
+    "celular": " (99)98259 0693/ 98211 0555",
+    "email": "santosluis2016@hotmail.com",
+    "conjuge": "DYEKYSSANDRA PASCHOA DE SOUSA",
+    "conjugeNascData": "26/11/1986",
+    "conjugeNascCidade": "MARABÁ",
+    "conjugeNascUF": "PA",
+    "conjugeNacionalidade": "Brasileira",
+    "conjugeEscolaridade": "Superior Completo",
+    "filhoID1": "652",
+    "filhoNome1": "LUCAS  PASCHOA DE SOUSA",
+    "filhoNascData1": "13/11/2015",
+    "filhoNascCidade1": "FLORIANO",
+    "filhoNascUF1": "PI",
+    "rg": "4824105 ",
+    "rgOrigem": "PA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "11946413750",
+    "nitNumero": "11946413750",
+    "cpf": "00277435358",
+    "raNome": "CATÓLICA",
+    "batData": "22/07/2001",
+    "batOficiante": "PR.MARIANO LAURENTINO DE SANTANA",
+    "batCidade": "BALSAS",
+    "batUF": "MA",
+    "preAspiranteData": "01/01/2014",
+    "preAspiranteOficiante": "pr mARCOS wAGNER rodrigues vaz",
+    "preAspiranteLocal": "bREU BRANCO",
+    "preAspiranteUF": "PA",
+    "aspiranteData": "31/12/2015",
+    "aspiranteOficiante": "PR.Marcos Wagner Rodrigues Vaz",
+    "aspiranteLocal": "Santa Isabel do para",
+    "aspiranteUF": "PA",
+    "biblicoData": "22/11/2020",
+    "biblicoOficiante": "MATHEUS SOUZA",
+    "biblicoLocal": "IMPERATRIZ",
+    "biblicoUF": "MA",
+    "pastorData": "01/06/2021",
+    "pastorOficiante": "MATHEUS SOUZA",
+    "pastorLocal": "IMPERATRIZ",
+    "pastorUF": "MA",
+    "histID1": "1985",
+    "histData1": "01/02/2012",
+    "histCidade1": "BACABAL-MA",
+    "histFuncao1": "CONTRATADO/MISSIONÁRIO",
+    "histID2": "2056",
+    "histData2": "01/01/2016",
+    "histCidade2": "MACAPÁ - AP",
+    "histFuncao2": "PRÉ ASPIRANTE",
+    "histID3": "3243",
+    "histData3": "01/01/2019",
+    "histCidade3": "IMPERATRIZ-MA",
+    "histFuncao3": "OBREIRO ASPIRANTE",
+    "histID4": "3474",
+    "histData4": "22/11/2020",
+    "histCidade4": "IMPERATRIZ - MA",
+    "histFuncao4": "OBREIRO BÍBLICO",
+    "histDecisao4": "CONSELHO",
+    "histID5": "3475",
+    "histData5": "01/06/2021",
+    "histCidade5": "IMPERATRIZ - MA",
+    "histFuncao5": "PASTOR REGIONAL",
+    "histDecisao5": "CONSELHO",
+    "histID6": "3719",
+    "histData6": "01/04/2023",
+    "histCidade6": "BALSAS - MA",
+    "histFuncao6": "PASTOR LOCAL",
+    "histDecisao6": "COMISSÃO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO LUIS SANTOS DE SOUSA Membro: Ativo, Missionário: InativoIgreja: BALSAS - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "LUIS SANTOS DE SOUSA",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: BALSAS - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA PERNAMBUCO, 939"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "VIDAL BARBOSA DOS REIS",
+    "categoria": "",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "26/01/1974",
+    "nascCidade": "TASSO FRAGOSO",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "1º Grau Completo",
+    "pai": "ALEXANDRE DIAS DOS REIS",
+    "mae": "NILZA BARBOSA DOS REIS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "12/12/2008",
+    "endereco": "RUA PERNAMBUCO, 939",
+    "bairro": "SETOR INDUSTRIAL",
+    "cidade": "BALSAS",
+    "uf": "MA",
+    "cep": "65000-000",
+    "telefone": "9982111633",
+    "celular": "81249906",
+    "email": "vidalcamapi@hotmail.com",
+    "conjuge": "MARILIA DOS REMEDIOS MENDES REIS",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "589",
+    "filhoNome1": "JONATAS MENDES REIS ",
+    "filhoNascData1": "28/05/2010",
+    "filhoNascCidade1": "SAO LUIS ",
+    "filhoNascUF1": "MA",
+    "filhoID2": "579",
+    "filhoNome2": "JEREMIAS MENDES REIS",
+    "filhoNascData2": "24/06/2012",
+    "filhoNascCidade2": "SAO LUIS ",
+    "filhoNascUF2": "MA",
+    "rg": "000009859893-7 MA",
+    "rgOrigem": "MA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "97736767300",
+    "raNome": "ADVENTISTA DO 7º DIA",
+    "batData": "21/09/1997",
+    "batOficiante": "LOURIVAL JOSÉ DE SANTANA",
+    "batCidade": "BALSAS",
+    "batUF": "MA",
+    "histID1": "2667",
+    "histData1": "01/03/2014",
+    "histFuncao1": "DIR. COLPORTAGEM",
+    "histID2": "2824",
+    "histData2": "01/01/2015",
+    "histFuncao2": "DIR COLPORTAGEM",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO VIDAL BARBOSA DOS REISMembro: Ativo, Missionário: InativoIgreja: BAVIERA  - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "VIDAL BARBOSA DOS REIS",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: BAVIERA  - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA PERNAMBUCO, 939"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "WALKER FERNANDO PAZ DE MACEDO",
+    "categoria": "Obreiro Bíblico",
+    "associacao": "AMAPI",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "30/09/1981",
+    "nascCidade": "SÃO LUIS",
+    "nascUF": "MA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "Superior Incompleto",
+    "pai": "OSÉIAS CONCEIÇÃO DE MACEDO",
+    "mae": "FRANCISCA DAS CHAGAS PAZ DE MACEDO",
+    "estCivil": "Casado(a)",
+    "casamentoData": "13/07/2006",
+    "uf": "CE",
+    "email": "macedowalker@hotmail.com",
+    "conjuge": "CLEUDILENE NUNES PEREIRA DE MACEDO",
+    "conjugeNascData": "28/10/1984",
+    "conjugeNascCidade": "santa inês ",
+    "conjugeNascUF": "ma",
+    "conjugeNacionalidade": "brasileira ",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "441",
+    "filhoNome1": "KLYNDE ESTER PEREIRA DE MACEDO ",
+    "filhoNascData1": "01/01/2009",
+    "filhoNascCidade1": "MARABÁ ",
+    "filhoNascUF1": "PA",
+    "filhoID2": "440",
+    "filhoNome2": "KLYVIA JEMIMA PEREIRA DE MACEDO ",
+    "filhoNascData2": "01/01/2009",
+    "filhoNascCidade2": "MARABÁ ",
+    "filhoNascUF2": "PA",
+    "rg": "659471965 MA",
+    "rgOrigem": "SSP-MA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "nitNumero": "11685883243",
+    "cpf": "65262972349",
+    "raNome": "REFORMISTA NATO",
+    "batData": "31/12/1998",
+    "batOficiante": "LOURIVAL JOSÉ DE SANTANA",
+    "batCidade": "SÃO LUIS",
+    "batUF": "MA",
+    "preAspiranteData": "01/01/2007",
+    "preAspiranteOficiante": "mariano l. santana",
+    "aspiranteData": "15/11/2009",
+    "aspiranteOficiante": "lourival josé  de santana",
+    "aspiranteLocal": "belém",
+    "aspiranteUF": "pa",
+    "biblicoData": "01/12/2012",
+    "biblicoOficiante": "lourival santana ",
+    "biblicoLocal": "belém ",
+    "biblicoUF": "pa",
+    "histID1": "1857",
+    "histData1": "01/02/2004",
+    "histCidade1": "CONCEIÇÃO -PA ",
+    "histFuncao1": "OBREIRO CONTRATO",
+    "histDecisao1": "MARIANO L. SANTANA",
+    "histID2": "1858",
+    "histData2": "01/01/2005",
+    "histCidade2": "CONCEIÇÃO -PA ",
+    "histFuncao2": "OBREIRO CONTRATO",
+    "histID3": "1859",
+    "histData3": "01/01/2006",
+    "histCidade3": "CONCEIÇÃO -PA ",
+    "histFuncao3": "OBREIRO CONTRATO",
+    "histID4": "1860",
+    "histData4": "01/01/2007",
+    "histCidade4": "SÃO DOMIGOS -PA",
+    "histFuncao4": "OBREIRO - PRÉ-ASPIRANTE",
+    "histID5": "1861",
+    "histData5": "01/01/2008",
+    "histCidade5": "SÃO DOMIGOS -PA",
+    "histFuncao5": "OBREIRO - PRÉ-ASPIRANTE",
+    "histID6": "1862",
+    "histData6": "01/01/2009",
+    "histCidade6": "SÃO DOMIGOS -PA",
+    "histFuncao6": "OBREIRO - PRÉ-ASPIRANTE",
+    "histID7": "1863",
+    "histData7": "01/01/2010",
+    "histCidade7": "SÃO DOMIGOS -PA(2010-2012)",
+    "histFuncao7": "OBREIRO ASPIRANTE",
+    "histID8": "1864",
+    "histData8": "01/01/2013",
+    "histCidade8": "BALSAS-MA  (2013-",
+    "histFuncao8": "OBREIRO BÍBLICO ",
+    "histID9": "1865",
+    "histData9": "01/07/2014",
+    "histCidade9": "IMPERATRIZ-MA",
+    "histFuncao9": "OBREIRO BÍBLICO",
+    "histID10": "2829",
+    "histData10": "01/01/2015",
+    "histCidade10": "IMPERATRIZ-MA",
+    "histFuncao10": "OBREIRO BÍBLICO ",
+    "histID11": "2830",
+    "histData11": "01/02/2016",
+    "histCidade11": "PALMEIRAS II-CE",
+    "histFuncao11": "OBREIRO BÍBLICO ",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO WALKER FERNANDO PAZ DE MACEDOMembro: Ativo, Missionário: InativoIgreja: SÃO CRISTOVÃO - MAAssociação: 2_AMAPI - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "WALKER FERNANDO PAZ DE MACEDO",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: SÃO CRISTOVÃO - MA",
+        "Associação: 2_AMAPI - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  }
+]

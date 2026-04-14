@@ -1,0 +1,373 @@
+[
+  {
+    "id": 492,
+    "nome": ".",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 312,
+    "nome": "AGUA PRETA",
+    "associacao": "ANOB",
+    "membros_count": 26,
+    "interessados_count": 70
+  },
+  {
+    "id": 289,
+    "nome": "AMORINHA",
+    "associacao": "ANOB",
+    "membros_count": 9,
+    "interessados_count": 10
+  },
+  {
+    "id": 529,
+    "nome": "ANOBSEDE",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 290,
+    "nome": "ARAPIRACA",
+    "associacao": "ANOB",
+    "membros_count": 48,
+    "interessados_count": 220
+  },
+  {
+    "id": 662,
+    "nome": "AZEVEM",
+    "associacao": "ANOB",
+    "membros_count": 10,
+    "interessados_count": 8
+  },
+  {
+    "id": 291,
+    "nome": "BELO JARDIM",
+    "associacao": "ANOB",
+    "membros_count": 19,
+    "interessados_count": 35
+  },
+  {
+    "id": 294,
+    "nome": "CAMPINA GRANDE",
+    "associacao": "ANOB",
+    "membros_count": 71,
+    "interessados_count": 131
+  },
+  {
+    "id": 295,
+    "nome": "CARUARU",
+    "associacao": "ANOB",
+    "membros_count": 52,
+    "interessados_count": 226
+  },
+  {
+    "id": 296,
+    "nome": "CHÃ GRANDE",
+    "associacao": "ANOB",
+    "membros_count": 26,
+    "interessados_count": 56
+  },
+  {
+    "id": 298,
+    "nome": "CLIMA BOM",
+    "associacao": "ANOB",
+    "membros_count": 64,
+    "interessados_count": 127
+  },
+  {
+    "id": 299,
+    "nome": "COQUEIRO SECO",
+    "associacao": "ANOB",
+    "membros_count": 14,
+    "interessados_count": 43
+  },
+  {
+    "id": 300,
+    "nome": "CORURIPE",
+    "associacao": "ANOB",
+    "membros_count": 15,
+    "interessados_count": 31
+  },
+  {
+    "id": 660,
+    "nome": "ESTRELA DE ALAGOAS",
+    "associacao": "ANOB",
+    "membros_count": 9,
+    "interessados_count": 16
+  },
+  {
+    "id": 304,
+    "nome": "GUARABIRA",
+    "associacao": "ANOB",
+    "membros_count": 22,
+    "interessados_count": 16
+  },
+  {
+    "id": 301,
+    "nome": "IGARASSU",
+    "associacao": "ANOB",
+    "membros_count": 83,
+    "interessados_count": 183
+  },
+  {
+    "id": 667,
+    "nome": "JABOATÃO DOS GUARARAPES",
+    "associacao": "ANOB",
+    "membros_count": 20,
+    "interessados_count": 19
+  },
+  {
+    "id": 611,
+    "nome": "JOÃO ALFREDO - SÍTIO",
+    "associacao": "ANOB",
+    "membros_count": 12,
+    "interessados_count": 18
+  },
+  {
+    "id": 306,
+    "nome": "JOÃO PESSOA",
+    "associacao": "ANOB",
+    "membros_count": 67,
+    "interessados_count": 186
+  },
+  {
+    "id": 308,
+    "nome": "LIMOEIRO",
+    "associacao": "ANOB",
+    "membros_count": 43,
+    "interessados_count": 62
+  },
+  {
+    "id": 292,
+    "nome": "LUIZ PEDRO III - AL",
+    "associacao": "ANOB",
+    "membros_count": 22,
+    "interessados_count": 58
+  },
+  {
+    "id": 309,
+    "nome": "MACEIÓ",
+    "associacao": "ANOB",
+    "membros_count": 22,
+    "interessados_count": 150
+  },
+  {
+    "id": 310,
+    "nome": "NATAL",
+    "associacao": "ANOB",
+    "membros_count": 48,
+    "interessados_count": 90
+  },
+  {
+    "id": 311,
+    "nome": "NOVA CRUZ",
+    "associacao": "ANOB",
+    "membros_count": 29,
+    "interessados_count": 37
+  },
+  {
+    "id": 627,
+    "nome": "OURICURI",
+    "associacao": "ANOB",
+    "membros_count": 9,
+    "interessados_count": 4
+  },
+  {
+    "id": 602,
+    "nome": "PETROLÂNDIA",
+    "associacao": "ANOB",
+    "membros_count": 30,
+    "interessados_count": 28
+  },
+  {
+    "id": 720,
+    "nome": "PETROLINA",
+    "associacao": "ANOB",
+    "membros_count": 17,
+    "interessados_count": 5
+  },
+  {
+    "id": 315,
+    "nome": "POÇO COMPRIDO",
+    "associacao": "ANOB",
+    "membros_count": 49,
+    "interessados_count": 95
+  },
+  {
+    "id": 646,
+    "nome": "POMBOS",
+    "associacao": "ANOB",
+    "membros_count": 15,
+    "interessados_count": 7
+  },
+  {
+    "id": 317,
+    "nome": "RECIFE",
+    "associacao": "ANOB",
+    "membros_count": 88,
+    "interessados_count": 185
+  },
+  {
+    "id": 318,
+    "nome": "RIACHO DAS ALMAS",
+    "associacao": "ANOB",
+    "membros_count": 42,
+    "interessados_count": 93
+  },
+  {
+    "id": 493,
+    "nome": "SENADOR RUI PALMEIRA",
+    "associacao": "ANOB",
+    "membros_count": 6,
+    "interessados_count": 18
+  },
+  {
+    "id": 737,
+    "nome": "UNIÃO DOS PALMARES - AL",
+    "associacao": "ANOB",
+    "membros_count": 8,
+    "interessados_count": 2
+  },
+  {
+    "id": 323,
+    "nome": "VITÓRIA DE SANTO ANTÃO",
+    "associacao": "ANOB",
+    "membros_count": 27,
+    "interessados_count": 64
+  },
+  {
+    "id": 297,
+    "nome": "CHICÃO",
+    "associacao": "ANOB",
+    "membros_count": 3,
+    "interessados_count": 0
+  },
+  {
+    "id": 302,
+    "nome": "FORTALEZA",
+    "associacao": "ANOB",
+    "membros_count": 32,
+    "interessados_count": 278
+  },
+  {
+    "id": 303,
+    "nome": "FORTIM",
+    "associacao": "ANOB",
+    "membros_count": 1,
+    "interessados_count": 17
+  },
+  {
+    "id": 597,
+    "nome": "GRUPO JORDÃO",
+    "associacao": "ANOB",
+    "membros_count": 1,
+    "interessados_count": 13
+  },
+  {
+    "id": 322,
+    "nome": "IGACI",
+    "associacao": "ANOB",
+    "membros_count": 3,
+    "interessados_count": 20
+  },
+  {
+    "id": 319,
+    "nome": "IGUATU - CE",
+    "associacao": "ANOB",
+    "membros_count": 2,
+    "interessados_count": 54
+  },
+  {
+    "id": 305,
+    "nome": "JAQUEIRA",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 356,
+    "nome": "JORDÃO",
+    "associacao": "ANOB",
+    "membros_count": 1,
+    "interessados_count": 0
+  },
+  {
+    "id": 307,
+    "nome": "JUAZEIRO DO NORTE",
+    "associacao": "ANOB",
+    "membros_count": 12,
+    "interessados_count": 110
+  },
+  {
+    "id": 584,
+    "nome": "MEMBROS ISOLADOS- CARIRI",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 658,
+    "nome": "MISSIONÁRIOS ANOB",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 313,
+    "nome": "PALMEIRAS II",
+    "associacao": "ANOB",
+    "membros_count": 6,
+    "interessados_count": 46
+  },
+  {
+    "id": 314,
+    "nome": "PARQUE POTIRA",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 686,
+    "nome": "PASSIRA",
+    "associacao": "ANOB",
+    "membros_count": 5,
+    "interessados_count": 0
+  },
+  {
+    "id": 316,
+    "nome": "QUIXADÁ",
+    "associacao": "ANOB",
+    "membros_count": 9,
+    "interessados_count": 83
+  },
+  {
+    "id": 320,
+    "nome": "SABONETE",
+    "associacao": "ANOB",
+    "membros_count": 1,
+    "interessados_count": 16
+  },
+  {
+    "id": 293,
+    "nome": "SÃO JOSÉ DA TAPERA",
+    "associacao": "ANOB",
+    "membros_count": 1,
+    "interessados_count": 0
+  },
+  {
+    "id": 621,
+    "nome": "SERRA TALHADA - PE",
+    "associacao": "ANOB",
+    "membros_count": 1,
+    "interessados_count": 4
+  },
+  {
+    "id": 321,
+    "nome": "SÍTIO BIGRE",
+    "associacao": "ANOB",
+    "membros_count": 0,
+    "interessados_count": 0
+  }
+]

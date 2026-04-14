@@ -1,0 +1,142 @@
+[
+  {
+    "id": 609,
+    "nome": "ABAIARA",
+    "associacao": "ASCE",
+    "membros_count": 26,
+    "interessados_count": 34
+  },
+  {
+    "id": 619,
+    "nome": "BARRINHA",
+    "associacao": "ASCE",
+    "membros_count": 7,
+    "interessados_count": 4
+  },
+  {
+    "id": 613,
+    "nome": "CAMOCIM",
+    "associacao": "ASCE",
+    "membros_count": 16,
+    "interessados_count": 17
+  },
+  {
+    "id": 577,
+    "nome": "FORTIM",
+    "associacao": "ASCE",
+    "membros_count": 23,
+    "interessados_count": 36
+  },
+  {
+    "id": 578,
+    "nome": "IGUATU",
+    "associacao": "ASCE",
+    "membros_count": 39,
+    "interessados_count": 57
+  },
+  {
+    "id": 620,
+    "nome": "ITAPIPOCA",
+    "associacao": "ASCE",
+    "membros_count": 6,
+    "interessados_count": 0
+  },
+  {
+    "id": 579,
+    "nome": "JUAZEIRO DO NORTE",
+    "associacao": "ASCE",
+    "membros_count": 56,
+    "interessados_count": 155
+  },
+  {
+    "id": 585,
+    "nome": "JUCÁS",
+    "associacao": "ASCE",
+    "membros_count": 15,
+    "interessados_count": 20
+  },
+  {
+    "id": 622,
+    "nome": "MISSÃO VELHA",
+    "associacao": "ASCE",
+    "membros_count": 19,
+    "interessados_count": 23
+  },
+  {
+    "id": 580,
+    "nome": "PALMEIRAS II",
+    "associacao": "ASCE",
+    "membros_count": 33,
+    "interessados_count": 110
+  },
+  {
+    "id": 576,
+    "nome": "PARQUELÂNDIA",
+    "associacao": "ASCE",
+    "membros_count": 106,
+    "interessados_count": 262
+  },
+  {
+    "id": 581,
+    "nome": "PARQUE POTIRA",
+    "associacao": "ASCE",
+    "membros_count": 20,
+    "interessados_count": 7
+  },
+  {
+    "id": 582,
+    "nome": "QUIXADA",
+    "associacao": "ASCE",
+    "membros_count": 52,
+    "interessados_count": 86
+  },
+  {
+    "id": 583,
+    "nome": "SABONETE",
+    "associacao": "ASCE",
+    "membros_count": 22,
+    "interessados_count": 19
+  },
+  {
+    "id": 616,
+    "nome": "SOBRAL",
+    "associacao": "ASCE",
+    "membros_count": 26,
+    "interessados_count": 86
+  },
+  {
+    "id": 743,
+    "nome": "ASCE EXTRA",
+    "associacao": "ASCE",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 587,
+    "nome": "ASCE SEDE",
+    "associacao": "ASCE",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 633,
+    "nome": "MARTINÓPOLE",
+    "associacao": "ASCE",
+    "membros_count": 4,
+    "interessados_count": 1
+  },
+  {
+    "id": 615,
+    "nome": "S",
+    "associacao": "ASCE",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 617,
+    "nome": "S",
+    "associacao": "ASCE",
+    "membros_count": 0,
+    "interessados_count": 0
+  }
+]

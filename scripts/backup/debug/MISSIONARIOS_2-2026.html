@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="https://www.w3.org/1999/xhtml" xml:lang="pt" lang="pt"><head>
+        <title>Secretaria 4.1</title>
+        <meta http-equiv="content-type" content="text/html; charset=iso-8859-1"> 
+        <!-- <meta http-equiv="content-type" content="text/html; charset=utf-8" /> -->
+        <meta http-equiv="content-style-type" content="text/css">
+        <meta http-equiv="pragma" content="no-cache">
+        <meta http-equiv="expires" content="0">
+        <meta name="resource-type" content="document">
+        <meta name="revisit-after" content="7">
+        <meta name="language" content="pt-br">
+
+        <style type="text/css">
+            input[type=submit] {
+                padding: 2px;
+                color: #009ad8;
+                font-weight: bolder;
+                background-color: #b2dfee;
+                border: 2px #28a5e1 solid;
+            }
+
+            input[type=button][name="back"] {
+                BORDER: #f90 2px solid;
+                PADDING: 2px;
+                FONT-WEIGHT: bold;
+                CURSOR: pointer;
+                COLOR: #c60;
+                BACKGROUND-COLOR: #fc6
+            }
+            input[type=button] {
+                padding: 2px;
+                color: #009ad8;
+                font-weight: bolder;
+                background-color: #b2dfee;
+                border: 2px #28a5e1 solid;
+            }
+        </style>
+
+        <link rel="stylesheet" href="arquivos/style.css" type="text/css" media="screen, projection">
+        <!--[if IE]>
+        <link rel="stylesheet" href="arquivos/style-ie.css" type="text/css" media="screen, projection" />
+        <![endif]-->
+
+        
+        <link rel="stylesheet" href="arquivos/print.css" type="text/css" media="print">
+        <link rel="shortcut icon" href="/favicon.ico">
+
+        <script type="text/javascript" src="arquivos/jquery.js"></script>
+        <script type="text/javascript" src="arquivos/base2.js"></script>
+        <script src="arquivos/jquery-ui.min.js" type="text/javascript"></script>
+
+        <script type="text/javascript" src="arquivos/mensagem.js"></script><script type="text/javascript" src="arquivos/jquery.maskMoney.js"></script> <script type="text/javascript" src="arquivos/calcular_recibo.js"></script> <script type="text/javascript" src="arquivos/js/sorttable.js"></script> <link rel="stylesheet" href="arquivos/css/relatorioFinanceiro.css" type="text/css">        <script type="text/javascript" src="arquivos/jquery.maskedinput-1.3.min.js"></script>
+
+        <script>
+            $(function () {
+                $(".dataa").mask("99/99/9999");
+                $(".cpff").mask("999.999.999-99");
+
+                //$( "#accordion" ).accordion();
+            });
+        </script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('#hierarquias').hide();
+            });
+        </script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                basics();
+            });
+        </script>
+
+
+    </head>
+
+    <body style="background-color: #F7F7F7">
+        
+        <div id="container" style="width: 100%">
+
+        <ul class="main_menu">
+  <li>
+     <a href="index.php?action=pendencia&amp;option=index" title=""><b>Início</b></a>
+  </li>
+<li><a href="#" title=""><b>Cadastros</b></a>
+<ul><li><a href="index.php?action=cadastro&amp;option=membro" title="">Membros</a></li><li><a href="index.php?action=cadastro&amp;option=associacao" title="">Associação</a></li><li><a href="index.php?action=cadastro&amp;option=missionario" title="">Missionários</a></li><li><a href="index.php?action=cadastro&amp;option=igreja" title="">Igrejas</a></li><li><a href="index.php?action=cadastro&amp;option=familia" title="">Famílias</a></li><li><a href="index.php?action=cadastro&amp;option=login" title="">Logins</a></li><li><a href="index.php?action=cadastro&amp;option=interessado" title="">Interessados</a></li><li><a href="index.php?action=cadastro&amp;option=colportor" title="">Colportores</a></li><li><a href="index.php?action=cadastro&amp;option=uniao" title="">Uniões</a></li></ul>
+</li><li><a href="#" title=""><b>Relatórios</b></a>
+<ul><li><a href="index.php?action=relatorio&amp;option=missionario" title="">Missionários</a></li><li><a href="index.php?action=relatorio&amp;option=inserir" title="">Inserir</a></li><li><a href="index.php?action=relatorio&amp;option=visualizar" title="">Visualizar</a></li><li><a href="index.php?action=relatorio&amp;option=financeiro" title="">Financeiro</a></li></ul>
+</li><li><a href="#" title=""><b>Ajuda</b></a>
+<ul><li><a href="index.php?action=ajuda&amp;option=acesso" title="">Seus Acessos</a></li><li><a href="index.php?action=ajuda&amp;option=senha" title="">Alterar Senha</a></li><li><a href="index.php?action=ajuda&amp;option=sistema" title="">Sobre o Sistema</a></li></ul>
+
+ </li><li>
+     <form action="index.php" name="procurar" method="get">
+        <input type="hidden" name="action" value="cadastro">
+        <input type="hidden" name="option" value="membro">
+        <input type="hidden" name="sub" value="procurar">
+        &nbsp;<input type="text" name="palavra" value=" Procurar Membro" onclick="this.value=''" style="height:22px; font: italic 12px Verdana" size="20">
+        <input type="submit" name="Procurar" value="Ok">&nbsp;
+     </form>
+  </li>
+
+  <li>
+     <a href="#" title=""><b>2_ANOB</b></a><ul><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=39" title=""></a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=40" title=""></a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=3" title="">1_ABA</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=1" title="">1_ASCENBRA</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=2" title="">1_ASMIN</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=33" title="">1_CAMIT</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=19" title="">2_AMAPI</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=6" title="">2_ANOB</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=5" title="">2_ARAM</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=20" title="">2_ASCE</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=4" title="">2_ASPAR</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=34" title="">2_CAMAP</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=28" title="">2_CAMISE</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=15" title="">DIFERENCA SENSO</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=14" title="">OUTRAS</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=35" title="">PORTUGAL</a></li><li><a href="index.php?action=cadastro&amp;option=associacao&amp;sub=trocar&amp;associacao=24" title="">UNINORTE</a></li></ul>
+
+  </li>
+
+  <li>
+    <a href="ctrl_mensagem.php" title="Caixa de Mensagens"><img id="imagem_correio" src="arquivos/correio.png"> <span class="aviso" id="new_msg"></span></a>
+    <!--     
+    <a href="#" title=""><span class="aviso">3°/2012</span></a>
+       <ul>
+        <li><a href="ctrl_mensagem.php" title="Caixa de Mensagens"></a></li>
+    </ul> -->
+  </li>
+  <li>
+     <a href="logout.php" title="Sair do Sistema"><b>Sair</b></a>
+  </li></ul>
+        
+   <fieldset> <legend>Relatórios - Financeiro</legend> <div id="content"> 
+<input type="button" name="back" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=listar'" value="Listar"> 
+<input type="button" name="" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=incluir'" value="Incluir"> 
+<input type="button" name="" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=consolidado'" value="Consolidado"> 
+<input type="button" name="" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=mccd'" value="MCCD"> 
+<input type="button" name="" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=associacao'" value="Associação"> 
+<input type="button" name="" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=detalhado'" value="Detalhado"> 
+<input type="button" name="" onclick="parent.location.href='index.php?action=relatorio&amp;option=financeiro&amp;sub=duplicidade'" value="Duplicidades"> 
+</div></fieldset> 
+
+      <div id="content"> 
+
+               <ul class="aviso" id="erros">  
+
+                  
+               </ul> 
+
+                   <fieldset>   
+
+                       <legend> Listar</legend>
+                       <table><tbody><tr><td style="font-size: 14pt; background-color:#ffffff" colspan="2"><b>Relatório da Igreja: <i>MISSIONÁRIOS ANOB  -  <a title="Mês anterior" href="?action=relatorio&amp;option=financeiro&amp;sub=listar&amp;igreja=658&amp;mes=1/2026">«</a>(2/2026)<a title="Próximo mês" href="?action=relatorio&amp;option=financeiro&amp;sub=listar&amp;igreja=658&amp;mes=3/2026">»</a></i> &nbsp; &nbsp; &nbsp; (<a href="index.php?action=relatorio&amp;option=financeiro&amp;sub=listar&amp;mudar">Mudar</a>) - (<a href="imprimir.php?action=relatorio&amp;option=financeiro&amp;sub=listar" target="_blank">Imprimir</a>) -</b> <b> (<a href="https://secretaria.org.br/treasury/?op=user|login|ODQ5OTotOjE3OS4xNzkuMTMxLjY5Oi06Yzc4NjBlYmI5N2NkNDU4MDc3MGZjMjg5MTZmMGI0MTM=.&amp;op2=offeringBook|658|2026-02">Ofertas Locais</a>)</b></td></tr>
+                 <tr><td style="font-size: 10pt; background-color:#ffffff" colspan="2"><b>Responsável: <i>RANMSON CUSTÓDIO DE FREITAS</i></b></td></tr>
+            <tr><td style="text-align:left; font-size: 12pt"><b>Status: confirmado ( <a href="index.php?action=relatorio&amp;option=financeiro&amp;sub=listar&amp;abrirRelatorio&amp;info2=658|2/2026" title="Abrir Relatório" onclick="if (!confirm('Deseja realmente Abrir este Relatório?')){return false;}">  Abrir </a>  )</b></td><td style="text-align:right; font-size: 10pt; width: 300px"><b>Saldo Anterior: </b> R$ 0,00</td></tr></tbody></table>        <style type="text/css">
+            td{
+                text-align: left;
+                /*-border: 1px solid; */
+                background-color: #EFEFEF;
+                font-style: italic;
+                /* padding:0px; */
+
+            }
+            th{ text-align: center}
+            .align_E{
+                text-align: left;
+                font-style: italic;
+                padding-left: 1px;
+                background-color: #CCFFCD;
+                width: 200px
+            }
+            .align_D{
+                text-align: right;
+                font-weight: bold;
+                padding-left: 1px;
+                background-color: #CCFFCD
+            }
+            .titulo{
+                font-size: 12pt;
+                text-align: left;
+            }
+            .tdA{
+                text-align:right;
+                background-color: #FFFADA;
+        
+            }
+            .tdAsoma{
+                text-align:right;
+                background-color: #FFF29A;
+                font-weight: bold;
+                font-style: normal;
+                    }
+        </style>
+
+        <table>
+            <tbody><tr><th rowspan="2" style="vertical-align: bottom; text-align: left"><select style="width:93px; font-weight: bold; padding: 0; margin:0; border-width:0" id="recModelFile" onchange=""><option selected="" value="recibo.php?">Recibo M2 - duas vias</option><option selected="" value="recibo.php?via1">Recibo M2 - uma via</option><option value="reciboT.php?">Recibo M3 - para Impressora térmica (em teste)</option></select> </th><th rowspan="2" style="vertical-align: bottom; text-align: left">Data</th><th rowspan="2" style="vertical-align: bottom; text-align: left">Nome</th><th colspan="11" style="text-align: center; background-color: #FFE434">CAIXA DA ASSOCIAÇÃO</th><th rowspan="2" style="background-color: #ACCFFF">Missões<br>Estrang</th><th colspan="2" style="text-align: center; background-color:#5ED156">CAIXA LOCAL</th></tr>
+            <tr><th style="background-color: #FFF3A4">Díz.</th><th style="background-color: #FFF3A4">Prim.</th><th style="background-color: #FFF3A4">A.Soci</th><th style="background-color: #FFF3A4">E.Sab</th><th style="background-color: #FFF3A4">Evang</th><th style="background-color: #FFF3A4">Rd/CB</th><th style="background-color: #FFF3A4">Const.</th><th style="background-color: #FFF3A4">Mús.</th><th style="background-color: #FFF3A4">Grt6%</th> <th style="background-color: #FFF3A4">Div.</th> <th style="background-color: #FFF3A4">SOMA</th><th style="background-color: #AADDAA">Entrad</th><th style="background-color: #AADDAA">Saídas</th></tr>
+            <tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00971</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710393'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> ADEMILSON TELES DOS SANTOS   </td><td class="tdA">543,01</td><td class="tdA">180,82</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">723,83</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00972</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710394'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> BRUNO MATEUS BARBOSA DA SILVA   </td><td class="tdA">261,78</td><td class="tdA">87,17</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">348,95</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00973</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710396'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> GUILHERME ALVES GOMES   </td><td class="tdA">796,60</td><td class="tdA">265,27</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">1.061,87</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00974</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710397'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> HELYANDRO ARAÚJO CASTRO   </td><td class="tdA">693,74</td><td class="tdA">231,01</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">924,75</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00975</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710398'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> HERBERT CARMIN BARRA   </td><td class="tdA">346,57</td><td class="tdA">115,41</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">461,98</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00976</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710399'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> JOSÉ ADRIANO SILVA DE LIMA FILHO    </td><td class="tdA">572,97</td><td class="tdA">190,80</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">763,77</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00977</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710400'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> JOSIVALDO MACHADO DE SOUZA   </td><td class="tdA">840,31</td><td class="tdA">279,82</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">1.120,13</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00978</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710401'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> MADIANO DO NASCIMENTO SANTANA   </td><td class="tdA">162,10</td><td class="tdA">53,98</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">216,08</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00979</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710402'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> MANOEL ROOSEVELT GOMES DO NASCIMENTO JUNIOR   </td><td class="tdA">1.160,40</td><td class="tdA">386,41</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">1.546,81</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00980</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710403'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> RAIMUNDO GOMES FERREIRA   </td><td class="tdA">343,58</td><td class="tdA">114,41</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">457,99</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00981</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710405'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> RANMSON CUSTÓDIO DE FREITAS   </td><td class="tdA">853,29</td><td class="tdA">284,14</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">1.137,43</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td style="background-color: #f0f0f0; width: 98px; text-align: right; "><a href="#">658.00982</a>&nbsp;&nbsp;<a onclick="javascript:novaJanela($('#recModelFile').val()+'&amp;cod=1710406'); return false;"><img src="arquivos/print_icon.gif" style="padding-top:5px" border="0"></a></td><td style="background-color: #f0f0f0; text-align: center; "> 04/03 </td><td style="background-color: #f0f0f0; "> RODRIGO BATISTA PAULINO   </td><td class="tdA">506,32</td><td class="tdA">168,60</td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdA"></td><td class="tdAsoma">674,92</td><td style="text-align:right; background-color: #DCE9FF; "></td><td style="text-align:right; background-color:#CDF5CA; " title=""></td><td style="text-align:right; background-color:#CDF5CA; ">&nbsp;</td></tr><tr><td colspan="3" style="background-color: #ffffff">&nbsp;</td><td class="tdAsoma">7.080,67</td><td class="tdAsoma">2.357,84</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma">0,00</td><td class="tdAsoma" style="background-color: #FFE434">9.438,51</td><td style="text-align:right; background-color: #ACCFFF; font-style: normal;"><b>0,00</b></td><td style="text-align:right; background-color: #AADDAA; font-style: normal;"><b>0,00</b></td><td style="text-align:right; background-color: #AADDAA; font-style: normal;"><b></b></td></tr><tr><td colspan="13" style="background-color: #ffffff">&nbsp;</td><td colspan="2" style="text-align:center; font-size: 11pt; background-color: #e0e0e0; font-style: normal;"><b>9.438,51</b></td><td colspan="2" style="text-align:center; font-size: 11pt; background-color: #C9F5C9; font-style: normal; color: #156B15"><b>0,00</b></td></tr></tbody></table><br>                    <div style="margin-left: 40px; font-size: 14pt; float: left; width: 500px; padding-left: 10px">
+                
+                                    <!--                <div style="background-color: #f5f5f5; margin-left: 40px; font-size: 14pt; float: left; width: 500px; padding-left: 10px">-->
+                    <b>Recibo: </b> 02/2026                    <!--                </div>-->
+         
+                <!-- <div style="background-color: #f5f5f5; margin-left: 40px; font-size: 14pt;  width: 500px; padding-left: 10px"> -->
+                <p style="margin-bottom: 0px"><b style="font-size: 11pt; color: #009900">Resumo Entradas Caixa Local</b></p>
+                <table style="margin-top:0px; float:left; width: 500px;">
+                    <tbody><tr><td style="width:195px; background-color: #cdf5ca">&nbsp; Of. Todos Cultos/Construção</td><td style="background-color: #AADDAA; text-align: right">0,00</td>
+                        <td style="width:10px">&nbsp;</td>
+                        <td style="background-color: #cdf5ca">&nbsp; Of. Juvenil</td><td style="background-color: #AADDAA; text-align: right">0,00</td></tr>
+                    <tr><td style="background-color: #cdf5ca">&nbsp; Of. Missionária</td><td style="background-color: #AADDAA; text-align: right">0,00</td>
+                        <td style="width:10px">&nbsp;</td>
+                        <td style="background-color: #cdf5ca">&nbsp; Of. Gratidão/Pobres</td><td style="background-color: #AADDAA; text-align: right">0,00</td></tr>
+                    <tr><td style="background-color: #cdf5ca">&nbsp; Diversos</td><td style="background-color: #AADDAA; text-align: right">0,00</td>
+                        <td colspan="3">&nbsp;</td></tr>
+                </tbody></table>
+            </div>
+
+            <div style="background-color: #f5f5f5; margin-left: 40px; float: right; width: 400px; padding-left: 10px">
+                <h3>Pagamentos</h3>
+        
+                <form name="formDep" method="post" action="index.php?action=relatorio&amp;option=financeiro&amp;sub=listar&amp;depExec">
+                    <input type="hidden" name="depID" value="" maxlength="150">
+                    <input type="hidden" name="depMes" value="" maxlength="150">
+                    <table>
+                        <tbody><tr><th>Data</th><th>Descrição</th><th>Valor</th><td>&nbsp;</td></tr>
+                                <tr><td>04/02/2026</td><td>dizimos e primicias </td><td style="text-align:right">9.438,51</td><td>&nbsp; &nbsp;</td></tr>                        <tr><td colspan="2" style="text-align: right"><b>Soma de Pagamentos:</b></td><td style="text-align: right"><b>9.438,51</b></td><td>&nbsp;</td></tr>
+                        <tr><td colspan="2" style="text-align: right"><b>Caixa Associação:</b></td><td style="text-align: right"><b>9.438,51</b></td><td>&nbsp;</td></tr>
+                        <tr><td colspan="2" style="text-align: right"><b>Saldo para Acerto:</b></td><td style="text-align: right"><b>0,00</b></td><td>&nbsp;</td></tr>
+                    </tbody></table>
+                </form>
+            </div>
+            
+                   </fieldset>
+           </div>
+      
+  <div id="footer">
+    <address>GS 4.1 / ASD-MR</address>
+    <!--<address style="color: red"><b>Atenção! </b> O sistema estará em manutenção das 19:00 às 20:00 horas.</address>-->
+  </div>
+</div>
+<!--<div style="float:left; width: 100">-->
+
+</body></html>

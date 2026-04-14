@@ -1,0 +1,86 @@
+[
+  {
+    "id": 635,
+    "nome": "AQUIDABÃ",
+    "associacao": "CAMISE",
+    "membros_count": 23,
+    "interessados_count": 36
+  },
+  {
+    "id": 656,
+    "nome": "ARACAJU (BUGIO)",
+    "associacao": "CAMISE",
+    "membros_count": 27,
+    "interessados_count": 14
+  },
+  {
+    "id": 636,
+    "nome": "ARACAJU (CENTRAL)",
+    "associacao": "CAMISE",
+    "membros_count": 92,
+    "interessados_count": 113
+  },
+  {
+    "id": 637,
+    "nome": "DORES",
+    "associacao": "CAMISE",
+    "membros_count": 32,
+    "interessados_count": 21
+  },
+  {
+    "id": 638,
+    "nome": "ESTÂNCIA",
+    "associacao": "CAMISE",
+    "membros_count": 11,
+    "interessados_count": 14
+  },
+  {
+    "id": 639,
+    "nome": "ITABAIANA",
+    "associacao": "CAMISE",
+    "membros_count": 19,
+    "interessados_count": 18
+  },
+  {
+    "id": 640,
+    "nome": "SACO GRANDE",
+    "associacao": "CAMISE",
+    "membros_count": 46,
+    "interessados_count": 18
+  },
+  {
+    "id": 746,
+    "nome": "SALGADO - SE",
+    "associacao": "CAMISE",
+    "membros_count": 14,
+    "interessados_count": 11
+  },
+  {
+    "id": 641,
+    "nome": "SIRIRI",
+    "associacao": "CAMISE",
+    "membros_count": 31,
+    "interessados_count": 16
+  },
+  {
+    "id": 642,
+    "nome": "SOCORRO",
+    "associacao": "CAMISE",
+    "membros_count": 28,
+    "interessados_count": 37
+  },
+  {
+    "id": 643,
+    "nome": "CAMISE - MISSIONÁRIOS - SE",
+    "associacao": "CAMISE",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 757,
+    "nome": "CAMISE - SEDE - SE",
+    "associacao": "CAMISE",
+    "membros_count": 0,
+    "interessados_count": 0
+  }
+]

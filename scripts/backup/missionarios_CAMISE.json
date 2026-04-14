@@ -1,0 +1,1058 @@
+[
+  {
+    "nome": "DAVI ALVES DE OLIVEIRA",
+    "categoria": "Ministro",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "13/04/1956",
+    "nascCidade": "SÃO LUIZ DOS MONTES BELOS",
+    "nascUF": "GO",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "1º Grau Incompleto",
+    "pai": "ONOFRE ALVES CRUVINEL",
+    "mae": "RITA LUIZA CRUVINEL",
+    "estCivil": "Casado(a)",
+    "casamentoData": "13/01/1980",
+    "endereco": "RUA: Nº",
+    "uf": "SE",
+    "celular": "(79) 9 9600- 2638",
+    "email": "prdavialves@hotmail.com",
+    "conjuge": "MARIA COUTINHO OLIVEIRA",
+    "conjugeNascData": "20/09/1960",
+    "conjugeNascCidade": "PORTO NACIONAL ",
+    "conjugeNascUF": "GO",
+    "conjugeNacionalidade": "BRASILEIRA",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "388",
+    "filhoNome1": "WAGGONER COUTINHO OLIVEIRA",
+    "filhoNascData1": "25/11/1982",
+    "filhoNascCidade1": "PARAISO DO NORTE",
+    "filhoNascUF1": "GO",
+    "filhoID2": "389",
+    "filhoNome2": "JONES COUTINHO OLIVEIRA",
+    "filhoNascData2": "25/11/1982",
+    "filhoNascCidade2": "PARAISO DO NORTTE ",
+    "filhoNascUF2": "GO",
+    "filhoID3": "390",
+    "filhoNome3": "ELLEN WHITE COUTINHO OLIVEIRA",
+    "filhoNascData3": "30/12/1984",
+    "filhoNascCidade3": "CONCEIÇÃO DO ARAQUAIA",
+    "filhoNascUF3": "PA",
+    "filhoID4": "391",
+    "filhoNome4": "SUELLEN COUTINHO OLIVEIRA",
+    "filhoNascData4": "30/07/1986",
+    "filhoNascCidade4": "GOIÂNIA",
+    "filhoNascUF4": "GO",
+    "rg": "645191 - SSP/GO",
+    "rgOrigem": "GO",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "19353588120",
+    "raNome": "REFORMISTA",
+    "batData": "15/07/1972",
+    "batOficiante": "PR PAULO TULEU",
+    "batCidade": "SÃO LUIZ DOS MONTES BELOS",
+    "batUF": "GO",
+    "aspiranteData": "01/12/1986",
+    "biblicoData": "01/11/1990",
+    "pastorData": "28/06/1996",
+    "pastorOficiante": "Ivan Lima ",
+    "pastorLocal": "Guarapira",
+    "pastorUF": "PB",
+    "ministroData": "09/08/2012",
+    "ministroOficiante": "Edson Custódio",
+    "ministroLocal": "Imperatriz",
+    "ministroUF": "MA",
+    "histID1": "1929",
+    "histData1": "01/04/1975",
+    "histCidade1": "ESC. MISSIONÁRIA",
+    "histID2": "1930",
+    "histData2": "01/01/1981",
+    "histCidade2": "PARAISO DO NORTE ",
+    "histFuncao2": "COLPORTOR AJUDADO",
+    "histID3": "1931",
+    "histData3": "01/06/1984",
+    "histCidade3": "CONCEIÇÃO DO ARAGUAIA",
+    "histFuncao3": "COLPORTOR AJUDADO",
+    "histID4": "1932",
+    "histData4": "01/01/1986",
+    "histCidade4": "GOIÂNIA ",
+    "histFuncao4": "AUX. COLPORTAGEM",
+    "histID5": "1933",
+    "histData5": "01/01/1987",
+    "histCidade5": "GOIÂNIA ",
+    "histFuncao5": "DIR. COLPORTAGEM",
+    "histID6": "1934",
+    "histData6": "01/01/1988",
+    "histCidade6": "SANTA TEREZINHA-GO",
+    "histFuncao6": "OBREIRO ASPIRANTE",
+    "histID7": "1935",
+    "histData7": "01/01/1989",
+    "histCidade7": "GOIÂNIA ",
+    "histFuncao7": "DIR. COLPORTAGEM",
+    "histID8": "1936",
+    "histData8": "01/01/1991",
+    "histCidade8": "BELÉM ",
+    "histFuncao8": "DIR. COLPORTAGEM",
+    "histID9": "1937",
+    "histData9": "01/01/1992",
+    "histCidade9": "LICENÇA",
+    "histID10": "1938",
+    "histData10": "01/01/1993",
+    "histCidade10": "GOIÂNIA",
+    "histFuncao10": "DIR. COLPORTAGEM",
+    "histID11": "1939",
+    "histData11": "01/03/1995",
+    "histCidade11": "JOÃO PESSOA (1995-1996)",
+    "histFuncao11": "OBREIRO BÍBLICO",
+    "histID12": "1940",
+    "histData12": "01/01/1997",
+    "histCidade12": "RECIFE (1997-1998)",
+    "histFuncao12": "PASTOR",
+    "histID13": "1941",
+    "histData13": "01/01/1999",
+    "histCidade13": "MACEIÓ (1999-2000)",
+    "histFuncao13": "PASTOR",
+    "histID14": "1942",
+    "histData14": "01/01/2001",
+    "histCidade14": "RECIFE (2001-2002)",
+    "histFuncao14": "DIR. COLPORTAGEM",
+    "histID15": "1943",
+    "histData15": "01/07/2002",
+    "histCidade15": "SALVADOR (2002-203)",
+    "histFuncao15": "PASTOR",
+    "histID16": "1944",
+    "histData16": "01/01/2004",
+    "histCidade16": "ARACAJÚ (2004-2006)",
+    "histFuncao16": "PASTOR",
+    "histID17": "1945",
+    "histData17": "01/01/2007",
+    "histCidade17": "BELÉM (2007-2009)",
+    "histFuncao17": "PASTOR",
+    "histID18": "1946",
+    "histData18": "01/10/2011",
+    "histCidade18": "IMPERATRIZ",
+    "histFuncao18": "PASTOR",
+    "histID19": "1980",
+    "histData19": "09/08/2012",
+    "histCidade19": "IMPERATRIZ(2013-",
+    "histFuncao19": "MINISTRO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO DAVI ALVES DE OLIVEIRAMembro: Ativo, Missionário: AtivoIgreja: SALGADO - SE -   Associação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "DAVI ALVES DE OLIVEIRA",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SALGADO - SE -",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA: Nº"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "ELIAS SILVA CAIRES",
+    "categoria": "Ministro",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "14/05/1969",
+    "nascCidade": "TANHAÇU",
+    "nascUF": "BA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MINISTRO",
+    "escolaridade": "Superior Completo",
+    "pai": "LANDULFINO DA SILVA CAIRES",
+    "mae": "LAURITA MARIA DE CAIRES",
+    "estCivil": "Casado(a)",
+    "casamentoData": "14/01/1990",
+    "endereco": "RUA ANTÔNIO SOUZA MONTES, 117 ",
+    "bairro": "SÃO CONRADO ",
+    "cidade": "ARACAJU ",
+    "uf": "SE",
+    "cep": "49042060",
+    "celular": "43 999564096",
+    "email": "cairesecaires2000@hotmail.com",
+    "conjuge": "OZINEIDE M. DOS SANTOS CAIRES",
+    "conjugeNascData": "18/04/1966",
+    "conjugeNascCidade": "juazeiro",
+    "conjugeNascUF": "BA",
+    "conjugeNacionalidade": "BRASILEIRA",
+    "conjugeEscolaridade": "2º Grau Incompleto",
+    "filhoID1": "226",
+    "filhoNome1": "ADDRIANN MARTINS DOS S. CAIRES",
+    "filhoNascData1": "10/05/1991",
+    "filhoNascCidade1": "GOIANIA",
+    "filhoNascUF1": "GO",
+    "filhoID2": "227",
+    "filhoNome2": "ADRIELLE MARTINS DOS S. CAIRES",
+    "filhoNascData2": "04/05/1993",
+    "filhoNascCidade2": "JUAZEIRO",
+    "filhoNascUF2": "BA",
+    "rg": "3655033 SSP/BA",
+    "rgOrigem": "SSP/BA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "nitNumero": "11303458424",
+    "cpf": "45815011568",
+    "raNome": "REFORMISTA BERÇO",
+    "batData": "22/05/1983",
+    "batOficiante": "PR MOISÉS QUIROGA",
+    "batCidade": "VITÓRIA DA CONQUISTA",
+    "batUF": "BA",
+    "colportagemData": "01/03/1984",
+    "colportagemOficiante": "hermes s barbosa",
+    "preAspiranteData": "01/10/1985",
+    "preAspiranteOficiante": "moises quiroga",
+    "biblicoData": "01/01/2004",
+    "pastorData": "27/12/2014",
+    "pastorOficiante": "davi p silva",
+    "pastorLocal": "cascadura",
+    "pastorUF": "rj",
+    "ministroData": "24/06/2017",
+    "ministroOficiante": "FELIPE SOUZA",
+    "ministroLocal": "londrina",
+    "ministroUF": "pr",
+    "histID1": "1110",
+    "histData1": "01/03/1984",
+    "histCidade1": "SALVADOR - BA",
+    "histFuncao1": "COLPORTOR",
+    "histID2": "1111",
+    "histData2": "01/10/1985",
+    "histCidade2": "SALVADOR - BA",
+    "histFuncao2": "ENC.DEPOSITO",
+    "histID3": "1112",
+    "histData3": "01/03/1989",
+    "histCidade3": "GOIANIA - GO",
+    "histFuncao3": "TESOURARIA",
+    "histID4": "1113",
+    "histData4": "01/01/1993",
+    "histCidade4": "RECIFE - PE",
+    "histFuncao4": "TESOURARIA",
+    "histID5": "1114",
+    "histData5": "01/01/1995",
+    "histCidade5": "SAO LUIZ - MA",
+    "histFuncao5": "AUX.DIR.COLP",
+    "histID6": "1115",
+    "histData6": "01/01/1997",
+    "histCidade6": "BELEM - PA",
+    "histFuncao6": "AUX.DIR.COLP",
+    "histID7": "1116",
+    "histData7": "01/01/1999",
+    "histCidade7": "GOIANIA - GO",
+    "histFuncao7": "DIR.COLPORTAGEM",
+    "histID8": "1117",
+    "histData8": "01/01/2000",
+    "histCidade8": "RIO DE JANEIRO - RJ",
+    "histFuncao8": "AUX.DIR.COLP",
+    "histID9": "1122",
+    "histData9": "01/01/2001",
+    "histCidade9": "RIO DE JANEIRO - RJ",
+    "histFuncao9": "DIR.COLPORTAGEM",
+    "histID10": "1118",
+    "histData10": "01/01/2004",
+    "histCidade10": "JI - PARANA - RO",
+    "histFuncao10": "TESOUR./SECRETARIO",
+    "histID11": "1119",
+    "histData11": "01/01/2007",
+    "histCidade11": "CACOAL - RO",
+    "histFuncao11": "OBREIRO BIBLICO",
+    "histID12": "1120",
+    "histData12": "01/01/2010",
+    "histCidade12": "DOURADOS - MS",
+    "histFuncao12": "OBREIRO BÍBLICO",
+    "histID13": "1121",
+    "histData13": "01/02/2013",
+    "histCidade13": "DUQUE DE CAXIAS - RJ",
+    "histFuncao13": "OBREIRO BÍBLICO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ELIAS SILVA CAIRESMembro: Ativo, Missionário: AtivoIgreja: ARACAJU (CENTRAL) - SEAssociação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ELIAS SILVA CAIRES",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: ARACAJU (CENTRAL) - SE",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA ANTÔNIO SOUZA MONTES, 117"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "JONY DOS SANTOS BARROS",
+    "categoria": "Obreiro Bíblico",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "27/01/1971",
+    "nascCidade": "BELÉM ",
+    "nascUF": "PA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "2º Grau Completo",
+    "pai": "JAIME DE SOUZA BARROS",
+    "mae": "TELMA NAZARÉ DOS SANTOS BARROS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "19/12/1993",
+    "endereco": "QUADRA 09 LOTE 13 ",
+    "bairro": "GAMA SUL ÁREA COMERCIAL",
+    "cidade": "BRASÍLIA",
+    "uf": "DF",
+    "cep": "72410-515",
+    "celular": "(61) 9912-9013 WhatsApp",
+    "email": "missionariojonysantos@hotmail.com",
+    "conjuge": "CRISTIANE RIBEIRO BARROS",
+    "conjugeNascData": "07/09/1975",
+    "conjugeNascCidade": "coroata ",
+    "conjugeNascUF": "ma",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "Superior Completo",
+    "filhoID1": "401",
+    "filhoNome1": "YURE EDERSON RIBEIRO BARROS",
+    "filhoNascData1": "29/09/1994",
+    "filhoNascCidade1": "PARAGOMINAS",
+    "filhoNascUF1": "PA",
+    "filhoID2": "402",
+    "filhoNome2": "IAN KLEBER RIBEIRO BARROS",
+    "filhoNascData2": "08/05/1996",
+    "filhoNascCidade2": "IMPERATRIZ",
+    "filhoNascUF2": "MA",
+    "filhoID3": "403",
+    "filhoNome3": "IANE CHRISTINE RIBEIRO BARROS",
+    "filhoNascData3": "25/06/1999",
+    "filhoNascCidade3": "CASTANHAL",
+    "filhoNascUF3": "PA",
+    "rg": "6337429 SSPGO",
+    "rgOrigem": "SSP-go",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "116-70513-36-4",
+    "cpf": "39689964291",
+    "raNome": "ADVENTISTA DO SÉTIMO DIA",
+    "batData": "07/04/1991",
+    "batOficiante": "PR JOSÉ PEREIRA",
+    "batCidade": "TAILÂNDIA",
+    "batUF": "PA",
+    "colportagemData": "10/04/1991",
+    "colportagemOficiante": "davi alves",
+    "colportagemLocal": "belem",
+    "colportagemUF": "pa",
+    "preAspiranteData": "01/01/2013",
+    "preAspiranteOficiante": "edimar bilio rocha",
+    "preAspiranteLocal": "goiânia",
+    "preAspiranteUF": "go",
+    "aspiranteData": "20/12/2015",
+    "aspiranteOficiante": "edimar bilio rocha",
+    "aspiranteLocal": "goiania",
+    "aspiranteUF": "go",
+    "biblicoOficiante": "jairo nizio",
+    "biblicoLocal": "brasilia",
+    "biblicoUF": "df",
+    "histID1": "2276",
+    "histData1": "01/07/1999",
+    "histCidade1": "CASTANHAL - PA",
+    "histFuncao1": "OBREIROCONTRATADO",
+    "histID2": "2277",
+    "histData2": "01/01/2000",
+    "histCidade2": "GOIANESIA DO PARA - PA",
+    "histFuncao2": "OBREIRO CONTRATADO",
+    "histID3": "2278",
+    "histData3": "01/01/2001",
+    "histCidade3": "TERESINA - PI",
+    "histFuncao3": "OBREIRO CONTRATADO",
+    "histID4": "2279",
+    "histData4": "01/01/2002",
+    "histCidade4": "TERESINA - PI",
+    "histFuncao4": "OBREIRO CONTRATADO",
+    "histID5": "2280",
+    "histData5": "01/01/2003",
+    "histCidade5": "DOM ELIZEU - PA",
+    "histFuncao5": "OBREIRO CONTRATADO",
+    "histID6": "2281",
+    "histData6": "01/01/2006",
+    "histCidade6": "GOIÂNIA - GO",
+    "histFuncao6": "AUXILIAR TESOUREIRO",
+    "histID7": "2282",
+    "histData7": "01/01/2007",
+    "histCidade7": "GOIÂNIA - GO",
+    "histFuncao7": "AUXILIAR TESOUREIRO",
+    "histID8": "2283",
+    "histData8": "01/01/2008",
+    "histCidade8": "GOIÂNIA - GO",
+    "histFuncao8": "AUXILIAR TESOUREIRO",
+    "histID9": "2284",
+    "histData9": "01/01/2009",
+    "histCidade9": "GOIÂNIA - GO",
+    "histFuncao9": "AUXILIAR TESOUREIRO",
+    "histID10": "2285",
+    "histData10": "01/01/2010",
+    "histCidade10": "GOIÂNIA - GO",
+    "histFuncao10": "AUXILIAR TESOUREIRO",
+    "histID11": "2286",
+    "histData11": "01/01/2011",
+    "histCidade11": "GOIÂNIA - GO",
+    "histFuncao11": "AUXILIAR TESOUREIRO",
+    "histID12": "2287",
+    "histData12": "01/01/2012",
+    "histCidade12": "GOIÂNIA - GO",
+    "histFuncao12": "AUXILIAR DE TESOUREIRO",
+    "histID13": "2288",
+    "histData13": "01/01/2013",
+    "histCidade13": "GOIÂNIA - GO",
+    "histFuncao13": "PRÉ- ASPIRANTE",
+    "histID14": "2988",
+    "histData14": "01/02/2016",
+    "histCidade14": "CALDAS NOVAS - GO",
+    "histFuncao14": "ASPIRANTE",
+    "histID15": "3279",
+    "histData15": "01/02/2019",
+    "histCidade15": "CATALÃO-GO",
+    "histFuncao15": "ASPIRANTE",
+    "histID16": "3485",
+    "histData16": "22/11/2020",
+    "histCidade16": "CATALÃO - GO",
+    "histFuncao16": "OB. BIBLICO",
+    "histID17": "3727",
+    "histData17": "01/01/2022",
+    "histCidade17": "GAMA-DF",
+    "histFuncao17": "OB. BIBLICO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO JONY DOS SANTOS BARROS Membro: Ativo, Missionário: AtivoIgreja: DORES - SEAssociação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "JONY DOS SANTOS BARROS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: DORES - SE",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "QUADRA 09 LOTE 13"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "MÁRCIO AUGUSTO BISPO DOS SANTOS",
+    "categoria": "",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "04/11/1978",
+    "nascCidade": "LAGARTO",
+    "nascUF": "SE",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "COLPORTOR AJUDADO ",
+    "escolaridade": "2º Grau Incompleto",
+    "pai": "MARIO BISPO DOS SANTOS",
+    "mae": "MARIA AUGUSTA DOS SANTOS",
+    "estCivil": "Casado(a)",
+    "endereco": "RUA TAUBATÉ Nº 700 AREIA BRANCA ",
+    "bairro": "MOSQUEIRO",
+    "cidade": "ARACAJU",
+    "uf": "SE",
+    "email": " gutobispo69@yahoo.com.br",
+    "conjuge": "SANDRA SANTOS MENDES",
+    "conjugeEscolaridade": "Doutorado",
+    "rg": "1.369.956 SSP-SE",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "96046007534",
+    "batData": "23/09/2023",
+    "batOficiante": "PR DAVI ALVES DE OLIVEIRA",
+    "batCidade": "ARACAJU",
+    "batUF": "SE",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO MÁRCIO AUGUSTO BISPO DOS SANTOSMembro: Ativo, Missionário: AtivoIgreja: SALGADO - SE -   Associação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "MÁRCIO AUGUSTO BISPO DOS SANTOS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SALGADO - SE -",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA TAUBATÉ Nº 700 AREIA BRANCA"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "OZINEIDE MARTINS DOS SANTOS CAIRES",
+    "categoria": "",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "18/04/1966",
+    "nascCidade": "JUAZEIRO",
+    "nascUF": "BA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "DO LAR",
+    "escolaridade": "Superior Completo",
+    "pai": "ANTONIO JOAQUIM DOS SANTOS",
+    "mae": "MARLENE MARTINS DOS SANTOS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "14/01/1990",
+    "endereco": "RUA ANTÔNIO SOUZA MONTES, 117 \n",
+    "bairro": "SÃO CONRADO ",
+    "cidade": "ARACAJU ",
+    "uf": "SE",
+    "cep": "49042060",
+    "celular": "79 981221515",
+    "email": "ozi_caires@hotmail.com",
+    "conjuge": "ELIAS SILVA CAIRES",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "3121796 SSP/GO",
+    "rgOrigem": "SSP/GO",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "38656221515",
+    "raNome": "ADVENTISTA 7º DIA",
+    "batData": "29/09/1982",
+    "batOficiante": "PR ARTUR GESSNER",
+    "batCidade": "FEIRA DE SANTANA",
+    "batUF": "BA",
+    "histID1": "3903",
+    "histData1": "01/01/2026",
+    "histCidade1": "ARACAJÚ - SE",
+    "histFuncao1": "DEPARTAMENTO DE MULHER",
+    "histDecisao1": "CONSELHO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO OZINEIDE MARTINS DOS SANTOS CAIRES Membro: Ativo, Missionário: AtivoIgreja: ARACAJU (CENTRAL) - SEAssociação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "OZINEIDE MARTINS DOS SANTOS CAIRES",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: ARACAJU (CENTRAL) - SE",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA ANTÔNIO SOUZA MONTES, 117"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "THIAGO BENICIO SANTOS",
+    "categoria": "Obreiro Pré-Aspirante",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "16/05/1996",
+    "nascCidade": "FORTALEZA",
+    "nascUF": "CE",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "MISSIONÁRIO ",
+    "escolaridade": "2º Grau Completo",
+    "pai": "LUIZ MAGNO SILVA SANTOS",
+    "mae": "MARCIA MARIA BENICIO DA SILVA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "25/11/2015",
+    "endereco": "RUA: MONTE CASTELO 407 ",
+    "bairro": "18 DO FORTE ",
+    "cidade": "ARACAJU-SE ",
+    "uf": "PE",
+    "cep": "-",
+    "celular": "81 98480-3384",
+    "email": "thiagobenicio61336@gmail.com",
+    "conjuge": "LUIZA FERNANDO FARIAS BENICIO ",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "2008440688",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "1661077895-8",
+    "nitNumero": "1661077895-8",
+    "cpf": "07135551303",
+    "batData": "24/04/2016",
+    "batOficiante": "PR ISAIAS SILVA CAIRES ",
+    "batCidade": "CABACEIRAS ",
+    "batUF": "PB",
+    "colportagemData": "01/01/2014",
+    "colportagemOficiante": "RENAN ALMEIDA",
+    "colportagemLocal": "FORTALEZA",
+    "colportagemUF": "CE",
+    "preAspiranteData": "01/02/2020",
+    "preAspiranteOficiante": "PR. ERIVALDO DOMINGOS",
+    "preAspiranteLocal": "RECIFE",
+    "preAspiranteUF": "PE",
+    "histID1": "3449",
+    "histData1": "01/01/2014",
+    "histCidade1": "FORTALEZA-CE",
+    "histFuncao1": "COLPORTOR",
+    "histID2": "3450",
+    "histData2": "01/02/2020",
+    "histCidade2": "RECIFE-PE",
+    "histFuncao2": "OBREIRO ",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO THIAGO BENICIO SANTOSMembro: Ativo, Missionário: AtivoIgreja: ARACAJU (CENTRAL) - SEAssociação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "THIAGO BENICIO SANTOS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: ARACAJU (CENTRAL) - SE",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA: MONTE CASTELO 407"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "ALTAMIRANDO BATISTA FILHO",
+    "categoria": "Obreiro Pré-Aspirante",
+    "associacao": "CAMISE",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "01/02/1966",
+    "nascCidade": "SALVADOR",
+    "nascUF": "BA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "PEDAGOGO",
+    "escolaridade": "Superior Completo",
+    "pai": "ALTAMIRANDO BATISTA",
+    "mae": "MARIA DA CONCEIÇÃO BATISTA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "28/06/1992",
+    "endereco": "RUA JACKSON DE FIGUEIREDO, Nº 195",
+    "bairro": "SANTOS DUMONT",
+    "cidade": "ARACAJU",
+    "uf": "SE",
+    "cep": "49.087300",
+    "telefone": "(79) 9 9884-5678",
+    "email": "mirandinha_bahia@hotmail.com",
+    "conjuge": "GILSONEIDE MENDES BATISTA",
+    "conjugeNascData": "26/07/1972",
+    "conjugeNascCidade": "paulo afonso",
+    "conjugeNascUF": "ba",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "Superior Completo",
+    "filhoID1": "486",
+    "filhoNome1": "JEFERSON ALAN MENDES BATISTA",
+    "filhoNascData1": "07/05/1993",
+    "filhoNascCidade1": "PAULO AFONSO ",
+    "filhoNascUF1": "BA",
+    "filhoID2": "487",
+    "filhoNome2": "GISELE MENDES BATISTA",
+    "filhoNascData2": "15/08/2002",
+    "filhoNascCidade2": "ARACAJÚ",
+    "filhoNascUF2": "SE",
+    "rg": "39246752 SSP-SE",
+    "rgOrigem": "BA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "38625954553",
+    "raNome": "ASSEMBLÉIA DE DEUS",
+    "batData": "10/07/1983",
+    "batOficiante": "MOISÉS LA CRUZ QUIROGA",
+    "batCidade": "SALVADOR",
+    "batUF": "BA",
+    "colportagemData": "01/07/1986",
+    "colportagemOficiante": "moisés la cruz quiroga",
+    "colportagemLocal": "salvador",
+    "colportagemUF": "ba",
+    "preAspiranteData": "18/11/2012",
+    "preAspiranteOficiante": "silvan paulo da silva",
+    "preAspiranteLocal": "são gonçalo",
+    "preAspiranteUF": "ba",
+    "histID1": "2608",
+    "histData1": "01/07/1986",
+    "histCidade1": "SALVADOR - BA",
+    "histFuncao1": "COLPORTAGEM",
+    "histID2": "2610",
+    "histData2": "01/01/2001",
+    "histCidade2": "SENHOR DO BONFIM",
+    "histFuncao2": "OBREIRO CONTRATADO",
+    "histID3": "2609",
+    "histData3": "01/09/2005",
+    "histCidade3": "PAULO AFONSO - BA",
+    "histFuncao3": "OBREIRO CONTRATADO",
+    "histID4": "2611",
+    "histData4": "01/02/2013",
+    "histCidade4": "ITABAIANA",
+    "histFuncao4": "PRÉ ASPIRANTE",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ALTAMIRANDO BATISTA FILHOMembro: Ativo, Missionário: InativoIgreja: ARACAJU (CENTRAL) - SEAssociação: 2_CAMISE - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ALTAMIRANDO BATISTA FILHO",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: ARACAJU (CENTRAL) - SE",
+        "Associação: 2_CAMISE - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA JACKSON DE FIGUEIREDO, Nº 195"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  }
+]

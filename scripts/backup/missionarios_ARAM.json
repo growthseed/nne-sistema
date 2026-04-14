@@ -1,0 +1,1365 @@
+[
+  {
+    "nome": "ADRIANO FERNANDO DE AGUIAR CARDOSO",
+    "categoria": "Obreiro Aspirante",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "18/09/1970",
+    "nascCidade": "RIO DE JANEIRO ",
+    "nascUF": "RJ",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "contador",
+    "escolaridade": "Superior Completo",
+    "pai": "ANTÔNIO FRANCISCO CARDOSO",
+    "mae": "TEREZA DE AGUIAR CARDOSO",
+    "estCivil": "Casado(a)",
+    "casamentoData": "28/07/1996",
+    "endereco": "RUA MONTE CASTELO Nº407",
+    "bairro": "18 DO FORTE",
+    "cidade": "ARACAJU",
+    "uf": "SE",
+    "cep": "49072-490",
+    "celular": "(79) 99172-0910",
+    "email": "adrianocardoso2009@hotmail.com",
+    "conjuge": "ADRIANA SOARES CLEMENTE CARDOSO",
+    "conjugeNascData": "28/10/1976",
+    "conjugeNascCidade": "fabriciano",
+    "conjugeNascUF": "mg",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "2º Grau Completo",
+    "filhoID1": "330",
+    "filhoNome1": "VICTOR HUGO SOARES CARDOSO",
+    "filhoNascData1": "05/01/1999",
+    "filhoNascCidade1": "BRASILIA",
+    "filhoNascUF1": "DF",
+    "filhoID2": "331",
+    "filhoNome2": "VINÍCIUS FERNANDO SOARES",
+    "filhoNascData2": "12/02/2008",
+    "filhoNascCidade2": "SÃO PAULO",
+    "filhoNascUF2": "SP",
+    "rg": "08722614-8  IFP/RJ",
+    "rgOrigem": "RJ",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "nitNumero": "17060701816",
+    "cpf": "01472965795",
+    "raNome": "MESMA ",
+    "batData": "05/11/1995",
+    "batOficiante": "JOSÉ HENRIQUE ",
+    "batCidade": "RESENDE",
+    "batUF": "RJ",
+    "preAspiranteData": "18/11/2009",
+    "preAspiranteOficiante": "delvacir dias preto",
+    "preAspiranteLocal": "caldas novas",
+    "preAspiranteUF": "go",
+    "aspiranteData": "09/12/2012",
+    "aspiranteOficiante": "delvacir dias preto",
+    "aspiranteLocal": "caldas novas",
+    "aspiranteUF": "go",
+    "histID1": "1637",
+    "histData1": "01/04/2009",
+    "histCidade1": "CALDAS NOVAS",
+    "histFuncao1": "CONTRATADO",
+    "histID2": "1638",
+    "histData2": "18/11/2009",
+    "histCidade2": "CALDAS NOVAS",
+    "histFuncao2": "PRÉ- ASPIRANTE",
+    "histID3": "2118",
+    "histData3": "09/12/2012",
+    "histCidade3": "CALDAS NOVAS",
+    "histFuncao3": "ASPIRANTE",
+    "histDecisao3": "ASSEMBLEIA",
+    "histID4": "2968",
+    "histData4": "01/02/2016",
+    "histCidade4": "CATALAO - GO",
+    "histFuncao4": "ASPIRANTE",
+    "histDecisao4": "COMISSÃO",
+    "histID5": "3304",
+    "histData5": "01/02/2019",
+    "histCidade5": "ARACAJU-SE",
+    "histFuncao5": "ASPIRANTE",
+    "histDecisao5": "CONSELHO",
+    "histID6": "3355",
+    "histData6": "01/01/2020",
+    "histCidade6": "ARACAJU-SE",
+    "histFuncao6": "ASPIRANTE",
+    "histDecisao6": "CONSELHO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ADRIANO FERNANDO DE AGUIAR CARDOSOMembro: Ativo, Missionário: AtivoIgreja: MANAUS CENTRAL - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ADRIANO FERNANDO DE AGUIAR CARDOSO",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: MANAUS CENTRAL - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA MONTE CASTELO Nº407"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "DOMINGOS LIMA DE MACEDO",
+    "categoria": "Obreiro Bíblico",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "04/02/1968",
+    "nascCidade": "MARABÁ",
+    "nascUF": "PA",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "MISSIONARIO",
+    "escolaridade": "1º Grau Incompleto",
+    "pai": "JOSIAS CARDOSO DE MACEDO",
+    "mae": "VILMA LIMA DE MACEDO",
+    "estCivil": "Casado(a)",
+    "casamentoData": "22/11/1992",
+    "endereco": "av. ayrão, 361",
+    "bairro": "PRESIDENTE VARGAS",
+    "cidade": "MANAUS",
+    "uf": "AM",
+    "cep": "69025050",
+    "telefone": "(86)33031405",
+    "celular": "(86) 9808-7970",
+    "email": "MLDMACEDO1@LIVE.COM",
+    "conjuge": "JUARINA RABELO B. DE MACEDO",
+    "conjugeNascData": "09/03/1973",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "42",
+    "filhoNome1": "HYALINHE RABELO DE MACEDO",
+    "filhoNascData1": "23/04/1996",
+    "filhoNascCidade1": "MAGU",
+    "filhoNascUF1": "MA",
+    "filhoID2": "43",
+    "filhoNome2": "WISNEY RABELO DE MACEDO",
+    "filhoNascData2": "01/07/1998",
+    "filhoNascCidade2": "BOA VISTA",
+    "filhoNascUF2": "RR",
+    "filhoID3": "44",
+    "filhoNome3": "WYCLEFF RABELO DE MACEDO",
+    "filhoNascData3": "25/12/2001",
+    "filhoNascCidade3": "BOA VISTA",
+    "filhoNascUF3": "RR",
+    "rg": "189376 RR",
+    "rgOrigem": "RR",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "nitNumero": "11377226020",
+    "cpf": "25575252272",
+    "tituloNumero": "002329842615",
+    "cnhNumero": "00476579386",
+    "raNome": "NAO",
+    "batData": "17/05/1992",
+    "batOficiante": "J. PEREIRA",
+    "batCidade": "PAXIUBA",
+    "batUF": "MA",
+    "colportagemData": "01/08/1992",
+    "colportagemOficiante": "GIDEÃO ANTONIO SILVA",
+    "colportagemLocal": "MACAPA",
+    "colportagemUF": "AP",
+    "preAspiranteData": "02/12/1994",
+    "preAspiranteOficiante": "PR.VALDIR GOMES",
+    "preAspiranteLocal": "SAO LUIS",
+    "preAspiranteUF": "MA",
+    "aspiranteData": "02/11/2000",
+    "aspiranteOficiante": "PR. OTAVIO",
+    "aspiranteLocal": "BOA VISTA",
+    "aspiranteUF": "RR",
+    "biblicoData": "05/11/2006",
+    "biblicoOficiante": "PR. MARIANO LAURENTINO",
+    "biblicoLocal": "MACAPA",
+    "biblicoUF": "AP",
+    "histID1": "150",
+    "histData1": "01/09/1994",
+    "histCidade1": "SAO LUIS-MA",
+    "histFuncao1": "COLPORTOR AJUDADO",
+    "histID2": "151",
+    "histData2": "01/01/1995",
+    "histCidade2": "PARNAIBA-PI (1995-1996)",
+    "histFuncao2": "OBREIRO PRÉ ASPIRANTE",
+    "histID3": "152",
+    "histData3": "05/01/1997",
+    "histCidade3": "BOA VISTA-RR (1997-1998)",
+    "histFuncao3": "OBREIRO PRE ASPIRANTE",
+    "histID4": "153",
+    "histData4": "05/01/1999",
+    "histCidade4": "URUAÇU-GO (1999-2000)",
+    "histFuncao4": "OBREIRO ASPIRANTE",
+    "histID5": "154",
+    "histData5": "05/01/2001",
+    "histCidade5": "BOA VISTA-RR (2001-2003)",
+    "histFuncao5": "OBREIRO ASPIRANTE",
+    "histID6": "155",
+    "histData6": "05/01/2004",
+    "histCidade6": "SANTA INES-MA",
+    "histFuncao6": "OBREIRO ASPIRANTE",
+    "histID7": "156",
+    "histData7": "05/01/2005",
+    "histCidade7": "MACAPA-AP (2005-2006)",
+    "histFuncao7": "OBREIRO ASPIRANTE",
+    "histID8": "157",
+    "histData8": "01/01/2007",
+    "histCidade8": "IMPERATRIZ-MA",
+    "histFuncao8": "OBREIRO BIBLICO",
+    "histID9": "158",
+    "histData9": "01/09/2011",
+    "histCidade9": "TERESINA -PI (2011-2012)",
+    "histFuncao9": "OBREIRO BIBLICO",
+    "histID10": "159",
+    "histData10": "01/01/2013",
+    "histCidade10": "BREU BRANCO PA ",
+    "histFuncao10": "OBREIRO BIBLICO",
+    "histID11": "165",
+    "histID12": "161",
+    "histID13": "162",
+    "histID14": "163",
+    "histID15": "164",
+    "histID16": "166",
+    "histID17": "160",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO DOMINGOS LIMA DE MACEDOMembro: Ativo, Missionário: AtivoIgreja: PURUPURU - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "DOMINGOS LIMA DE MACEDO",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: PURUPURU - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "av. ayrão, 361"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "FRANCISCO DE ASSIS DOS SANTOS DA SILVA",
+    "categoria": "",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "15/05/2003",
+    "nascCidade": "PARNAÍBA",
+    "nascUF": "PI",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "COLPORTOR",
+    "escolaridade": "Não Informado",
+    "pai": "JOSÉ DE RIBAMAR DA SILVA",
+    "mae": "DIUVANDA GREGORIO DOS SANTOS DA SILVA",
+    "estCivil": "Solteiro(a)",
+    "cidade": "BOA VISTA",
+    "uf": "rr",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "0742795420217",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "11052515355",
+    "batData": "03/12/2023",
+    "batOficiante": "ISAÍAS REIS",
+    "batCidade": "TERESINA",
+    "batUF": "PI",
+    "histID1": "3938",
+    "histData1": "01/02/2026",
+    "histCidade1": "BOA VISTA-RR",
+    "histFuncao1": "JOVENS EM MISSÃO",
+    "histID2": "3937",
+    "histFuncao2": "JOVENS EM MISSÃO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO FRANCISCO DE ASSIS DOS SANTOS DA SILVAMembro: Ativo, Missionário: AtivoIgreja: SANTA LUZIA - RRAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "FRANCISCO DE ASSIS DOS SANTOS DA SILVA",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: SANTA LUZIA - RR",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "GEDEÂO ANTONIO SILVA",
+    "categoria": "Obreiro Aspirante",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "30/06/1969",
+    "nascCidade": "VITORIA DE SANTANTÂO",
+    "nascUF": "PE",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "LIDER DE COLPORTAGEM",
+    "escolaridade": "Não Informado",
+    "pai": "ANTONIO DA HORA SILVA",
+    "mae": "JOSEFA MARIA DA SILVA",
+    "estCivil": "Casado(a)",
+    "casamentoData": "18/12/1988",
+    "endereco": "RUA DOUTORA BRUNA DE OLIVEIRA RODRIGUES, 5072, RESIDENCIAL ARCO ÍRIS",
+    "bairro": "ALTO ALEGRE",
+    "cidade": "TERESINA",
+    "uf": "PI",
+    "cep": "64009-415",
+    "celular": "(86) 99988-4123",
+    "email": "gedeaodahora@outlook.com",
+    "conjuge": "LUZIA DE FATIMA SOUZA PEREIRA SILVA",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "1810027 SSPPA",
+    "rgOrigem": "SSPPA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "26433605249",
+    "raNome": "ASD-MR",
+    "batData": "27/03/2002",
+    "batOficiante": "JOSIAS DE ALMEIDA",
+    "batCidade": "CATALÂO",
+    "batUF": "GO",
+    "preAspiranteData": "01/01/2019",
+    "preAspiranteOficiante": "valterrubem souza",
+    "preAspiranteLocal": "sobral",
+    "preAspiranteUF": "ce",
+    "aspiranteData": "08/11/2022",
+    "aspiranteOficiante": "UNIÃO",
+    "aspiranteLocal": "BRASÍLIA",
+    "aspiranteUF": "DF",
+    "histID1": "3195",
+    "histData1": "01/01/2017",
+    "histCidade1": "SOBRAL - CE",
+    "histFuncao1": "OBREIRO CONTRATADO",
+    "histID2": "3223",
+    "histData2": "01/01/2019",
+    "histCidade2": "SOBRAL - CE",
+    "histFuncao2": "PRÉ-ASPIRANTE",
+    "histID3": "3352",
+    "histData3": "01/01/2020",
+    "histCidade3": "SOBRAL-CE",
+    "histFuncao3": "PRÉ-ASPIRANTE",
+    "histID4": "3686",
+    "histData4": "01/01/2022",
+    "histCidade4": "TERESINA - PI",
+    "histFuncao4": "PRÉ-ASPIRANTE",
+    "histID5": "3701",
+    "histData5": "01/01/2023",
+    "histCidade5": "TERESINA - PI",
+    "histFuncao5": "ASPIRANTE",
+    "histDecisao5": "CONSELHO",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO GEDEÂO ANTONIO SILVAMembro: Ativo, Missionário: AtivoIgreja: CAREIRO DA VÁRZEA - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "GEDEÂO ANTONIO SILVA",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: CAREIRO DA VÁRZEA - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA DOUTORA BRUNA DE OLIVEIRA RODRIGUES, 5072, RESIDENCIAL ARCO ÍRIS"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "HÉBER MENEZES REIS",
+    "categoria": "Ministro",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "11/05/1983",
+    "nascCidade": "TANHAÇU",
+    "nascUF": "BA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "PASTOR",
+    "escolaridade": "Superior Completo",
+    "pai": "SEBASTIÃO DOS SANTOS REIS",
+    "mae": "MARIA CRISTINA MENEZES REIS",
+    "estCivil": "Casado(a)",
+    "casamentoData": "09/12/2001",
+    "endereco": "RUA ÉRICO MOTA, 1275",
+    "bairro": "AMADEU FURTADO",
+    "cidade": "FORTALEZA",
+    "uf": "CE",
+    "cep": "60455-495",
+    "celular": "(85)998332883",
+    "email": "hebermenezesreis@Gmail.com",
+    "conjuge": "QUEILA SANTANA DA ROCHA REIS",
+    "conjugeNascData": "25/05/1983",
+    "conjugeNascCidade": "maceió",
+    "conjugeNacionalidade": "brasileira",
+    "conjugeEscolaridade": "2º Grau Completo",
+    "filhoID1": "464",
+    "filhoNome1": " HELLEN KEYSE ROCHA REIS",
+    "filhoNascData1": "15/07/2005",
+    "filhoNascCidade1": "NOSSA SENHORA DAS DORES",
+    "filhoNascUF1": "SE",
+    "filhoID2": "465",
+    "filhoNome2": "HELLEN LAÍS ROCHA REIS",
+    "filhoNascData2": "11/10/2011",
+    "filhoNascCidade2": "FEIRA DE SANTANA",
+    "filhoNascUF2": "BA",
+    "rg": "33994897 SSP/SE",
+    "rgOrigem": "ssp se",
+    "rgData": "05/05/2006",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "00512624526",
+    "tituloNumero": "099857460540",
+    "tituloOrigem": "ba",
+    "tituloData": "07/01/2010",
+    "reservistaNumero": "190452032203",
+    "reservistaOrigem": "se",
+    "reservistaData": "27/02/2004",
+    "cnhNumero": "03904169921",
+    "cnhOrigem": "se",
+    "cnhData": "07/08/2006",
+    "batData": "22/08/1999",
+    "batOficiante": "PR. ÁLVARO DANIEL M. CARDOSO",
+    "batCidade": "TANHAÇU",
+    "batUF": "BA",
+    "colportagemData": "01/01/1999",
+    "colportagemOficiante": "dir.francisco campos",
+    "colportagemLocal": "ituaçu",
+    "colportagemUF": "ba",
+    "preAspiranteData": "01/12/2006",
+    "preAspiranteOficiante": "pr. marcos rodrigues vaz",
+    "preAspiranteLocal": "salvador",
+    "preAspiranteUF": "ba",
+    "aspiranteData": "04/12/2009",
+    "aspiranteOficiante": "PR. VALTERRUBEMSOUZA SANTOS",
+    "aspiranteLocal": "SALVADOR",
+    "aspiranteUF": "BA",
+    "biblicoData": "15/12/2012",
+    "biblicoOficiante": "pr. silvan paulo da silva",
+    "biblicoLocal": "são gonçalo",
+    "biblicoUF": "ba",
+    "pastorData": "01/06/2013",
+    "pastorOficiante": "pr.matheus souza da silva",
+    "pastorLocal": "estância",
+    "pastorUF": "se",
+    "ministroData": "28/07/2018",
+    "ministroOficiante": "Pr. CARLOS LINARES",
+    "ministroLocal": "BELO HORIZONTE",
+    "ministroUF": "MG",
+    "histID1": "2629",
+    "histData1": "01/01/1999",
+    "histCidade1": "ITUAÇU - BA",
+    "histFuncao1": "COLPORTOR",
+    "histID2": "2630",
+    "histData2": "01/07/2002",
+    "histCidade2": "PAULO AFONSO -BA",
+    "histFuncao2": "OBREIRO CONTRATADO",
+    "histID3": "2631",
+    "histData3": "01/01/2004",
+    "histCidade3": "NOSSA SENHORA DAS DORES - SE",
+    "histFuncao3": "OBREIRO CONTRATADO",
+    "histID4": "2632",
+    "histData4": "01/01/2007",
+    "histCidade4": "FEIRA DE SANTANA - BA",
+    "histFuncao4": "OBR.PRÉ - ASPIRANTE",
+    "histID5": "2633",
+    "histData5": "01/01/2008",
+    "histCidade5": "SALVADOR - BA",
+    "histFuncao5": "OBR.PRÉ - ASPIRANTE",
+    "histID6": "2634",
+    "histData6": "01/01/2010",
+    "histCidade6": "FEIRA DE SANTANA - BA",
+    "histFuncao6": "OBR.ASPIRANTE",
+    "histID7": "2635",
+    "histData7": "01/01/2013",
+    "histCidade7": "ARACAJU - SE",
+    "histFuncao7": "OBR.BIBLICO",
+    "histID8": "2636",
+    "histData8": "01/06/2013",
+    "histCidade8": "ARACAJU - SE",
+    "histFuncao8": "PASTOR",
+    "histID9": "3189",
+    "histData9": "01/01/2016",
+    "histCidade9": "BELO HORIZONTE -MG",
+    "histFuncao9": "PASTOR",
+    "histID10": "3190",
+    "histData10": "28/07/2018",
+    "histCidade10": "BELO HORIZONTE - MG",
+    "histFuncao10": "MINISTRO",
+    "histID11": "3196",
+    "histData11": "01/01/2019",
+    "histCidade11": "FORTALEZA - CE",
+    "histFuncao11": "MINISTRO",
+    "histID12": "3353",
+    "histData12": "01/01/2020",
+    "histCidade12": "FORTALEZA-CE",
+    "histFuncao12": "MINISTRO",
+    "histID13": "3559",
+    "histData13": "01/01/2021",
+    "histCidade13": "FORTALEZA - CE",
+    "histFuncao13": "MINISTRO",
+    "histID14": "3560",
+    "histData14": "01/01/2022",
+    "histCidade14": "FORTALEZA-CE",
+    "histFuncao14": "PRESIDENTE ASCE",
+    "histID15": "3737",
+    "histData15": "01/01/2023",
+    "histCidade15": "FORTALEZA - CE ",
+    "histFuncao15": "PRESIDENTE ASCE",
+    "histID16": "3902",
+    "histData16": "01/01/2026",
+    "histCidade16": "MANAUS - AM",
+    "histFuncao16": "PRESIDENTE ARAM",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO HÉBER MENEZES REISMembro: Ativo, Missionário: AtivoIgreja: MANAUS CENTRAL - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "HÉBER MENEZES REIS",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: MANAUS CENTRAL - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA ÉRICO MOTA, 1275"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "RYAN PEDRO DE MEDEIROS DA ROCHA",
+    "categoria": "",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "12/03/2003",
+    "nascCidade": "SÃO PAULO",
+    "nascUF": "SP",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "ESTUDANTE",
+    "escolaridade": "Técnico",
+    "pai": "GEREMIAS SILVEIRA DA ROCHA",
+    "mae": "ALINE REJANE LIMA DE MEDEIROS",
+    "estCivil": "Solteiro(a)",
+    "endereco": "RUA: MARIA RODRIGUES DOS SANTOS, 2181",
+    "bairro": "TANCREDO NEVES",
+    "cidade": "BOA VISTA",
+    "uf": "RR",
+    "cep": "69.313-48",
+    "telefone": "9790 9 9680-5931",
+    "email": "r7anpedro7@gmail.com",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "07255806589 SSP/SE",
+    "rgOrigem": "SSP SE",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "07255806589",
+    "raNome": "REFORMISTA",
+    "batData": "23/09/2023",
+    "batOficiante": "ANTÔNIO DEIBLAN DE OLIVEIRA",
+    "batCidade": "ARACAJU",
+    "batUF": "SE",
+    "histID1": "3940",
+    "histData1": "01/02/2026",
+    "histCidade1": "BOA VISTA",
+    "histFuncao1": "JOVENS EM MISSÃO",
+    "histDecisao1": "CONSELHO",
+    "histID2": "3939",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO RYAN PEDRO DE MEDEIROS DA ROCHAMembro: Ativo, Missionário: AtivoIgreja: BOA VISTA - RRAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "RYAN PEDRO DE MEDEIROS DA ROCHA",
+        "Membro: Ativo, Missionário: Ativo",
+        "Igreja: BOA VISTA - RR",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA: MARIA RODRIGUES DOS SANTOS, 2181"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "ARIEL TAVARES MAUES",
+    "categoria": "",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "22/08/1993",
+    "nascCidade": "BELEM",
+    "nascUF": "PA",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "ESTUDANTE",
+    "escolaridade": "1º Grau Completo",
+    "pai": "JOÃO DE DEUS O. MAUES",
+    "mae": "AURIA MARIA DE MELO TAVARES MAUES",
+    "estCivil": "Casado(a)",
+    "casamentoData": "18/12/2016",
+    "endereco": "Av. Mazagão 388",
+    "bairro": "Malvinas",
+    "cidade": "Macapá",
+    "uf": "ap",
+    "celular": "993009370",
+    "email": "arieltavares07@gmail.com",
+    "conjuge": "RAQUEL DA COSTA CUNHA TAVARES",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "6873015 SSP-PA",
+    "rgOrigem": "SSP-PA",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "01836497296",
+    "raNome": "XX",
+    "batData": "31/12/2009",
+    "batOficiante": "PR DAVI ALVES DE OLIVEIRA ",
+    "batCidade": "BELEM",
+    "batUF": "PA",
+    "histID1": "3842",
+    "histData1": "01/01/2025",
+    "histCidade1": "PORTO GRANDE - AP ",
+    "histFuncao1": "MISSIONáRIO APRENDIZ",
+    "histDecisao1": "CAMAP",
+    "histID2": "3866",
+    "histData2": "30/09/2025",
+    "histCidade2": "PORTO GRANDE - AP ",
+    "histFuncao2": "DISPENSADO ",
+    "histDecisao2": "CAMAP",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO ARIEL TAVARES MAUESMembro: Ativo, Missionário: InativoIgreja: MANAUS CENTRAL - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "ARIEL TAVARES MAUES",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: MANAUS CENTRAL - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "Av. Mazagão 388"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "JOSÉ LUIZ DA SILVA",
+    "categoria": "Pastor",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "23/04/1955",
+    "nascCidade": "IGUATU",
+    "nascUF": "CE",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "MISSIONÁRIO",
+    "escolaridade": "Não Informado",
+    "pai": "SEVERINO ANTONIO DA SILVA",
+    "mae": "DELTRUPES ALVES DINIZ",
+    "estCivil": "Casado(a)",
+    "endereco": " RUA BERNARDO CABRAL, 76",
+    "bairro": "TANCREDO NEVES",
+    "cidade": "MANAUS",
+    "uf": "AM",
+    "cep": "69087-290",
+    "celular": "(92) 8246-6086 (Tim)",
+    "conjuge": "MARIA NATIVIDADE PEREIRA SILVA",
+    "conjugeNascData": "27/01/1956",
+    "conjugeNascCidade": "COARI ",
+    "conjugeNascUF": "AM",
+    "conjugeNacionalidade": "BRASILEIRA",
+    "conjugeEscolaridade": "Não Informado",
+    "filhoID1": "301",
+    "filhoNome1": "LUZINEIDE DA SILVA BARBOSA",
+    "filhoNascData1": "25/04/1977",
+    "filhoNascCidade1": "COARI",
+    "filhoNascUF1": "AM",
+    "filhoID2": "302",
+    "filhoNome2": "LUZENILTON PEREIRA DA SILVA",
+    "filhoNascData2": "18/05/1978",
+    "filhoNascCidade2": "MANAUS",
+    "filhoNascUF2": "AM",
+    "filhoID3": "303",
+    "filhoNome3": "LUZILEIDE PEREIRA DA SILVA",
+    "filhoNascData3": "18/11/1979",
+    "filhoNascCidade3": "MANAUS",
+    "filhoNascUF3": "AM",
+    "rg": "327413",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "13396862287",
+    "raNome": "CATÓLICA",
+    "batData": "03/05/1981",
+    "batOficiante": "WASCHINGTON L. BUENO",
+    "batCidade": "MANAUS",
+    "batUF": "AM",
+    "aspiranteData": "01/11/1988",
+    "biblicoData": "01/11/1990",
+    "pastorData": "01/03/2014",
+    "pastorOficiante": "mariano l. santana",
+    "pastorLocal": "balbina",
+    "pastorUF": "am",
+    "histID1": "1524",
+    "histData1": "01/01/1987",
+    "histCidade1": "MANAUS - AM",
+    "histFuncao1": "DIR. COLPORTAGEM",
+    "histID2": "1525",
+    "histData2": "01/01/1988",
+    "histCidade2": "PORTO VELHO - RO",
+    "histFuncao2": "OBREIRO ASPIRANTE",
+    "histID3": "1526",
+    "histData3": "01/01/1990",
+    "histCidade3": "CACOAL - RO",
+    "histFuncao3": "OBREIRO BÍBLICO",
+    "histID4": "1527",
+    "histData4": "01/01/1991",
+    "histCidade4": "BOA VISTA - RR",
+    "histFuncao4": "OBREIRO BÍBLICO",
+    "histID5": "1528",
+    "histData5": "01/01/1995",
+    "histCidade5": "MANAUS - AM",
+    "histFuncao5": "OBREIRO BÍBLICO",
+    "histID6": "1529",
+    "histData6": "01/01/1996",
+    "histCidade6": "MANAUS - AM",
+    "histFuncao6": "OBREIRO BÍBLICO",
+    "histID7": "1530",
+    "histData7": "01/01/1997",
+    "histCidade7": "DISPENSADO",
+    "histFuncao7": "OBREIRO BÍBLICO",
+    "histID8": "1531",
+    "histData8": "01/04/2010",
+    "histCidade8": "PURUPURU - AM",
+    "histFuncao8": "OBREIRO",
+    "histID9": "2042",
+    "histData9": "01/01/2011",
+    "histCidade9": "PURUPURU - AM",
+    "histFuncao9": "OBREIRO",
+    "histID10": "2043",
+    "histData10": "01/01/2012",
+    "histCidade10": "PURUPURU - AM",
+    "histFuncao10": "OBREIRO",
+    "histID11": "2292",
+    "histData11": "21/02/2013",
+    "histCidade11": "MANAUS-AM",
+    "histFuncao11": "OBREIRO",
+    "histID12": "2655",
+    "histData12": "01/03/2014",
+    "histCidade12": "BALBINA-AM",
+    "histFuncao12": "PASTOR",
+    "histID13": "2884",
+    "histData13": "17/12/2015",
+    "histCidade13": "DISPENSADO",
+    "histFuncao13": "PASTOR",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO JOSÉ LUIZ DA SILVAMembro: Ativo, Missionário: InativoIgreja: SANTA ETELVINA - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "JOSÉ LUIZ DA SILVA",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: SANTA ETELVINA - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "RUA BERNARDO CABRAL, 76"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "MATHEUS RAMOS MARQUES",
+    "categoria": "",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "09/05/1999",
+    "nascCidade": "JUAZEIRO DO NORTE",
+    "nascUF": "CE",
+    "nacionalidade": "BRASILEIRO",
+    "profissao": "COLPORTOR",
+    "escolaridade": "2º Grau Incompleto",
+    "pai": "ELIAS MARQUES",
+    "mae": "CICERA RAMOS DOMINGOS",
+    "estCivil": "Solteiro(a)",
+    "cidade": "ALMIRANTE TAMANDARÉ ",
+    "uf": "PR",
+    "celular": "73 99148 8340",
+    "email": "matheusramosmarques2018@gmail.com",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "20078378669",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "pisNumero": "16391366366",
+    "nitNumero": "16391366366",
+    "cpf": "07947645337",
+    "batData": "23/09/2018",
+    "batOficiante": "PR GEREMIAS ROCHA",
+    "batCidade": "EUNÁPOLIS_BA",
+    "batUF": "BA",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO MATHEUS RAMOS MARQUESMembro: Ativo, Missionário: InativoIgreja: MANAUS MEMBROS ISOLADOS - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "MATHEUS RAMOS MARQUES",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: MANAUS MEMBROS ISOLADOS - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  },
+  {
+    "nome": "VALDINEI DOS SANTOS CRAVEL",
+    "categoria": "",
+    "associacao": "ARAM",
+    "palavra": " Procurar Membro",
+    "Procurar": "Ok",
+    "sexo": "F",
+    "nascData": "31/01/1987",
+    "nascCidade": "CACOAL",
+    "nascUF": "RO",
+    "nacionalidade": "BRASILEIRA",
+    "profissao": "ESTUDANTE",
+    "escolaridade": "2º Grau Completo",
+    "pai": "MOACIR PEDRO CRAVEL",
+    "mae": "SELMA APARECIDA DOS SANTOS CRAVEL",
+    "estCivil": "Solteiro(a)",
+    "endereco": "ESTRADA RAMAL DO LAGOA PARK CLUB\nCASA",
+    "bairro": "CALAFATE",
+    "cidade": "RIO BRANCO",
+    "uf": "AC",
+    "cep": "69910-000",
+    "celular": "(68) 8403-1689",
+    "email": "neycravelh@hotmail.com",
+    "conjugeEscolaridade": "Não Informado",
+    "rg": "1022421-1 SSP/AC",
+    "rgOrigem": "SSP/AC",
+    "ctpsSerie": "Série",
+    "ctpsUF": "UF",
+    "cpf": "99913640210",
+    "raNome": "REFORMISTA BERÇO",
+    "batData": "25/07/2004",
+    "batOficiante": "JOEL ANTONIO SILVA",
+    "batCidade": "RIO BRANCO",
+    "batUF": "AC",
+    "acesso_gd": "Não",
+    "oficial_uniao": "Não",
+    "_church_assignments": [
+      [
+        "CADASTRO BIOGRÁFICO VALDINEI DOS SANTOS CRAVELMembro: Ativo, Missionário: InativoIgreja: MANAUS CENTRAL - AMAssociação: 2_ARAM - UNINORTE",
+        "CADASTRO BIOGRÁFICO",
+        "VALDINEI DOS SANTOS CRAVEL",
+        "Membro: Ativo, Missionário: Inativo",
+        "Igreja: MANAUS CENTRAL - AM",
+        "Associação: 2_ARAM - UNINORTE"
+      ],
+      [
+        "Sexo:",
+        "Masculino\n                                     Feminino"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "Estado Civil:",
+        "Não Informado\nSolteiro(a)\nCasado(a)\nViúvo(a)\nDivorciado(a)"
+      ],
+      [
+        "Endereço:",
+        "ESTRADA RAMAL DO LAGOA PARK CLUB\nCASA"
+      ],
+      [
+        "UF:",
+        "CEP:"
+      ],
+      [
+        "Escolaridade:",
+        "Não Informado\n1º Grau Incompleto\n1º Grau Completo\n2º Grau Incompleto\n2º Grau Completo\nTécnico\nSuperior Incompleto\nSuperior Completo\nMestrado\nDoutorado\nNão Alfabetizado(a)"
+      ],
+      [
+        "NÚMERO",
+        "ORIGEM",
+        "DATA EMISSÃO"
+      ],
+      [
+        "PIS:",
+        "CEF"
+      ],
+      [
+        "NIT:",
+        "INSS"
+      ],
+      [
+        "CPF:",
+        "RF"
+      ],
+      [
+        "DATA",
+        "OFICIANTE",
+        "LOCAL",
+        "UF"
+      ],
+      [
+        "DATA",
+        "CIDADE - UF",
+        "FUNÇÃO",
+        "DECISÃO"
+      ]
+    ]
+  }
+]

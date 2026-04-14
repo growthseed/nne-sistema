@@ -1,0 +1,44 @@
+{
+  "ARAM": {
+    "completed": true,
+    "churches": 17,
+    "members": 1638,
+    "missionaries": 10
+  },
+  "AMAPI": {
+    "completed": true,
+    "churches": 36,
+    "members": 638,
+    "missionaries": 16
+  },
+  "ANOB": {
+    "completed": true,
+    "churches": 53,
+    "members": 4114,
+    "missionaries": 18
+  },
+  "ASCE": {
+    "completed": true,
+    "churches": 0,
+    "members": 0,
+    "missionaries": 0
+  },
+  "ASPAR": {
+    "completed": true,
+    "churches": 85,
+    "members": 0,
+    "missionaries": 0
+  },
+  "CAMAP": {
+    "completed": true,
+    "churches": 8,
+    "members": 0,
+    "missionaries": 5
+  },
+  "CAMISE": {
+    "completed": true,
+    "churches": 0,
+    "members": 0,
+    "missionaries": 0
+  }
+}

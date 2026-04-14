@@ -1,0 +1,4964 @@
+[
+  {
+    "igreja_id_old": "312",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "JOSÉ ROBERTO DA SILVA",
+    "status": "confirmado",
+    "saldo_anterior": 1976.86,
+    "recibos": [
+      {
+        "recibo": "312.02496",
+        "data": "16/02",
+        "nome": "ANTÔNIO LOPES DO NASCIMENTO",
+        "valores_raw": [
+          "250,00",
+          "75,00",
+          "325,00"
+        ]
+      },
+      {
+        "recibo": "312.02497",
+        "data": "16/02",
+        "nome": "CICERO FERREIRA DA SILVA",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "312.02498",
+        "data": "16/02",
+        "nome": "CICERO FERREIRA DA SILVA",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "312.02499",
+        "data": "16/02",
+        "nome": "EDILEIDE GOMES DA SILVA",
+        "valores_raw": [
+          "140,00",
+          "40,00",
+          "180,00"
+        ]
+      },
+      {
+        "recibo": "312.02500",
+        "data": "16/02",
+        "nome": "JOÃO BATISTA DA SILVA",
+        "valores_raw": [
+          "160,00",
+          "160,00"
+        ]
+      },
+      {
+        "recibo": "312.02501",
+        "data": "16/02",
+        "nome": "JOSÉ ROBERTO DA SILVA",
+        "valores_raw": [
+          "350,00",
+          "350,00"
+        ]
+      },
+      {
+        "recibo": "312.02502",
+        "data": "16/02",
+        "nome": "JOSÉ SOTERO DA SILVA",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "312.02503",
+        "data": "16/02",
+        "nome": "JOSÉ VALDIR DA SILVA",
+        "valores_raw": [
+          "200,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "312.02504",
+        "data": "16/02",
+        "nome": "LENILDA CHAGAS DO NASCIMENTO",
+        "valores_raw": [
+          "144,00",
+          "36,00",
+          "180,00"
+        ]
+      },
+      {
+        "recibo": "312.02505",
+        "data": "16/02",
+        "nome": "MARGARIDA MARIA FEITOSA SILVA",
+        "valores_raw": [
+          "300,00",
+          "70,00",
+          "370,00"
+        ]
+      },
+      {
+        "recibo": "312.02506",
+        "data": "16/02",
+        "nome": "MARIA APARECIDA DOS SANTOS ANDRADE",
+        "valores_raw": [
+          "140,00",
+          "140,00"
+        ]
+      },
+      {
+        "recibo": "312.02507",
+        "data": "16/02",
+        "nome": "MARIA DE LOURDES DA SILVA",
+        "valores_raw": [
+          "160,00",
+          "40,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "312.02508",
+        "data": "16/02",
+        "nome": "MARIA GORETH MUNIZ DA SILVA",
+        "valores_raw": [
+          "303,00",
+          "303,00"
+        ]
+      },
+      {
+        "recibo": "312.02509",
+        "data": "16/02",
+        "nome": "MARIA MARLI DA SILVA",
+        "valores_raw": [
+          "134,00",
+          "134,00"
+        ]
+      },
+      {
+        "recibo": "312.02510",
+        "data": "16/02",
+        "nome": "MARINÊS FABIANA M. DA SILVA",
+        "valores_raw": [
+          "58,00",
+          "20,00",
+          "78,00"
+        ]
+      },
+      {
+        "recibo": "312.02511",
+        "data": "16/02",
+        "nome": "SABRINA STEFANE MUNIZ DA SILVA",
+        "valores_raw": [
+          "60,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "312.02512",
+        "data": "16/02",
+        "nome": "MARIA GORETH MUNIZ DA SILVA",
+        "valores_raw": [
+          "627,00",
+          "217,00",
+          "844,00"
+        ]
+      },
+      {
+        "recibo": "312.02513",
+        "data": "16/02",
+        "nome": "MARIA MARLI DA SILVA",
+        "valores_raw": [
+          "70,00",
+          "70,00"
+        ]
+      },
+      {
+        "recibo": "312.02514",
+        "data": "16/02",
+        "nome": "LENILDA CHAGAS DO NASCIMENTO",
+        "valores_raw": [
+          "120,00",
+          "36,00",
+          "156,00"
+        ]
+      },
+      {
+        "recibo": "312.02515",
+        "data": "16/02",
+        "nome": "MABEL FABIANA MUNIZ",
+        "valores_raw": [
+          "110,00",
+          "110,00"
+        ]
+      },
+      {
+        "recibo": "312.02516",
+        "data": "16/02",
+        "nome": "IGREJA LOCAL   *",
+        "valores_raw": [
+          "30,00",
+          "159,00",
+          "17,00",
+          "206,00",
+          "62,00",
+          "465,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 3676,
+      "primicias": 534,
+      "assistencia_social": 30,
+      "escola_sabatina": 159,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 17,
+      "diversos_assoc": 0,
+      "soma_associacao": 4416,
+      "caixa_local_entradas": 465,
+      "missoes_estrangeiras": 62,
+      "caixa_local_saidas": 378
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 199,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 266,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "18/02/2026",
+        "descricao": "deposito bradesco",
+        "valor": 2000
+      },
+      {
+        "data": "19/02/2026",
+        "descricao": "deposito bradesco",
+        "valor": 2477.98
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "ÁGUA PRETA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "312",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "JOSÉ ROBERTO DA SILVA",
+    "status": "confirmado",
+    "saldo_anterior": 2063.86,
+    "recibos": [
+      {
+        "recibo": "312.02517",
+        "data": "22/03",
+        "nome": "CICERO FERREIRA DA SILVA",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "312.02518",
+        "data": "22/03",
+        "nome": "EDILEIDE GOMES DA SILVA",
+        "valores_raw": [
+          "165,00",
+          "50,00",
+          "215,00"
+        ]
+      },
+      {
+        "recibo": "312.02519",
+        "data": "22/03",
+        "nome": "JOÃO BATISTA DA SILVA",
+        "valores_raw": [
+          "160,00",
+          "160,00"
+        ]
+      },
+      {
+        "recibo": "312.02520",
+        "data": "22/03",
+        "nome": "JOSÉ ROBERTO DA SILVA",
+        "valores_raw": [
+          "230,00",
+          "230,00"
+        ]
+      },
+      {
+        "recibo": "312.02521",
+        "data": "22/03",
+        "nome": "JOSÉ VALDIR DA SILVA",
+        "valores_raw": [
+          "180,00",
+          "180,00"
+        ]
+      },
+      {
+        "recibo": "312.02522",
+        "data": "22/03",
+        "nome": "LENILDA CHAGAS DO NASCIMENTO",
+        "valores_raw": [
+          "220,00",
+          "75,00",
+          "5,00",
+          "300,00"
+        ]
+      },
+      {
+        "recibo": "312.02523",
+        "data": "22/03",
+        "nome": "MARGARIDA MARIA FEITOSA SILVA",
+        "valores_raw": [
+          "300,00",
+          "70,00",
+          "370,00"
+        ]
+      },
+      {
+        "recibo": "312.02524",
+        "data": "22/03",
+        "nome": "MARIA APARECIDA DOS SANTOS ANDRADE",
+        "valores_raw": [
+          "155,00",
+          "155,00"
+        ]
+      },
+      {
+        "recibo": "312.02525",
+        "data": "22/03",
+        "nome": "MARIA DE LOURDES DA SILVA",
+        "valores_raw": [
+          "160,00",
+          "40,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "312.02526",
+        "data": "22/03",
+        "nome": "MARIA GORETH MUNIZ DA SILVA",
+        "valores_raw": [
+          "587,00",
+          "202,00",
+          "789,00"
+        ]
+      },
+      {
+        "recibo": "312.02527",
+        "data": "22/03",
+        "nome": "MARIA MARLI DA SILVA",
+        "valores_raw": [
+          "75,00",
+          "75,00"
+        ]
+      },
+      {
+        "recibo": "312.02528",
+        "data": "22/03",
+        "nome": "MARIA APARECIDA DOS SANTOS ANDRADE",
+        "valores_raw": [
+          "155,00",
+          "155,00"
+        ]
+      },
+      {
+        "recibo": "312.02529",
+        "data": "22/03",
+        "nome": "SABRINA STEFANE MUNIZ DA SILVA",
+        "valores_raw": [
+          "60,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "312.02530",
+        "data": "22/03",
+        "nome": "DAVID",
+        "valores_raw": [
+          "160,00",
+          "160,00"
+        ]
+      },
+      {
+        "recibo": "312.02531",
+        "data": "22/03",
+        "nome": "DAVID",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "312.02532",
+        "data": "22/03",
+        "nome": "MABEL FABIANA MUNIZ",
+        "valores_raw": [
+          "110,00",
+          "110,00"
+        ]
+      },
+      {
+        "recibo": "312.02533",
+        "data": "22/03",
+        "nome": "MABEL FABIANA MUNIZ",
+        "valores_raw": [
+          "50,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "312.02534",
+        "data": "22/03",
+        "nome": "WESLEY",
+        "valores_raw": [
+          "9,00",
+          "9,00"
+        ]
+      },
+      {
+        "recibo": "312.02535",
+        "data": "22/03",
+        "nome": "IGREJA LOCAL   *",
+        "valores_raw": [
+          "40,00",
+          "177,00",
+          "19,00",
+          "236,00",
+          "51,00",
+          "440,01"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 3026,
+      "primicias": 437,
+      "assistencia_social": 40,
+      "escola_sabatina": 177,
+      "evangelismo": 5,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 19,
+      "diversos_assoc": 0,
+      "soma_associacao": 3704,
+      "caixa_local_entradas": 440.01,
+      "missoes_estrangeiras": 51,
+      "caixa_local_saidas": 566
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 144,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 296.01,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "23/03/2026",
+        "descricao": "DEPOSITO",
+        "valor": 3755
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "ÁGUA PRETA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "289",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "289.00955",
+        "data": "02/03",
+        "nome": "ELIAS PEDRO SOARES   *",
+        "valores_raw": [
+          "160,00",
+          "12,00",
+          "172,00"
+        ]
+      },
+      {
+        "recibo": "289.00956",
+        "data": "02/03",
+        "nome": "OZANA SEVERINA SOARES   *",
+        "valores_raw": [
+          "160,00",
+          "12,00",
+          "172,00"
+        ]
+      },
+      {
+        "recibo": "289.00957",
+        "data": "02/03",
+        "nome": "RIVANETE OZANA SOARES GOMES   *",
+        "valores_raw": [
+          "109,00",
+          "109,00"
+        ]
+      },
+      {
+        "recibo": "289.00958",
+        "data": "02/03",
+        "nome": "RÚBEM PEDRO SOARES   *",
+        "valores_raw": [
+          "70,00",
+          "23,00",
+          "93,00"
+        ]
+      },
+      {
+        "recibo": "289.00959",
+        "data": "02/03",
+        "nome": "ANTÔNIA TEREZA DE SANTANA   *",
+        "valores_raw": [
+          "163,00",
+          "50,00",
+          "213,00"
+        ]
+      },
+      {
+        "recibo": "289.00960",
+        "data": "02/03",
+        "nome": "IGREJA  LOCAL   *",
+        "valores_raw": [
+          "44,00",
+          "4,00",
+          "40,00",
+          "88,00",
+          "30,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "23/02/2026",
+        "descricao": "ANTONIA",
+        "valor": 877
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "AMORINHA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "289",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "ADEMILSON TELES DOS SANTOS",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "289.00961",
+        "data": "27/03",
+        "nome": "OZANA SEVERINA SOARES",
+        "valores_raw": [
+          "160,00",
+          "10,00",
+          "170,00"
+        ]
+      },
+      {
+        "recibo": "289.00962",
+        "data": "27/03",
+        "nome": "ELIAS PEDRO SOARES",
+        "valores_raw": [
+          "162,00",
+          "20,00",
+          "182,00"
+        ]
+      },
+      {
+        "recibo": "289.00963",
+        "data": "27/03",
+        "nome": "RIVANETE OZANA SOARES GOMES",
+        "valores_raw": [
+          "120,00",
+          "120,00"
+        ]
+      },
+      {
+        "recibo": "289.00964",
+        "data": "27/03",
+        "nome": "ANTÔNIA TEREZA DE SANTANA",
+        "valores_raw": [
+          "160,00",
+          "50,00",
+          "210,00"
+        ]
+      },
+      {
+        "recibo": "289.00965",
+        "data": "27/03",
+        "nome": "RÚBEM PEDRO SOARES",
+        "valores_raw": [
+          "100,00",
+          "30,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "289.00966",
+        "data": "27/03",
+        "nome": "IGREJA  LOCAL",
+        "valores_raw": [
+          "67,00",
+          "6,50",
+          "73,50",
+          "40,00"
+        ]
+      },
+      {
+        "recibo": "289.00967",
+        "data": "27/03",
+        "nome": "OFERTA FAROIS DA VERDADE",
+        "valores_raw": [
+          "40,50",
+          "40,50"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "24/03/2026",
+        "descricao": "pix",
+        "valor": 966
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "AMORINHA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "529",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "529.02941",
+        "data": "27/01",
+        "nome": "GERUZA MORAIS DE OLIVEIRA",
+        "valores_raw": [
+          "155,00",
+          "155,00"
+        ]
+      },
+      {
+        "recibo": "529.02956",
+        "data": "30/01",
+        "nome": "LEUDIVAN DA CONCEIÇÃO NEVES",
+        "valores_raw": [
+          "1.455,00",
+          "45,00",
+          "1.500,00"
+        ]
+      },
+      {
+        "recibo": "529.02957",
+        "data": "30/01",
+        "nome": "GUILHERME ALVES GOMES",
+        "valores_raw": [
+          "200,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "529.02959",
+        "data": "04/02",
+        "nome": "GISELLY MARTINS OLIVEIRA BORGES",
+        "valores_raw": [
+          "373,09",
+          "373,09"
+        ]
+      },
+      {
+        "recibo": "529.02960",
+        "data": "04/02",
+        "nome": "MARTA BORGES MARTINS DE OLIVEIRA",
+        "valores_raw": [
+          "304,48",
+          "304,48"
+        ]
+      },
+      {
+        "recibo": "529.02961",
+        "data": "05/02",
+        "nome": "ELIZEU SUDARO NASCIMENTO",
+        "valores_raw": [
+          "800,00",
+          "800,00"
+        ]
+      },
+      {
+        "recibo": "529.02962",
+        "data": "05/02",
+        "nome": "MATEUS DE ALMEIDA SOUSA",
+        "valores_raw": [
+          "1.867,00",
+          "562,00",
+          "640,00",
+          "3.069,00"
+        ]
+      },
+      {
+        "recibo": "529.02963",
+        "data": "05/02",
+        "nome": "ROSIETE AUGUSTO MARTINIANO SANTOS",
+        "valores_raw": [
+          "629,20",
+          "201,05",
+          "830,25"
+        ]
+      },
+      {
+        "recibo": "529.02964",
+        "data": "07/02",
+        "nome": "RUTE SANTOS OLIVEIRA DE MIRANDA",
+        "valores_raw": [
+          "25,75",
+          "8,33",
+          "34,08"
+        ]
+      },
+      {
+        "recibo": "529.02965",
+        "data": "09/02",
+        "nome": "KEDMA AUGUSTO MARTINIANO SANTOS",
+        "valores_raw": [
+          "1.816,85",
+          "1.816,85"
+        ]
+      },
+      {
+        "recibo": "529.02966",
+        "data": "12/02",
+        "nome": "MIRIAM ALVES DE MENEZES",
+        "valores_raw": [
+          "3.806,00",
+          "3.806,00"
+        ]
+      },
+      {
+        "recibo": "529.02967",
+        "data": "13/02",
+        "nome": "MARTA BORGES MARTINS DE OLIVEIRA",
+        "valores_raw": [
+          "227,50",
+          "227,50"
+        ]
+      },
+      {
+        "recibo": "529.02968",
+        "data": "13/02",
+        "nome": "NATANE KEZIA DA SILVA COSTA REGO",
+        "valores_raw": [
+          "403,35",
+          "40,34",
+          "443,69"
+        ]
+      },
+      {
+        "recibo": "529.02969",
+        "data": "13/02",
+        "nome": "ELIZEU SUDARO NASCIMENTO",
+        "valores_raw": [
+          "180,00",
+          "180,00"
+        ]
+      },
+      {
+        "recibo": "529.02970",
+        "data": "17/02",
+        "nome": "MANOEL IZIDIO DA SILVA",
+        "valores_raw": [
+          "379,20",
+          "55,00",
+          "434,20"
+        ]
+      },
+      {
+        "recibo": "529.02971",
+        "data": "17/02",
+        "nome": "SABRINNA TRIGUEIRO DA ROCHA",
+        "valores_raw": [
+          "178,25",
+          "178,25"
+        ]
+      },
+      {
+        "recibo": "529.02972",
+        "data": "19/02",
+        "nome": "CICERO LUIZ LIMA",
+        "valores_raw": [
+          "376,20",
+          "125,80",
+          "502,00"
+        ]
+      },
+      {
+        "recibo": "529.02973",
+        "data": "19/02",
+        "nome": "CICERO LUIZ LIMA",
+        "valores_raw": [
+          "70,00",
+          "70,00"
+        ]
+      },
+      {
+        "recibo": "529.02974",
+        "data": "25/02",
+        "nome": "RAFAEL HENRIQUE FARIAS CAMPOS",
+        "valores_raw": [
+          "200,00",
+          "150,00",
+          "350,00"
+        ]
+      },
+      {
+        "recibo": "529.02975",
+        "data": "27/02",
+        "nome": "JOSÉLIA FERREIRA DOS ANJOS",
+        "valores_raw": [
+          "514,29",
+          "514,29"
+        ]
+      },
+      {
+        "recibo": "529.02978",
+        "data": "04/03",
+        "nome": "MARIA ODETE DA SILVA SANTOS",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "529.02979",
+        "data": "04/03",
+        "nome": "ELIANE DE SOUZA ANDRADE",
+        "valores_raw": [
+          "300,00",
+          "50,00",
+          "350,00"
+        ]
+      },
+      {
+        "recibo": "529.02980",
+        "data": "04/03",
+        "nome": "JARDES GARDEU A. SOUSA (DADAU)",
+        "valores_raw": [
+          "300,00",
+          "300,00"
+        ]
+      },
+      {
+        "recibo": "529.02981",
+        "data": "04/03",
+        "nome": "MARIA ROSILENE DA SILVA",
+        "valores_raw": [
+          "360,00",
+          "360,00"
+        ]
+      },
+      {
+        "recibo": "529.02982",
+        "data": "04/03",
+        "nome": "LINOVA ALVES DOS SANTOS",
+        "valores_raw": [
+          "587,32",
+          "587,32"
+        ]
+      },
+      {
+        "recibo": "529.02983",
+        "data": "04/03",
+        "nome": "RUBERLANE DE SANTANA SOARES",
+        "valores_raw": [
+          "210,00",
+          "210,00"
+        ]
+      },
+      {
+        "recibo": "529.02984",
+        "data": "04/03",
+        "nome": "AMAZIAS MENDES DA SILVA",
+        "valores_raw": [
+          "440,00",
+          "124,00",
+          "564,00"
+        ]
+      },
+      {
+        "recibo": "529.02985",
+        "data": "04/03",
+        "nome": "JOSÉ EUGÊNIO COELHO DA SILVA",
+        "valores_raw": [
+          "206,00",
+          "74,00",
+          "280,00"
+        ]
+      },
+      {
+        "recibo": "529.02986",
+        "data": "04/03",
+        "nome": "MAURO JOSÉ RODRIGUES DA SILVA",
+        "valores_raw": [
+          "303,00",
+          "101,00",
+          "404,00"
+        ]
+      },
+      {
+        "recibo": "529.02987",
+        "data": "04/03",
+        "nome": "RUTE SANTOS OLIVEIRA DE MIRANDA",
+        "valores_raw": [
+          "22,90",
+          "22,90"
+        ]
+      },
+      {
+        "recibo": "529.02988",
+        "data": "04/03",
+        "nome": "JULIO CESAR ROCHA ALMEIDA",
+        "valores_raw": [
+          "149,94",
+          "49,98",
+          "199,92"
+        ]
+      },
+      {
+        "recibo": "529.02989",
+        "data": "04/03",
+        "nome": "JULIO CESAR ROCHA ALMEIDA",
+        "valores_raw": [
+          "149,94",
+          "49,98",
+          "199,92"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "05/02/2025",
+        "descricao": "FAZER DESP. ALUGUEL ADRIANO",
+        "valor": 800
+      },
+      {
+        "data": "27/01/2026",
+        "descricao": "GERUZA",
+        "valor": 155
+      },
+      {
+        "data": "29/01/2026",
+        "descricao": "RUTH MIRANDA",
+        "valor": 34.08
+      },
+      {
+        "data": "30/01/2026",
+        "descricao": "GUILHERME GOMES",
+        "valor": 200
+      },
+      {
+        "data": "30/01/2026",
+        "descricao": "LEUDIVAN",
+        "valor": 1500
+      },
+      {
+        "data": "31/01/2026",
+        "descricao": "LINOVA",
+        "valor": 167
+      },
+      {
+        "data": "02/02/2026",
+        "descricao": "MARIA ODETE",
+        "valor": 150
+      },
+      {
+        "data": "03/02/2026",
+        "descricao": "GISELLY BORGES",
+        "valor": 373.09
+      },
+      {
+        "data": "03/02/2026",
+        "descricao": "ROSIETE",
+        "valor": 830.25
+      },
+      {
+        "data": "04/02/2026",
+        "descricao": "MARTA BORGES",
+        "valor": 304.48
+      },
+      {
+        "data": "05/02/2026",
+        "descricao": "ELIANE SOUZA",
+        "valor": 350
+      },
+      {
+        "data": "05/02/2026",
+        "descricao": "MATEUS ALMEIDA",
+        "valor": 3069
+      },
+      {
+        "data": "06/02/2026",
+        "descricao": "GARDEL",
+        "valor": 300
+      },
+      {
+        "data": "08/02/2026",
+        "descricao": "AMAZIAS",
+        "valor": 440
+      },
+      {
+        "data": "08/02/2026",
+        "descricao": "JULIO CESAR",
+        "valor": 199.92
+      },
+      {
+        "data": "09/02/2026",
+        "descricao": "RUBERLANE",
+        "valor": 210
+      },
+      {
+        "data": "09/02/2026",
+        "descricao": "KEDMA",
+        "valor": 1816.85
+      },
+      {
+        "data": "09/02/2026",
+        "descricao": "MARIA ROSILENE",
+        "valor": 360
+      },
+      {
+        "data": "11/02/2026",
+        "descricao": "MAURO",
+        "valor": 404
+      },
+      {
+        "data": "12/02/2026",
+        "descricao": "MIRIAM",
+        "valor": 3806
+      },
+      {
+        "data": "13/02/2026",
+        "descricao": "NATANE",
+        "valor": 443.69
+      },
+      {
+        "data": "13/02/2026",
+        "descricao": "RANMSON",
+        "valor": 180
+      },
+      {
+        "data": "13/02/2026",
+        "descricao": "MARTA BORGES",
+        "valor": 227.5
+      },
+      {
+        "data": "15/02/2026",
+        "descricao": "MANOEL IZIDIO",
+        "valor": 434.2
+      },
+      {
+        "data": "16/02/2026",
+        "descricao": "JOSELIA",
+        "valor": 424
+      },
+      {
+        "data": "16/02/2026",
+        "descricao": "JOSELIA",
+        "valor": 4.29
+      },
+      {
+        "data": "17/02/2026",
+        "descricao": "SABRINNA",
+        "valor": 178.25
+      },
+      {
+        "data": "19/02/2026",
+        "descricao": "CICERO $$",
+        "valor": 572
+      },
+      {
+        "data": "19/02/2026",
+        "descricao": "LINOVA",
+        "valor": 262.83
+      },
+      {
+        "data": "19/02/2026",
+        "descricao": "LINOVA",
+        "valor": 157.49
+      },
+      {
+        "data": "22/02/2026",
+        "descricao": "JOSELIA",
+        "valor": 86
+      },
+      {
+        "data": "25/02/2026",
+        "descricao": "RAFAEL",
+        "valor": 150
+      },
+      {
+        "data": "25/02/2026",
+        "descricao": "RAFAEL",
+        "valor": 200
+      },
+      {
+        "data": "26/02/2026",
+        "descricao": "RUTE MIRANDA",
+        "valor": 22.9
+      },
+      {
+        "data": "28/02/2026",
+        "descricao": "AMAZIAS",
+        "valor": 124
+      },
+      {
+        "data": "02/03/2026",
+        "descricao": "JOSE E SILVA",
+        "valor": 280
+      },
+      {
+        "data": "04/03/2026",
+        "descricao": "JULIO CESAR",
+        "valor": 199.92
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "ANOB SEDE",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "529",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "529.02976",
+        "data": "28/02",
+        "nome": "ANTONIA DANIELI COSTA CARVALHO",
+        "valores_raw": [
+          "81,05",
+          "27,01",
+          "108,06"
+        ]
+      },
+      {
+        "recibo": "529.02977",
+        "data": "02/03",
+        "nome": "MANOEL ROOSEVELT GOMES DO NASCIMENTO",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "529.02990",
+        "data": "05/03",
+        "nome": "VIVIANE DE ANDRADE",
+        "valores_raw": [
+          "1.504,00",
+          "452,00",
+          "300,00",
+          "2.256,00"
+        ]
+      },
+      {
+        "recibo": "529.02991",
+        "data": "05/03",
+        "nome": "ELIZEU SUDARO NASCIMENTO",
+        "valores_raw": [
+          "800,00",
+          "800,00"
+        ]
+      },
+      {
+        "recibo": "529.02992",
+        "data": "07/03",
+        "nome": "LEONOR AVILA O AMARAL",
+        "valores_raw": [
+          "850,00",
+          "850,00"
+        ]
+      },
+      {
+        "recibo": "529.02993",
+        "data": "11/03",
+        "nome": "GISELLY MARTINS OLIVEIRA BORGES",
+        "valores_raw": [
+          "240,12",
+          "240,12"
+        ]
+      },
+      {
+        "recibo": "529.02994",
+        "data": "12/03",
+        "nome": "MARTA BORGES MARTINS DE OLIVEIRA",
+        "valores_raw": [
+          "600,00",
+          "600,00"
+        ]
+      },
+      {
+        "recibo": "529.02995",
+        "data": "12/03",
+        "nome": "MARIA ROSILENE DA SILVA",
+        "valores_raw": [
+          "292,31",
+          "87,69",
+          "380,00"
+        ]
+      },
+      {
+        "recibo": "529.02996",
+        "data": "13/03",
+        "nome": "KEDMA AUGUSTO MARTINIANO SANTOS",
+        "valores_raw": [
+          "1.618,20",
+          "1.618,20"
+        ]
+      },
+      {
+        "recibo": "529.02997",
+        "data": "13/03",
+        "nome": "ROSIETE AUGUSTO MARTINIANO SANTOS",
+        "valores_raw": [
+          "949,65",
+          "949,65"
+        ]
+      },
+      {
+        "recibo": "529.02998",
+        "data": "16/03",
+        "nome": "IVANEIDE MARIA DA SILVA SUDARO",
+        "valores_raw": [
+          "300,00",
+          "300,00"
+        ]
+      },
+      {
+        "recibo": "529.02999",
+        "data": "26/03",
+        "nome": "JEANE FERNANDES ALVES",
+        "valores_raw": [
+          "25,00",
+          "25,00"
+        ]
+      },
+      {
+        "recibo": "529.03000",
+        "data": "28/03",
+        "nome": "ISAAC ENÉAS MORAES DE JESUS",
+        "valores_raw": [
+          "50,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "529.03001",
+        "data": "30/03",
+        "nome": "RAFAEL HENRIQUE FARIAS CAMPOS",
+        "valores_raw": [
+          "50,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "529.03002",
+        "data": "30/03",
+        "nome": "ANTONIA DANIELI COSTA CARVALHO",
+        "valores_raw": [
+          "81,05",
+          "27,01",
+          "108,06"
+        ]
+      },
+      {
+        "recibo": "529.03003",
+        "data": "31/03",
+        "nome": "ELIZEU SUDARO NASCIMENTO     (Cancelado) *",
+        "valores_raw": []
+      },
+      {
+        "recibo": "529.03004",
+        "data": "31/03",
+        "nome": "LINOVA ALVES DOS SANTOS",
+        "valores_raw": [
+          "154,00",
+          "154,00"
+        ]
+      },
+      {
+        "recibo": "529.03005",
+        "data": "31/03",
+        "nome": "MAURO JOSÉ RODRIGUES DA SILVA",
+        "valores_raw": [
+          "342,00",
+          "101,00",
+          "443,00"
+        ]
+      },
+      {
+        "recibo": "529.03006",
+        "data": "31/03",
+        "nome": "MAURO JOSÉ RODRIGUES DA SILVA",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "529.03007",
+        "data": "31/03",
+        "nome": "ELISABETE M N ARAUJO",
+        "valores_raw": [
+          "377,90",
+          "377,90"
+        ]
+      },
+      {
+        "recibo": "529.03008",
+        "data": "31/03",
+        "nome": "ELISABETE M N ARAUJO",
+        "valores_raw": [
+          "377,80",
+          "377,80"
+        ]
+      },
+      {
+        "recibo": "529.03009",
+        "data": "31/03",
+        "nome": "MARIA MADALENA DE OLIVEIRA CUSTODIO FREITAS",
+        "valores_raw": [
+          "50,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "529.03010",
+        "data": "31/03",
+        "nome": "MARICÉLIA HONÓRIO DA SILVA",
+        "valores_raw": [
+          "95,00",
+          "31,60",
+          "126,60"
+        ]
+      },
+      {
+        "recibo": "529.03011",
+        "data": "31/03",
+        "nome": "ELIANE DE SOUZA ANDRADE",
+        "valores_raw": [
+          "300,00",
+          "50,00",
+          "350,00"
+        ]
+      },
+      {
+        "recibo": "529.03012",
+        "data": "31/03",
+        "nome": "JOSÉ ALVES DOS SANTOS",
+        "valores_raw": [
+          "420,00",
+          "420,00"
+        ]
+      },
+      {
+        "recibo": "529.03013",
+        "data": "31/03",
+        "nome": "RAFAELLA MARIA DA SILVA",
+        "valores_raw": [
+          "70,00",
+          "70,00"
+        ]
+      },
+      {
+        "recibo": "529.03014",
+        "data": "31/03",
+        "nome": "SABRINNA TRIGUEIRO DA ROCHA",
+        "valores_raw": [
+          "283,20",
+          "283,20"
+        ]
+      },
+      {
+        "recibo": "529.03015",
+        "data": "31/03",
+        "nome": "RUTE SANTOS OLIVEIRA DE MIRANDA",
+        "valores_raw": [
+          "18,00",
+          "18,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "09/03/2025",
+        "descricao": "LEONOR AVILA",
+        "valor": 850
+      },
+      {
+        "data": "05/02/2026",
+        "descricao": "JOSE ALVES",
+        "valor": 200
+      },
+      {
+        "data": "22/02/2026",
+        "descricao": "ELISABETE",
+        "valor": 377.9
+      },
+      {
+        "data": "28/02/2026",
+        "descricao": "ANTONIA DANIELI",
+        "valor": 108.06
+      },
+      {
+        "data": "02/03/2026",
+        "descricao": "ROOSEVELT",
+        "valor": 150
+      },
+      {
+        "data": "04/03/2026",
+        "descricao": "ELIANE ANDRADE",
+        "valor": 350
+      },
+      {
+        "data": "04/03/2026",
+        "descricao": "JOSE ALVES",
+        "valor": 220
+      },
+      {
+        "data": "05/03/2026",
+        "descricao": "LINOVA",
+        "valor": 154
+      },
+      {
+        "data": "05/03/2026",
+        "descricao": "FAZER DESP. ALUGUEL ADRIANO",
+        "valor": 800
+      },
+      {
+        "data": "05/03/2026",
+        "descricao": "VIVIANE ANDRADE",
+        "valor": 2256
+      },
+      {
+        "data": "09/03/2026",
+        "descricao": "ROSIETE",
+        "valor": 949.65
+      },
+      {
+        "data": "09/03/2026",
+        "descricao": "KEDMA",
+        "valor": 1618.2
+      },
+      {
+        "data": "09/03/2026",
+        "descricao": "MAURO",
+        "valor": 443
+      },
+      {
+        "data": "10/03/2026",
+        "descricao": "RAFAELLA MARIA",
+        "valor": 70
+      },
+      {
+        "data": "11/03/2026",
+        "descricao": "GISELLY",
+        "valor": 240.12
+      },
+      {
+        "data": "12/03/2026",
+        "descricao": "MARTA BORGES",
+        "valor": 600
+      },
+      {
+        "data": "12/03/2026",
+        "descricao": "Adilson",
+        "valor": 380
+      },
+      {
+        "data": "16/03/2026",
+        "descricao": "MAURO",
+        "valor": 100
+      },
+      {
+        "data": "16/03/2026",
+        "descricao": "IVANEIDE",
+        "valor": 300
+      },
+      {
+        "data": "17/03/2026",
+        "descricao": "SABRINNA",
+        "valor": 283.2
+      },
+      {
+        "data": "21/03/2026",
+        "descricao": "RUTE SANTOS",
+        "valor": 18
+      },
+      {
+        "data": "21/03/2026",
+        "descricao": "ELISABETE",
+        "valor": 377.8
+      },
+      {
+        "data": "26/03/2026",
+        "descricao": "JEAN FERNANDES",
+        "valor": 25
+      },
+      {
+        "data": "28/03/2026",
+        "descricao": "CLEUNIR PAULA",
+        "valor": 50
+      },
+      {
+        "data": "29/03/2026",
+        "descricao": "MARICELIA",
+        "valor": 126.6
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "ANTONIA DANIELI",
+        "valor": 108.06
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "RAFAEL HENRIQUE",
+        "valor": 50
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "ISAAC ENEIAS",
+        "valor": 50
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "ANOB SEDE",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "290",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "JAQUELINE FERREIRA GONÇALVES",
+    "status": "confirmado",
+    "saldo_anterior": 952.27,
+    "recibos": [
+      {
+        "recibo": "290.03310",
+        "data": "13/02",
+        "nome": "MARCOS FERNANDO GONÇALVES LIMA",
+        "valores_raw": [
+          "130,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "290.03311",
+        "data": "13/02",
+        "nome": "VÂNIA",
+        "valores_raw": [
+          "20,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "290.03312",
+        "data": "13/02",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "45,00",
+          "15,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "290.03313",
+        "data": "13/02",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA   *",
+        "valores_raw": [
+          "40,00",
+          "15,00",
+          "55,00"
+        ]
+      },
+      {
+        "recibo": "290.03314",
+        "data": "13/02",
+        "nome": "MARIA HELENITA DE BARROS",
+        "valores_raw": [
+          "65,60",
+          "65,60"
+        ]
+      },
+      {
+        "recibo": "290.03315",
+        "data": "13/02",
+        "nome": "CLEONICE CAVALCANTE SIQUEIRA",
+        "valores_raw": [
+          "110,00",
+          "37,00",
+          "147,00"
+        ]
+      },
+      {
+        "recibo": "290.03316",
+        "data": "24/02",
+        "nome": "ROSIETE AUGUSTO MARTINIANO SANTOS",
+        "valores_raw": [
+          "26,00",
+          "26,00",
+          "24,00"
+        ]
+      },
+      {
+        "recibo": "290.03317",
+        "data": "24/02",
+        "nome": "ANDREA CORDEIRO DA SILVA",
+        "valores_raw": [
+          "150,00",
+          "50,00",
+          "200,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "290.03318",
+        "data": "24/02",
+        "nome": "MARIA JOSÉ HONÓRIO",
+        "valores_raw": [
+          "70,00",
+          "30,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "290.03319",
+        "data": "24/02",
+        "nome": "REJANE DA SILVA GOMES",
+        "valores_raw": [
+          "320,00",
+          "320,00"
+        ]
+      },
+      {
+        "recibo": "290.03320",
+        "data": "24/02",
+        "nome": "MARLEIDE HONORIO DA SILVA",
+        "valores_raw": [
+          "60,00",
+          "20,00",
+          "80,00"
+        ]
+      },
+      {
+        "recibo": "290.03321",
+        "data": "24/02",
+        "nome": "MARIA DAS GRAÇAS HONORIO DA SILVA",
+        "valores_raw": [
+          "122,00",
+          "18,00",
+          "140,00"
+        ]
+      },
+      {
+        "recibo": "290.03322",
+        "data": "24/02",
+        "nome": "JOSÉ ALVES DA SILVA",
+        "valores_raw": [
+          "100,00",
+          "20,00",
+          "120,00"
+        ]
+      },
+      {
+        "recibo": "290.03323",
+        "data": "24/02",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "35,00",
+          "15,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "290.03324",
+        "data": "24/02",
+        "nome": "ROBSON DE OLIVEIRA GONÇALVES",
+        "valores_raw": [
+          "165,50",
+          "165,50"
+        ]
+      },
+      {
+        "recibo": "290.03325",
+        "data": "24/02",
+        "nome": "CAIXA LOCAL",
+        "valores_raw": [
+          "101,70",
+          "7,25",
+          "108,95",
+          "32,00",
+          "359,50"
+        ]
+      },
+      {
+        "recibo": "290.03326",
+        "data": "24/02",
+        "nome": "JOAQUIM HENRIQUE F. GONÇALVES",
+        "valores_raw": [
+          "0,95",
+          "0,95"
+        ]
+      },
+      {
+        "recibo": "290.03327",
+        "data": "25/02",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "35,00",
+          "15,00",
+          "50,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 1495.05,
+      "primicias": 235,
+      "assistencia_social": 0,
+      "escola_sabatina": 101.7,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 7.25,
+      "diversos_assoc": 0,
+      "soma_associacao": 1839,
+      "caixa_local_entradas": 483.5,
+      "missoes_estrangeiras": 32,
+      "caixa_local_saidas": 434.24
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 362.5,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 121,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "26/02/2026",
+        "descricao": "Depósito - N,Trans: 4976",
+        "valor": 80
+      },
+      {
+        "data": "26/02/2026",
+        "descricao": "Depósito - N,Trans: 4980",
+        "valor": 256
+      },
+      {
+        "data": "26/02/2026",
+        "descricao": "Depósito - N,Trans: 4984",
+        "valor": 435
+      },
+      {
+        "data": "26/02/2026",
+        "descricao": "Depósito - N,Trans: 4988",
+        "valor": 1100
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "ARAPIRACA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "290",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "JAQUELINE FERREIRA GONÇALVES",
+    "status": "confirmado",
+    "saldo_anterior": 1001.53,
+    "recibos": [
+      {
+        "recibo": "290.03328",
+        "data": "21/03",
+        "nome": "MARIA DAS GRAÇAS HONORIO DA SILVA",
+        "valores_raw": [
+          "120,00",
+          "10,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "290.03329",
+        "data": "21/03",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "35,00",
+          "15,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "290.03330",
+        "data": "21/03",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "35,00",
+          "15,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "290.03331",
+        "data": "21/03",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "45,00",
+          "15,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "290.03332",
+        "data": "21/03",
+        "nome": "MARIA HELENITA DE BARROS",
+        "valores_raw": [
+          "85,25",
+          "85,25"
+        ]
+      },
+      {
+        "recibo": "290.03333",
+        "data": "21/03",
+        "nome": "MARCOS FERNANDO GONÇALVES LIMA",
+        "valores_raw": [
+          "172,10",
+          "172,10"
+        ]
+      },
+      {
+        "recibo": "290.03334",
+        "data": "21/03",
+        "nome": "VÂNIA",
+        "valores_raw": [
+          "20,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "290.03335",
+        "data": "24/03",
+        "nome": "MARLEIDE HONORIO DA SILVA",
+        "valores_raw": [
+          "60,00",
+          "20,00",
+          "80,00"
+        ]
+      },
+      {
+        "recibo": "290.03336",
+        "data": "25/03",
+        "nome": "CAIXA LOCAL",
+        "valores_raw": [
+          "72,50",
+          "5,80",
+          "78,30",
+          "45,00",
+          "328,75"
+        ]
+      },
+      {
+        "recibo": "290.03337",
+        "data": "25/03",
+        "nome": "ROBSON DE OLIVEIRA GONÇALVES",
+        "valores_raw": [
+          "606,30",
+          "606,30"
+        ]
+      },
+      {
+        "recibo": "290.03338",
+        "data": "25/03",
+        "nome": "JOAQUIM HENRIQUE F. GONÇALVES",
+        "valores_raw": [
+          "0,35",
+          "0,35"
+        ]
+      },
+      {
+        "recibo": "290.03339",
+        "data": "25/03",
+        "nome": "MAURÍCIO HONÓRIO DA SILVA",
+        "valores_raw": [
+          "35,00",
+          "15,00",
+          "50,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 1214,
+      "primicias": 90,
+      "assistencia_social": 0,
+      "escola_sabatina": 72.5,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 5.8,
+      "diversos_assoc": 0,
+      "soma_associacao": 1382.3,
+      "caixa_local_entradas": 328.75,
+      "missoes_estrangeiras": 45,
+      "caixa_local_saidas": 431.56
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 232,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 96.75,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "25/03/2026",
+        "descricao": "Pix",
+        "valor": 606.3
+      },
+      {
+        "data": "26/03/2026",
+        "descricao": "Depósito - N. Trans: 4972",
+        "valor": 111
+      },
+      {
+        "data": "26/03/2026",
+        "descricao": "Depósito - N. Trans: 4976",
+        "valor": 80
+      },
+      {
+        "data": "26/03/2026",
+        "descricao": "Depósito - N. Trans: 4980",
+        "valor": 630
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "ARAPIRACA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "662",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 381,
+    "recibos": [
+      {
+        "recibo": "662.00063",
+        "data": "02/03",
+        "nome": "ODETE SOARES DE OLIVEIRA",
+        "valores_raw": [
+          "272,50",
+          "272,50"
+        ]
+      },
+      {
+        "recibo": "662.00064",
+        "data": "02/03",
+        "nome": "JONAS CAETANO DE DEUS",
+        "valores_raw": [
+          "160,00",
+          "53,00",
+          "213,00"
+        ]
+      },
+      {
+        "recibo": "662.00065",
+        "data": "02/03",
+        "nome": "CAIXA LOCAL",
+        "valores_raw": [
+          "15,00",
+          "2,00",
+          "17,00",
+          "24,00",
+          "144,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 432.5,
+      "primicias": 53,
+      "assistencia_social": 15,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 2,
+      "diversos_assoc": 0,
+      "soma_associacao": 502.5,
+      "caixa_local_entradas": 144,
+      "missoes_estrangeiras": 24,
+      "caixa_local_saidas": 505.2
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 62,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 30,
+      "diversos": 52
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "02/03/2026",
+        "descricao": "ERIVALDO DOS SANTOS",
+        "valor": 526.5
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "AZEVEM",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "662",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 19.8,
+    "recibos": [
+      {
+        "recibo": "662.00066",
+        "data": "30/03",
+        "nome": "ODETE SOARES DE OLIVEIRA",
+        "valores_raw": [
+          "120,00",
+          "37,00",
+          "157,00"
+        ]
+      },
+      {
+        "recibo": "662.00067",
+        "data": "30/03",
+        "nome": "SANDRA MARIA DA SILVA SOARES",
+        "valores_raw": [
+          "120,00",
+          "120,00"
+        ]
+      },
+      {
+        "recibo": "662.00068",
+        "data": "30/03",
+        "nome": "JONAS CAETANO DE DEUS",
+        "valores_raw": [
+          "100,00",
+          "33,33",
+          "133,33"
+        ]
+      },
+      {
+        "recibo": "662.00069",
+        "data": "30/03",
+        "nome": "CAIXA LOCAL   *",
+        "valores_raw": [
+          "25,60",
+          "6,60",
+          "32,20",
+          "19,00",
+          "297,40"
+        ]
+      },
+      {
+        "recibo": "662.00070",
+        "data": "30/03",
+        "nome": "ODETE SOARES DE OLIVEIRA",
+        "valores_raw": [
+          "160,00",
+          "53,50",
+          "213,50"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 500,
+      "primicias": 123.83,
+      "assistencia_social": 25.6,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 6.6,
+      "diversos_assoc": 0,
+      "soma_associacao": 656.03,
+      "caixa_local_entradas": 297.4,
+      "missoes_estrangeiras": 19,
+      "caixa_local_saidas": 42
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 114,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 103.4,
+      "diversos": 80
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "22/03/2026",
+        "descricao": "JONAS",
+        "valor": 517.1
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "JONAS",
+        "valor": 157.93
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "AZEVEM",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "291",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 898.09,
+    "recibos": [
+      {
+        "recibo": "291.00777",
+        "data": "30/03",
+        "nome": "KELEM DOMINA DA COSTA E SILVA",
+        "valores_raw": [
+          "292,00",
+          "292,00",
+          "76,00"
+        ]
+      },
+      {
+        "recibo": "291.00778",
+        "data": "30/03",
+        "nome": "SELMA DA COSTA E SILVA BORGES",
+        "valores_raw": [
+          "240,00",
+          "240,00",
+          "10,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "291.00779",
+        "data": "30/03",
+        "nome": "FRANCISCO DE ASSIS SILVA",
+        "valores_raw": [
+          "100,00",
+          "33,00",
+          "10,00",
+          "143,00",
+          "5,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "291.00780",
+        "data": "30/03",
+        "nome": "EMPÓRIO SAÚDE & SABOR",
+        "valores_raw": [
+          "56,00",
+          "19,00",
+          "5,00",
+          "80,00",
+          "5,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "291.00781",
+        "data": "30/03",
+        "nome": "IGREJA LOCAL   *",
+        "valores_raw": [
+          "17,00",
+          "23,00",
+          "40,00",
+          "25,00",
+          "172,75"
+        ]
+      },
+      {
+        "recibo": "291.00782",
+        "data": "30/03",
+        "nome": "SELMA DA COSTA E SILVA BORGES",
+        "valores_raw": [
+          "254,00",
+          "254,00",
+          "15,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "291.00783",
+        "data": "30/03",
+        "nome": "FRANCISCO DE ASSIS SILVA",
+        "valores_raw": [
+          "100,00",
+          "33,00",
+          "10,00",
+          "143,00",
+          "5,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "291.00784",
+        "data": "30/03",
+        "nome": "LUCAS GENOR DA SILVA",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "291.00785",
+        "data": "30/03",
+        "nome": "MARIA DE LURDES",
+        "valores_raw": [
+          "60,00",
+          "60,00",
+          "10,00"
+        ]
+      },
+      {
+        "recibo": "291.00786",
+        "data": "30/03",
+        "nome": "EMPÓRIO SAÚDE & SABOR",
+        "valores_raw": [
+          "49,00",
+          "16,00",
+          "5,00",
+          "70,00",
+          "5,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "291.00787",
+        "data": "30/03",
+        "nome": "IGREJA LOCAL",
+        "valores_raw": [
+          "27,00",
+          "37,00",
+          "64,00",
+          "19,00",
+          "373,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 1251,
+      "primicias": 101,
+      "assistencia_social": 44,
+      "escola_sabatina": 60,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 30,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 1486,
+      "caixa_local_entradas": 831.75,
+      "missoes_estrangeiras": 89,
+      "caixa_local_saidas": 868.53
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 821.75,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 10,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "24/02/2026",
+        "descricao": "DEPOSITO",
+        "valor": 840
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "deposito",
+        "valor": 735
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "BELO JARDIM",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "294",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "HERBERT CARMIN BARRA",
+    "status": "confirmado",
+    "saldo_anterior": 1519.63,
+    "recibos": [
+      {
+        "recibo": "294.04192",
+        "data": "29/01",
+        "nome": "DAIANA PRINCE NEVES DE LACERDA",
+        "valores_raw": [
+          "65,00",
+          "21,70",
+          "86,70"
+        ]
+      },
+      {
+        "recibo": "294.04193",
+        "data": "29/01",
+        "nome": "LÍVIA ELOÁ  DE LACERDA",
+        "valores_raw": [
+          "65,00",
+          "21,70",
+          "86,70"
+        ]
+      },
+      {
+        "recibo": "294.04194",
+        "data": "22/02",
+        "nome": "JEANNDLERYR JOSÉ DE MEDEIROS",
+        "valores_raw": [
+          "30,00",
+          "30,00",
+          "20,00"
+        ]
+      },
+      {
+        "recibo": "294.04195",
+        "data": "22/02",
+        "nome": "ANTÔNIO PEREIRA DA SILVA",
+        "valores_raw": [
+          "300,00",
+          "100,00",
+          "400,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "294.04196",
+        "data": "22/02",
+        "nome": "MARGARIDA EUNICE PEREIRA DA SILVA",
+        "valores_raw": [
+          "152,00",
+          "152,00",
+          "30,00"
+        ]
+      },
+      {
+        "recibo": "294.04197",
+        "data": "22/02",
+        "nome": "JEANNDLERYR JOSÉ DE MEDEIROS",
+        "valores_raw": [
+          "166,27",
+          "57,33",
+          "223,60",
+          "20,00",
+          "96,40"
+        ]
+      },
+      {
+        "recibo": "294.04198",
+        "data": "22/02",
+        "nome": "ARLENILSON PEREIRA DA SILVA",
+        "valores_raw": [
+          "191,00",
+          "191,00"
+        ]
+      },
+      {
+        "recibo": "294.04199",
+        "data": "22/02",
+        "nome": "NICOLE DA ROCHA NASCIMENTO",
+        "valores_raw": [
+          "1.560,00",
+          "1.560,00"
+        ]
+      },
+      {
+        "recibo": "294.04200",
+        "data": "22/02",
+        "nome": "MATHEUS DE LIMA MONTEIRO   *",
+        "valores_raw": [
+          "1.476,50",
+          "1.476,50"
+        ]
+      },
+      {
+        "recibo": "294.04201",
+        "data": "22/02",
+        "nome": "ANTÔNIO PEREIRA DA SILVA",
+        "valores_raw": [
+          "200,00",
+          "70,00",
+          "270,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "294.04202",
+        "data": "22/02",
+        "nome": "MARGARIDA EUNICE PEREIRA DA SILVA",
+        "valores_raw": [
+          "152,00",
+          "152,00",
+          "30,00"
+        ]
+      },
+      {
+        "recibo": "294.04203",
+        "data": "22/02",
+        "nome": "JEANNDLERYR JOSÉ DE MEDEIROS",
+        "valores_raw": [
+          "58,00",
+          "20,00",
+          "78,00",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "294.04204",
+        "data": "22/02",
+        "nome": "FRANCISCO BATISTA DOS SANTOS",
+        "valores_raw": [
+          "1.122,66",
+          "374,22",
+          "1.496,88"
+        ]
+      },
+      {
+        "recibo": "294.04205",
+        "data": "22/02",
+        "nome": "ALBA LÚCIA DA ROCHA NASCIMENTO",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "294.04206",
+        "data": "22/02",
+        "nome": "ANNA LUCIA LEAL PÊ",
+        "valores_raw": [
+          "290,00",
+          "290,00"
+        ]
+      },
+      {
+        "recibo": "294.04207",
+        "data": "22/02",
+        "nome": "JEANNDLERYR JOSÉ DE MEDEIROS",
+        "valores_raw": [
+          "10,00",
+          "4,00",
+          "14,00",
+          "40,00"
+        ]
+      },
+      {
+        "recibo": "294.04208",
+        "data": "22/02",
+        "nome": "IGREJA  DE CAMPINA  GRANDE   *",
+        "valores_raw": [
+          "34,00",
+          "59,20",
+          "13,08",
+          "106,28",
+          "35,00",
+          "813,72"
+        ]
+      },
+      {
+        "recibo": "294.04209",
+        "data": "22/02",
+        "nome": "IGREJA  DE CAMPINA  GRANDE",
+        "valores_raw": [
+          "53,80",
+          "53,80"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 5938.43,
+      "primicias": 668.95,
+      "assistencia_social": 34,
+      "escola_sabatina": 59.2,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 13.08,
+      "diversos_assoc": 53.8,
+      "soma_associacao": 6767.46,
+      "caixa_local_entradas": 1430.12,
+      "missoes_estrangeiras": 55,
+      "caixa_local_saidas": 1162.88
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 1182.6,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 204.92,
+      "diversos": 42.6
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "23/01/2026",
+        "descricao": "Valor que foi enviado a mais mês passado",
+        "valor": 135.97
+      },
+      {
+        "data": "25/01/2026",
+        "descricao": "PIX JEANNDLERIYR JOSE DE MEDEIROS",
+        "valor": 128
+      },
+      {
+        "data": "30/01/2026",
+        "descricao": "PIX FRANCISCO BATSTA DOS SANTOS",
+        "valor": 1496.88
+      },
+      {
+        "data": "04/02/2026",
+        "descricao": "PIX ANNA LUCIA LEAL PE",
+        "valor": 290
+      },
+      {
+        "data": "08/02/2026",
+        "descricao": "PIX ALBA LUCIA ROCHA",
+        "valor": 100
+      },
+      {
+        "data": "23/02/2026",
+        "descricao": "DEPÓSITO",
+        "valor": 2200
+      },
+      {
+        "data": "23/02/2026",
+        "descricao": "DEPÓSITO",
+        "valor": 620
+      },
+      {
+        "data": "23/02/2026",
+        "descricao": "DEPÓSITO",
+        "valor": 1650
+      },
+      {
+        "data": "24/02/2026",
+        "descricao": "PIX KELLY ROMERO",
+        "valor": 201.61
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "CAMPINA GRANDE",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "294",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "HERBERT CARMIN BARRA",
+    "status": "confirmado",
+    "saldo_anterior": 1786.87,
+    "recibos": [
+      {
+        "recibo": "294.04210",
+        "data": "24/03",
+        "nome": "JEANNDLERYR JOSÉ DE MEDEIROS",
+        "valores_raw": [
+          "203,34",
+          "66,66",
+          "270,00",
+          "10,00",
+          "40,00"
+        ]
+      },
+      {
+        "recibo": "294.04211",
+        "data": "24/03",
+        "nome": "ANTÔNIO PEREIRA DA SILVA",
+        "valores_raw": [
+          "200,00",
+          "80,00",
+          "40,00",
+          "320,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "294.04212",
+        "data": "24/03",
+        "nome": "MARGARIDA EUNICE PEREIRA DA SILVA",
+        "valores_raw": [
+          "152,00",
+          "152,00",
+          "30,00"
+        ]
+      },
+      {
+        "recibo": "294.04213",
+        "data": "24/03",
+        "nome": "DAIANA PRINCE NEVES DE LACERDA",
+        "valores_raw": [
+          "65,00",
+          "21,70",
+          "86,70"
+        ]
+      },
+      {
+        "recibo": "294.04214",
+        "data": "24/03",
+        "nome": "LÍVIA ELOÁ  DE LACERDA",
+        "valores_raw": [
+          "65,00",
+          "21,70",
+          "86,70"
+        ]
+      },
+      {
+        "recibo": "294.04215",
+        "data": "24/03",
+        "nome": "MARIA LUCINEIDE DE LIMA SILVA FARIAS",
+        "valores_raw": [
+          "155,00",
+          "155,00"
+        ]
+      },
+      {
+        "recibo": "294.04216",
+        "data": "24/03",
+        "nome": "MARIA LUCINEIDE DE LIMA SILVA FARIAS",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "294.04217",
+        "data": "24/03",
+        "nome": "MARIA LUCINEIDE DE LIMA SILVA FARIAS",
+        "valores_raw": [
+          "155,00",
+          "155,00"
+        ]
+      },
+      {
+        "recibo": "294.04218",
+        "data": "24/03",
+        "nome": "FRANCISCO BATISTA DOS SANTOS",
+        "valores_raw": [
+          "1.399,80",
+          "466,60",
+          "1.866,40",
+          "50,00"
+        ]
+      },
+      {
+        "recibo": "294.04219",
+        "data": "24/03",
+        "nome": "LIDIANA ISABELE MUNIZ DO NASCIMENTO",
+        "valores_raw": [
+          "200,00",
+          "67,00",
+          "267,00"
+        ]
+      },
+      {
+        "recibo": "294.04220",
+        "data": "24/03",
+        "nome": "ANNA LUCIA LEAL PÊ",
+        "valores_raw": [
+          "320,00",
+          "320,00"
+        ]
+      },
+      {
+        "recibo": "294.04221",
+        "data": "24/03",
+        "nome": "KELLY ROMERO CÁCERES",
+        "valores_raw": [
+          "325,00",
+          "108,00",
+          "433,00"
+        ]
+      },
+      {
+        "recibo": "294.04222",
+        "data": "24/03",
+        "nome": "KELLY ROMERO CÁCERES",
+        "valores_raw": [
+          "30,00",
+          "10,00",
+          "40,00"
+        ]
+      },
+      {
+        "recibo": "294.04223",
+        "data": "24/03",
+        "nome": "IGREJA  DE CAMPINA  GRANDE   *",
+        "valores_raw": [
+          "47,32",
+          "68,00",
+          "11,28",
+          "126,60",
+          "52,00",
+          "455,72"
+        ]
+      },
+      {
+        "recibo": "294.04224",
+        "data": "25/03",
+        "nome": "JEANNDLERYR JOSÉ DE MEDEIROS",
+        "valores_raw": [
+          "77,34",
+          "26,66",
+          "104,00",
+          "66,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 3497.48,
+      "primicias": 868.32,
+      "assistencia_social": 47.32,
+      "escola_sabatina": 108,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 11.28,
+      "diversos_assoc": 0,
+      "soma_associacao": 4532.4,
+      "caixa_local_entradas": 741.72,
+      "missoes_estrangeiras": 112,
+      "caixa_local_saidas": 1221.78
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 536,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 176.72,
+      "diversos": 29
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "08/02/2026",
+        "descricao": "PIX MARIA LUCINEIDE DE LIMA",
+        "valor": 155
+      },
+      {
+        "data": "08/02/2026",
+        "descricao": "PIX MARIA LUCINEIDE DE LIMA",
+        "valor": 150
+      },
+      {
+        "data": "27/02/2026",
+        "descricao": "PIX FRANCISCO BATSTA DOS SANTOS",
+        "valor": 1916.4
+      },
+      {
+        "data": "01/03/2026",
+        "descricao": "PIX LIDIANA ISABELE MUNIZ",
+        "valor": 267
+      },
+      {
+        "data": "01/03/2026",
+        "descricao": "PIX ANNA LUCIA LEAL PE",
+        "valor": 320
+      },
+      {
+        "data": "09/03/2026",
+        "descricao": "PIX MARIA LUCINEIDE DE LIMA",
+        "valor": 155
+      },
+      {
+        "data": "24/03/2026",
+        "descricao": "PIX KELLY ROMERO CACERES",
+        "valor": 433
+      },
+      {
+        "data": "24/03/2026",
+        "descricao": "PIX JEANNDLERIYR JOSE DE MEDEIROS",
+        "valor": 170
+      },
+      {
+        "data": "25/03/2026",
+        "descricao": "DEPOSITO",
+        "valor": 800
+      },
+      {
+        "data": "25/03/2026",
+        "descricao": "PIX HERBERT JUNIOR",
+        "valor": 278
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "CAMPINA GRANDE",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "295",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "HELYANDRO ARAÚJO CASTRO",
+    "status": "confirmado",
+    "saldo_anterior": 415.46,
+    "recibos": [
+      {
+        "recibo": "295.05674",
+        "data": "02/02",
+        "nome": "LEONARDO LIRA",
+        "valores_raw": [
+          "162,00",
+          "58,00",
+          "220,00"
+        ]
+      },
+      {
+        "recibo": "295.05675",
+        "data": "02/02",
+        "nome": "JULIA FERREIRA DA SILVA",
+        "valores_raw": [
+          "105,00",
+          "105,00"
+        ]
+      },
+      {
+        "recibo": "295.05676",
+        "data": "24/02",
+        "nome": "EDITE MARIA FEITOSA",
+        "valores_raw": [
+          "152,00",
+          "58,00",
+          "210,00"
+        ]
+      },
+      {
+        "recibo": "295.05677",
+        "data": "24/02",
+        "nome": "JOSEFA EDNALVA DA SILVA ELLEN",
+        "valores_raw": [
+          "60,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "295.05678",
+        "data": "24/02",
+        "nome": "JOSEFA MARIA DA CONCEIÇÃO",
+        "valores_raw": [
+          "152,00",
+          "152,00"
+        ]
+      },
+      {
+        "recibo": "295.05679",
+        "data": "24/02",
+        "nome": "JOSEFA MARIA DA CONCEIÇÃO",
+        "valores_raw": [
+          "241,00",
+          "10,00",
+          "251,00",
+          "10,00"
+        ]
+      },
+      {
+        "recibo": "295.05680",
+        "data": "24/02",
+        "nome": "MARIA SEVERINA DA SILVA",
+        "valores_raw": [
+          "162,00",
+          "45,00",
+          "207,00"
+        ]
+      },
+      {
+        "recibo": "295.05681",
+        "data": "24/02",
+        "nome": "OTÁVIO FRANCISCO DA SILVA",
+        "valores_raw": [
+          "339,00",
+          "121,00",
+          "460,00"
+        ]
+      },
+      {
+        "recibo": "295.05682",
+        "data": "24/02",
+        "nome": "OTÁVIO FRANCISCO DA SILVA",
+        "valores_raw": [
+          "214,00",
+          "77,00",
+          "291,00"
+        ]
+      },
+      {
+        "recibo": "295.05683",
+        "data": "24/02",
+        "nome": "CÍCERA MARIA DE LIMA",
+        "valores_raw": [
+          "160,00",
+          "30,00",
+          "190,00"
+        ]
+      },
+      {
+        "recibo": "295.05684",
+        "data": "24/02",
+        "nome": "CARMELITA JOSEFA OLIVEIRA DA SILVA",
+        "valores_raw": [
+          "258,00",
+          "99,50",
+          "357,50",
+          "2,50"
+        ]
+      },
+      {
+        "recibo": "295.05685",
+        "data": "24/02",
+        "nome": "MANOEL BALBINO FEITOSA",
+        "valores_raw": [
+          "162,00",
+          "48,00",
+          "210,00"
+        ]
+      },
+      {
+        "recibo": "295.05686",
+        "data": "24/02",
+        "nome": "JOSÉ NILSON DA SILVA",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "295.05687",
+        "data": "24/02",
+        "nome": "JOÃO FIRMINO DA SILVA",
+        "valores_raw": [
+          "162,00",
+          "162,00"
+        ]
+      },
+      {
+        "recibo": "295.05688",
+        "data": "24/02",
+        "nome": "MARIA APARECIDA DE A. SANTOS",
+        "valores_raw": [
+          "160,00",
+          "160,00"
+        ]
+      },
+      {
+        "recibo": "295.05689",
+        "data": "02/03",
+        "nome": "LEONARDO LIRA",
+        "valores_raw": [
+          "162,00",
+          "58,00",
+          "220,00"
+        ]
+      },
+      {
+        "recibo": "295.05690",
+        "data": "02/03",
+        "nome": "CAIXA LOCAL   *",
+        "valores_raw": [
+          "157,00",
+          "157,00",
+          "419,31"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 2801,
+      "primicias": 604.5,
+      "assistencia_social": 0,
+      "escola_sabatina": 157,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 3562.5,
+      "caixa_local_entradas": 431.81,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 431.53
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 237.25,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 194.56,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "30/01/2026",
+        "descricao": "ELUZIA VENTURA",
+        "valor": 220
+      },
+      {
+        "data": "01/02/2026",
+        "descricao": "JULIA FERREIRA",
+        "valor": 105
+      },
+      {
+        "data": "25/02/2026",
+        "descricao": "DEPOSITO",
+        "valor": 1000
+      },
+      {
+        "data": "25/02/2026",
+        "descricao": "DEPOSITO",
+        "valor": 1000
+      },
+      {
+        "data": "25/02/2026",
+        "descricao": "DEPOSITO",
+        "valor": 862
+      },
+      {
+        "data": "27/02/2026",
+        "descricao": "ELUZIA VENTURA",
+        "valor": 220
+      },
+      {
+        "data": "04/03/2026",
+        "descricao": "JOSE CARLOS",
+        "valor": 155.5
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "CARUARU",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "295",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "HELYANDRO ARAÚJO CASTRO",
+    "status": "confirmado",
+    "saldo_anterior": 415.74,
+    "recibos": [
+      {
+        "recibo": "295.05691",
+        "data": "05/03",
+        "nome": "ELUZIA VENTURA DE A. LIRA",
+        "valores_raw": [
+          "535,00",
+          "180,00",
+          "715,00"
+        ]
+      },
+      {
+        "recibo": "295.05692",
+        "data": "05/03",
+        "nome": "ELUZIA VENTURA DE A. LIRA",
+        "valores_raw": [
+          "535,00",
+          "180,00",
+          "715,00"
+        ]
+      },
+      {
+        "recibo": "295.05693",
+        "data": "11/03",
+        "nome": "MANOEL BALBINO FEITOSA",
+        "valores_raw": [
+          "162,00",
+          "48,00",
+          "210,00"
+        ]
+      },
+      {
+        "recibo": "295.05694",
+        "data": "11/03",
+        "nome": "OTÁVIO FRANCISCO DA SILVA",
+        "valores_raw": [
+          "288,00",
+          "135,00",
+          "423,00"
+        ]
+      },
+      {
+        "recibo": "295.05695",
+        "data": "11/03",
+        "nome": "CARMELITA JOSEFA OLIVEIRA DA SILVA",
+        "valores_raw": [
+          "278,00",
+          "92,00",
+          "370,00"
+        ]
+      },
+      {
+        "recibo": "295.05696",
+        "data": "11/03",
+        "nome": "CÍCERA MARIA DE LIMA",
+        "valores_raw": [
+          "105,00",
+          "30,00",
+          "10,00",
+          "145,00",
+          "35,00"
+        ]
+      },
+      {
+        "recibo": "295.05697",
+        "data": "11/03",
+        "nome": "JOSEFA FARIAS DA SILVA",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "295.05698",
+        "data": "11/03",
+        "nome": "MARIA APARECIDA DE A. SANTOS",
+        "valores_raw": [
+          "160,00",
+          "160,00"
+        ]
+      },
+      {
+        "recibo": "295.05699",
+        "data": "11/03",
+        "nome": "ÉDNA MARIA DA SILVA",
+        "valores_raw": [
+          "210,00",
+          "90,00",
+          "300,00"
+        ]
+      },
+      {
+        "recibo": "295.05700",
+        "data": "11/03",
+        "nome": "JOSEFA MARIA DA CONCEIÇÃO",
+        "valores_raw": [
+          "190,00",
+          "60,00",
+          "250,00"
+        ]
+      },
+      {
+        "recibo": "295.05701",
+        "data": "23/03",
+        "nome": "HÉRICK E HENRY",
+        "valores_raw": [
+          "90,00",
+          "27,00",
+          "117,00",
+          "120,00"
+        ]
+      },
+      {
+        "recibo": "295.05702",
+        "data": "23/03",
+        "nome": "DAYANE ARAUJO CASTRO VASCONCELOS",
+        "valores_raw": [
+          "930,88",
+          "279,55",
+          "1.210,43"
+        ]
+      },
+      {
+        "recibo": "295.05703",
+        "data": "30/03",
+        "nome": "HÉRICK E HENRY",
+        "valores_raw": [
+          "45,00",
+          "14,00",
+          "59,00",
+          "1,00"
+        ]
+      },
+      {
+        "recibo": "295.05704",
+        "data": "30/03",
+        "nome": "CÍCERA MARIA DE LIMA",
+        "valores_raw": [
+          "174,00",
+          "30,00",
+          "204,00",
+          "10,00",
+          "11,00"
+        ]
+      },
+      {
+        "recibo": "295.05705",
+        "data": "30/03",
+        "nome": "JOÃO FIRMINO DA SILVA",
+        "valores_raw": [
+          "162,00",
+          "162,00"
+        ]
+      },
+      {
+        "recibo": "295.05706",
+        "data": "30/03",
+        "nome": "MARIA SEVERINA DA SILVA",
+        "valores_raw": [
+          "162,00",
+          "48,00",
+          "210,00"
+        ]
+      },
+      {
+        "recibo": "295.05707",
+        "data": "30/03",
+        "nome": "EDITE MARIA FEITOSA",
+        "valores_raw": [
+          "152,00",
+          "48,00",
+          "200,00",
+          "10,00"
+        ]
+      },
+      {
+        "recibo": "295.05708",
+        "data": "30/03",
+        "nome": "MARIA APARECIDA DA SILVA",
+        "valores_raw": [
+          "310,00",
+          "310,00"
+        ]
+      },
+      {
+        "recibo": "295.05709",
+        "data": "30/03",
+        "nome": "PAULO JOÃO DA SILVA (PAULINHO)",
+        "valores_raw": [
+          "310,00",
+          "310,00"
+        ]
+      },
+      {
+        "recibo": "295.05710",
+        "data": "30/03",
+        "nome": "OTÁVIO FRANCISCO DA SILVA",
+        "valores_raw": [
+          "237,00",
+          "84,00",
+          "321,00"
+        ]
+      },
+      {
+        "recibo": "295.05711",
+        "data": "30/03",
+        "nome": "CAIXA DA IGREJA   *",
+        "valores_raw": [
+          "145,00",
+          "145,00",
+          "75,00",
+          "323,10"
+        ]
+      },
+      {
+        "recibo": "295.05712",
+        "data": "30/03",
+        "nome": "ELUZIA VENTURA DE A. LIRA",
+        "valores_raw": [
+          "60,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 5185.88,
+      "primicias": 1345.55,
+      "assistencia_social": 0,
+      "escola_sabatina": 155,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 6686.43,
+      "caixa_local_entradas": 500.1,
+      "missoes_estrangeiras": 145,
+      "caixa_local_saidas": 264.07
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 260.2,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 239.9,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "30/01/2026",
+        "descricao": "ELUZIA VENTURA",
+        "valor": 715
+      },
+      {
+        "data": "27/02/2026",
+        "descricao": "ELUZIA VENTURA",
+        "valor": 715
+      },
+      {
+        "data": "11/03/2026",
+        "descricao": "DEPOSITO",
+        "valor": 4
+      },
+      {
+        "data": "11/03/2026",
+        "descricao": "DEPOSITO",
+        "valor": 1040
+      },
+      {
+        "data": "11/03/2026",
+        "descricao": "DEPOSITO",
+        "valor": 100
+      },
+      {
+        "data": "11/03/2026",
+        "descricao": "Adiantamento em Dnheiro para associação",
+        "valor": 900
+      },
+      {
+        "data": "23/03/2026",
+        "descricao": "DAYANE VASCONCELOS",
+        "valor": 117
+      },
+      {
+        "data": "23/03/2026",
+        "descricao": "DAYANE VASCONCELOS",
+        "valor": 1210.43
+      },
+      {
+        "data": "23/03/2026",
+        "descricao": "Reforma igreja de Caruaru.",
+        "valor": 120
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "DAYANE VASCONCELOS",
+        "valor": 60
+      },
+      {
+        "data": "31/03/2026",
+        "descricao": "CARUARU",
+        "valor": 850
+      },
+      {
+        "data": "31/03/2026",
+        "descricao": "CARUARU",
+        "valor": 1000
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "CARUARU",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "296",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "ROBERTO PEDRO SOARES",
+    "status": "confirmado",
+    "saldo_anterior": 684.46,
+    "recibos": [
+      {
+        "recibo": "296.02491",
+        "data": "08/02",
+        "nome": "MARLENE MARIA DO NASCIMENTO",
+        "valores_raw": [
+          "172,00",
+          "40,00",
+          "212,00",
+          "28,00"
+        ]
+      },
+      {
+        "recibo": "296.02492",
+        "data": "08/02",
+        "nome": "JURANDI FRANCISCO DE ANDRADE",
+        "valores_raw": [
+          "370,00",
+          "370,00"
+        ]
+      },
+      {
+        "recibo": "296.02493",
+        "data": "08/02",
+        "nome": "MAURO JOSÉ RODRIGUES DA SILVA",
+        "valores_raw": [
+          "15,00",
+          "15,00"
+        ]
+      },
+      {
+        "recibo": "296.02494",
+        "data": "08/02",
+        "nome": "MATEUS RODRIGUE",
+        "valores_raw": [
+          "18,00",
+          "18,00"
+        ]
+      },
+      {
+        "recibo": "296.02495",
+        "data": "08/02",
+        "nome": "JURANDI FRANCISCO DE ANDRADE",
+        "valores_raw": [
+          "1.510,00",
+          "1.510,00"
+        ]
+      },
+      {
+        "recibo": "296.02496",
+        "data": "08/02",
+        "nome": "DANIEL JOSÉ DO NASCIMENTO",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "296.02497",
+        "data": "08/02",
+        "nome": "JAQUELINE RODRIGUE DE FREITA",
+        "valores_raw": [
+          "75,00",
+          "75,00"
+        ]
+      },
+      {
+        "recibo": "296.02498",
+        "data": "08/02",
+        "nome": "DANIEL JOSÉ DO NASCIMENTO",
+        "valores_raw": [
+          "162,00",
+          "162,00"
+        ]
+      },
+      {
+        "recibo": "296.02499",
+        "data": "08/02",
+        "nome": "MATEUS RODRIGUE",
+        "valores_raw": [
+          "10,00",
+          "10,00"
+        ]
+      },
+      {
+        "recibo": "296.02500",
+        "data": "08/02",
+        "nome": "EUNICE MARIA NASCIMENTO DOS SANTOS",
+        "valores_raw": [
+          "152,00",
+          "20,00",
+          "172,00",
+          "38,00"
+        ]
+      },
+      {
+        "recibo": "296.02501",
+        "data": "08/02",
+        "nome": "MAURO JOSÉ RODRIGUES DA SILVA",
+        "valores_raw": [
+          "3,30",
+          "3,30"
+        ]
+      },
+      {
+        "recibo": "296.02502",
+        "data": "08/02",
+        "nome": "JURANDI FRANCISCO DE ANDRADE",
+        "valores_raw": [
+          "400,00",
+          "400,00"
+        ]
+      },
+      {
+        "recibo": "296.02503",
+        "data": "08/02",
+        "nome": "MARLENE MARIA DO NASCIMENTO",
+        "valores_raw": [
+          "265,00",
+          "60,00",
+          "325,00",
+          "70,00"
+        ]
+      },
+      {
+        "recibo": "296.02504",
+        "data": "08/02",
+        "nome": "JURANDI FRANCISCO DE ANDRADE",
+        "valores_raw": [
+          "40,00",
+          "40,00"
+        ]
+      },
+      {
+        "recibo": "296.02505",
+        "data": "08/02",
+        "nome": "MARLY MARIA NASCIMENTO SÃO PEDRO",
+        "valores_raw": [
+          "710,00",
+          "710,00"
+        ]
+      },
+      {
+        "recibo": "296.02506",
+        "data": "08/02",
+        "nome": "JANICE SANTOS",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "296.02507",
+        "data": "08/02",
+        "nome": "LAUDICÉIA SANTOS DO NASCIMENTO",
+        "valores_raw": [
+          "162,00",
+          "162,00"
+        ]
+      },
+      {
+        "recibo": "296.02508",
+        "data": "08/02",
+        "nome": "ROBERTO PEDRO SOARES",
+        "valores_raw": [
+          "130,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "296.02509",
+        "data": "08/02",
+        "nome": "JONES NASCIMENTO SÃO PEDRO",
+        "valores_raw": [
+          "247,00",
+          "247,00"
+        ]
+      },
+      {
+        "recibo": "296.02510",
+        "data": "08/02",
+        "nome": "DANIELLE DOS SANTOS",
+        "valores_raw": [
+          "60,00",
+          "60,00"
+        ]
+      },
+      {
+        "recibo": "296.02511",
+        "data": "08/02",
+        "nome": "CELIA MARIA DE LIRA",
+        "valores_raw": [
+          "90,00",
+          "90,00"
+        ]
+      },
+      {
+        "recibo": "296.02512",
+        "data": "19/02",
+        "nome": "JONES NASCIMENTO SÃO PEDRO",
+        "valores_raw": [
+          "358,65",
+          "119,55",
+          "478,20"
+        ]
+      },
+      {
+        "recibo": "296.02513",
+        "data": "20/02",
+        "nome": "ADEMILSON TELES DOS SANTOS",
+        "valores_raw": [
+          "1.200,00",
+          "1.200,00"
+        ]
+      },
+      {
+        "recibo": "296.02514",
+        "data": "22/02",
+        "nome": "IGREJA CHA GRANDE",
+        "valores_raw": [
+          "140,00",
+          "18,00",
+          "158,00",
+          "50,00",
+          "372,00"
+        ]
+      },
+      {
+        "recibo": "296.02515",
+        "data": "23/02",
+        "nome": "KEMILY SILVA TELES",
+        "valores_raw": [
+          "33,34",
+          "11,11",
+          "44,45",
+          "17,55"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 6433.29,
+      "primicias": 250.66,
+      "assistencia_social": 0,
+      "escola_sabatina": 140,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 18,
+      "diversos_assoc": 0,
+      "soma_associacao": 6841.95,
+      "caixa_local_entradas": 525.55,
+      "missoes_estrangeiras": 50,
+      "caixa_local_saidas": 466.83
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 90,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 435.55,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "08/02/2026",
+        "descricao": "via pix",
+        "valor": 397
+      },
+      {
+        "data": "09/02/2026",
+        "descricao": "deposito bradesco",
+        "valor": 4570
+      },
+      {
+        "data": "19/02/2026",
+        "descricao": "via pix",
+        "valor": 478
+      },
+      {
+        "data": "20/02/2026",
+        "descricao": "Depósito",
+        "valor": 100
+      },
+      {
+        "data": "20/02/2026",
+        "descricao": "Depósito",
+        "valor": 1000
+      },
+      {
+        "data": "20/02/2026",
+        "descricao": "Pix",
+        "valor": 100
+      },
+      {
+        "data": "21/02/2026",
+        "descricao": "via pix",
+        "valor": 62
+      },
+      {
+        "data": "23/02/2026",
+        "descricao": "via pix",
+        "valor": 184.95
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "CHÃ GRANDE",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "296",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 743.18,
+    "recibos": [
+      {
+        "recibo": "296.02516",
+        "data": "28/02",
+        "nome": "CELIA MARIA DE LIRA",
+        "valores_raw": [
+          "140,00",
+          "140,00"
+        ]
+      },
+      {
+        "recibo": "296.02517",
+        "data": "28/02",
+        "nome": "DANIEL JOSÉ DO NASCIMENTO",
+        "valores_raw": [
+          "184,10",
+          "184,10"
+        ]
+      },
+      {
+        "recibo": "296.02518",
+        "data": "28/02",
+        "nome": "DANIEL JOSÉ DO NASCIMENTO",
+        "valores_raw": [
+          "85,00",
+          "85,00"
+        ]
+      },
+      {
+        "recibo": "296.02519",
+        "data": "28/02",
+        "nome": "KEMILY SILVA TELES",
+        "valores_raw": [
+          "10,00",
+          "4,00",
+          "14,00"
+        ]
+      },
+      {
+        "recibo": "296.02520",
+        "data": "28/02",
+        "nome": "VALDIR FIRMINO DA SILVA",
+        "valores_raw": [
+          "280,00",
+          "280,00"
+        ]
+      },
+      {
+        "recibo": "296.02521",
+        "data": "02/03",
+        "nome": "JONES NASCIMENTO SÃO PEDRO",
+        "valores_raw": [
+          "250,00",
+          "250,00"
+        ]
+      },
+      {
+        "recibo": "296.02522",
+        "data": "02/03",
+        "nome": "MARLY MARIA NASCIMENTO SÃO PEDRO",
+        "valores_raw": [
+          "3.720,00",
+          "3.720,00"
+        ]
+      },
+      {
+        "recibo": "296.02523",
+        "data": "02/03",
+        "nome": "MARLENE MARIA DO NASCIMENTO",
+        "valores_raw": [
+          "170,00",
+          "50,00",
+          "220,00",
+          "30,00"
+        ]
+      },
+      {
+        "recibo": "296.02524",
+        "data": "02/03",
+        "nome": "JAQUELINE RODRIGUE DE FREITA",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "296.02525",
+        "data": "02/03",
+        "nome": "GIVANILDA DE OLIVEIRA SILVA TELES",
+        "valores_raw": [
+          "25,00",
+          "9,00",
+          "34,00"
+        ]
+      },
+      {
+        "recibo": "296.02526",
+        "data": "02/03",
+        "nome": "GIVANILDA DE OLIVEIRA SILVA TELES",
+        "valores_raw": [
+          "22,50",
+          "7,50",
+          "30,00"
+        ]
+      },
+      {
+        "recibo": "296.02527",
+        "data": "02/03",
+        "nome": "EDENILSON DA COSTA REGO",
+        "valores_raw": [
+          "1.600,00",
+          "600,00",
+          "2.200,00"
+        ]
+      },
+      {
+        "recibo": "296.02528",
+        "data": "05/03",
+        "nome": "ADEMILSON TELES DOS SANTOS",
+        "valores_raw": [
+          "200,00",
+          "67,00",
+          "267,00"
+        ]
+      },
+      {
+        "recibo": "296.02529",
+        "data": "05/03",
+        "nome": "KEMILY SILVA TELES",
+        "valores_raw": [
+          "5,00",
+          "2,00",
+          "7,00"
+        ]
+      },
+      {
+        "recibo": "296.02530",
+        "data": "08/03",
+        "nome": "ROBERTO PEDRO SOARES",
+        "valores_raw": [
+          "200,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "296.02531",
+        "data": "08/03",
+        "nome": "MAURO JOSÉ RODRIGUES DA SILVA",
+        "valores_raw": [
+          "10,00",
+          "10,00"
+        ]
+      },
+      {
+        "recibo": "296.02532",
+        "data": "08/03",
+        "nome": "MATEUS RODRIGUE",
+        "valores_raw": [
+          "4,00",
+          "4,00"
+        ]
+      },
+      {
+        "recibo": "296.02533",
+        "data": "10/03",
+        "nome": "MAYARA DA SILVA PEREIRA",
+        "valores_raw": [
+          "100,00",
+          "34,00",
+          "134,00"
+        ]
+      },
+      {
+        "recibo": "296.02534",
+        "data": "11/03",
+        "nome": "JONES NASCIMENTO SÃO PEDRO",
+        "valores_raw": [
+          "358,65",
+          "119,55",
+          "478,20"
+        ]
+      },
+      {
+        "recibo": "296.02535",
+        "data": "21/03",
+        "nome": "IGREJA CHA GRANDE",
+        "valores_raw": [
+          "26,00",
+          "129,00",
+          "14,00",
+          "169,00",
+          "50,00",
+          "261,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 7540.25,
+      "primicias": 893.05,
+      "assistencia_social": 0,
+      "escola_sabatina": 129,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 14,
+      "diversos_assoc": 0,
+      "soma_associacao": 8576.3,
+      "caixa_local_entradas": 291,
+      "missoes_estrangeiras": 50,
+      "caixa_local_saidas": 528.54
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 40,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 251,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "27/02/2026",
+        "descricao": "via pix",
+        "valor": 14
+      },
+      {
+        "data": "28/02/2026",
+        "descricao": "via pix",
+        "valor": 690
+      },
+      {
+        "data": "05/03/2026",
+        "descricao": "Pix",
+        "valor": 7
+      },
+      {
+        "data": "05/03/2026",
+        "descricao": "Transferência",
+        "valor": 267
+      },
+      {
+        "data": "10/03/2026",
+        "descricao": "via pix",
+        "valor": 134
+      },
+      {
+        "data": "10/03/2026",
+        "descricao": "deposito bradesco",
+        "valor": 5338
+      },
+      {
+        "data": "11/03/2026",
+        "descricao": "via pix",
+        "valor": 478.2
+      },
+      {
+        "data": "21/03/2026",
+        "descricao": "via pix",
+        "valor": 198.1
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "RETIRO DE AMORINHA CEASA",
+        "valor": 1500
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "CHÃ GRANDE",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "493",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 247,
+    "recibos": [
+      {
+        "recibo": "493.00958",
+        "data": "26/02",
+        "nome": "PEDRO MENDES DA SILVA",
+        "valores_raw": [
+          "300,00",
+          "100,00",
+          "400,00"
+        ]
+      },
+      {
+        "recibo": "493.00959",
+        "data": "26/02",
+        "nome": "SIDJÂNIA VIEIRA NUNES MENDES",
+        "valores_raw": [
+          "198,75",
+          "66,25",
+          "265,00"
+        ]
+      },
+      {
+        "recibo": "493.00960",
+        "data": "26/02",
+        "nome": "QUITÉRIA NUNES DE MOURA",
+        "valores_raw": [
+          "280,00",
+          "280,00"
+        ]
+      },
+      {
+        "recibo": "493.00961",
+        "data": "26/02",
+        "nome": "DAVIDSON  ARAÚJO DE  OLIVEIRA",
+        "valores_raw": [
+          "242,00",
+          "80,00",
+          "2,00",
+          "324,00"
+        ]
+      },
+      {
+        "recibo": "493.00962",
+        "data": "26/02",
+        "nome": "JUCELHA SOARES DE OLIVEIRA",
+        "valores_raw": [
+          "15,00",
+          "5,00",
+          "20,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "26/02/2026",
+        "descricao": "aluguel do salao",
+        "valor": 200
+      },
+      {
+        "data": "26/02/2026",
+        "descricao": "deposito pix",
+        "valor": 839
+      },
+      {
+        "data": "03/03/2026",
+        "descricao": "PEDRO MENDEZ",
+        "valor": 250
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "SENADOR RUI PALMEIRA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "493",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 247,
+    "recibos": [
+      {
+        "recibo": "493.00963",
+        "data": "23/03",
+        "nome": "MARIA EVA DE SOUZA SANTOS   *",
+        "valores_raw": [
+          "337,50",
+          "112,50",
+          "450,00"
+        ]
+      },
+      {
+        "recibo": "493.00964",
+        "data": "23/03",
+        "nome": "MARIA DO AMPARO VIEIRA MACHADO",
+        "valores_raw": [
+          "300,00",
+          "300,00"
+        ]
+      },
+      {
+        "recibo": "493.00965",
+        "data": "23/03",
+        "nome": "SIDJÂNIA VIEIRA NUNES MENDES",
+        "valores_raw": [
+          "204,00",
+          "68,00",
+          "272,00"
+        ]
+      },
+      {
+        "recibo": "493.00966",
+        "data": "23/03",
+        "nome": "RUTE MACIEL DOS SANTOS",
+        "valores_raw": [
+          "150,00",
+          "50,00",
+          "200,00"
+        ]
+      },
+      {
+        "recibo": "493.00967",
+        "data": "23/03",
+        "nome": "QUITÉRIA NUNES DE MOURA",
+        "valores_raw": [
+          "140,00",
+          "140,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "23/03/2026",
+        "descricao": "Depódito Bradesco",
+        "valor": 1212
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "ALUGUEL SENADOR",
+        "valor": 150
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "SENADOR RUI PALMEIRA",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "737",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "JOSÉ EDSON TELES DA SILVA",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "737.00179",
+        "data": "24/03",
+        "nome": "JOSÉ EDSON TELES DA SILVA",
+        "valores_raw": [
+          "120,00",
+          "40,00",
+          "160,00"
+        ]
+      },
+      {
+        "recibo": "737.00180",
+        "data": "24/03",
+        "nome": "LIELZA AVELINO DA CONCEIÇÃO",
+        "valores_raw": [
+          "324,00",
+          "108,00",
+          "432,00"
+        ]
+      },
+      {
+        "recibo": "737.00181",
+        "data": "24/03",
+        "nome": "JHOIENY TELES DA SILVA",
+        "valores_raw": [
+          "160,00",
+          "63,07",
+          "223,07"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "19/03/2026",
+        "descricao": "Banco neon",
+        "valor": 195
+      },
+      {
+        "data": "20/03/2026",
+        "descricao": "Banco neon",
+        "valor": 28.07
+      },
+      {
+        "data": "24/03/2026",
+        "descricao": "Mercado pago",
+        "valor": 592
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "UNIÃO DOS PALMARES - AL",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "323",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "ADEMILSON TELES DOS SANTOS",
+    "status": "confirmado",
+    "saldo_anterior": 299.13,
+    "recibos": [
+      {
+        "recibo": "323.00846",
+        "data": "22/02",
+        "nome": "JOSE RAMOS DA SILVA",
+        "valores_raw": [
+          "150,00",
+          "150,00"
+        ]
+      },
+      {
+        "recibo": "323.00847",
+        "data": "22/02",
+        "nome": "LAUDICEIA SOARES DE MELO",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "323.00848",
+        "data": "22/02",
+        "nome": "TAÍS MEIRA DE FREITAS",
+        "valores_raw": [
+          "130,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "323.00849",
+        "data": "23/02",
+        "nome": "IGREJA LOCAL",
+        "valores_raw": [
+          "65,00",
+          "65,00"
+        ]
+      },
+      {
+        "recibo": "323.00850",
+        "data": "23/02",
+        "nome": "TAÍS MEIRA DE FREITAS",
+        "valores_raw": [
+          "130,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "323.00851",
+        "data": "24/02",
+        "nome": "LAUDICEIA SOARES DE MELO",
+        "valores_raw": [
+          "60,00",
+          "60,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "25/01/2026",
+        "descricao": "Pix",
+        "valor": 130
+      },
+      {
+        "data": "09/02/2026",
+        "descricao": "Pix",
+        "valor": 100
+      },
+      {
+        "data": "23/02/2026",
+        "descricao": "pix",
+        "valor": 130
+      },
+      {
+        "data": "23/02/2026",
+        "descricao": "Pix",
+        "valor": 60
+      },
+      {
+        "data": "24/02/2026",
+        "descricao": "Pix",
+        "valor": 215
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "VITÓRIA DE SANTO ANTÃO",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "323",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "ADEMILSON TELES DOS SANTOS",
+    "status": "confirmado",
+    "saldo_anterior": 299.13,
+    "recibos": [
+      {
+        "recibo": "323.00852",
+        "data": "27/03",
+        "nome": "TAÍS MEIRA DE FREITAS",
+        "valores_raw": [
+          "130,00",
+          "130,00"
+        ]
+      },
+      {
+        "recibo": "323.00853",
+        "data": "27/03",
+        "nome": "LAUDICEIA SOARES DE MELO",
+        "valores_raw": [
+          "100,00",
+          "100,00"
+        ]
+      },
+      {
+        "recibo": "323.00854",
+        "data": "28/03",
+        "nome": "SEVERINO PEREIRA XAVIER BARRETO",
+        "valores_raw": [
+          "500,00",
+          "500,00"
+        ]
+      },
+      {
+        "recibo": "323.00855",
+        "data": "28/03",
+        "nome": "ARLENE DAVINA DA SILVA TORRES",
+        "valores_raw": [
+          "310,00",
+          "310,00"
+        ]
+      },
+      {
+        "recibo": "323.00856",
+        "data": "28/03",
+        "nome": "IGREJA LOCAL   *",
+        "valores_raw": [
+          "70,00",
+          "70,00"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "20/03/2026",
+        "descricao": "transferencia",
+        "valor": 100
+      },
+      {
+        "data": "26/03/2026",
+        "descricao": "pix",
+        "valor": 130
+      },
+      {
+        "data": "30/03/2026",
+        "descricao": "transferencia",
+        "valor": 880
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "VITÓRIA DE SANTO ANTÃO",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "658",
+    "mes": 2,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "658.00971",
+        "data": "04/03",
+        "nome": "ADEMILSON TELES DOS SANTOS",
+        "valores_raw": [
+          "543,01",
+          "180,82",
+          "723,83"
+        ]
+      },
+      {
+        "recibo": "658.00972",
+        "data": "04/03",
+        "nome": "BRUNO MATEUS BARBOSA DA SILVA",
+        "valores_raw": [
+          "261,78",
+          "87,17",
+          "348,95"
+        ]
+      },
+      {
+        "recibo": "658.00973",
+        "data": "04/03",
+        "nome": "GUILHERME ALVES GOMES",
+        "valores_raw": [
+          "796,60",
+          "265,27",
+          "1.061,87"
+        ]
+      },
+      {
+        "recibo": "658.00974",
+        "data": "04/03",
+        "nome": "HELYANDRO ARAÚJO CASTRO",
+        "valores_raw": [
+          "693,74",
+          "231,01",
+          "924,75"
+        ]
+      },
+      {
+        "recibo": "658.00975",
+        "data": "04/03",
+        "nome": "HERBERT CARMIN BARRA",
+        "valores_raw": [
+          "346,57",
+          "115,41",
+          "461,98"
+        ]
+      },
+      {
+        "recibo": "658.00976",
+        "data": "04/03",
+        "nome": "JOSÉ ADRIANO SILVA DE LIMA FILHO",
+        "valores_raw": [
+          "572,97",
+          "190,80",
+          "763,77"
+        ]
+      },
+      {
+        "recibo": "658.00977",
+        "data": "04/03",
+        "nome": "JOSIVALDO MACHADO DE SOUZA",
+        "valores_raw": [
+          "840,31",
+          "279,82",
+          "1.120,13"
+        ]
+      },
+      {
+        "recibo": "658.00978",
+        "data": "04/03",
+        "nome": "MADIANO DO NASCIMENTO SANTANA",
+        "valores_raw": [
+          "162,10",
+          "53,98",
+          "216,08"
+        ]
+      },
+      {
+        "recibo": "658.00979",
+        "data": "04/03",
+        "nome": "MANOEL ROOSEVELT GOMES DO NASCIMENTO JUNIOR",
+        "valores_raw": [
+          "1.160,40",
+          "386,41",
+          "1.546,81"
+        ]
+      },
+      {
+        "recibo": "658.00980",
+        "data": "04/03",
+        "nome": "RAIMUNDO GOMES FERREIRA",
+        "valores_raw": [
+          "343,58",
+          "114,41",
+          "457,99"
+        ]
+      },
+      {
+        "recibo": "658.00981",
+        "data": "04/03",
+        "nome": "RANMSON CUSTÓDIO DE FREITAS",
+        "valores_raw": [
+          "853,29",
+          "284,14",
+          "1.137,43"
+        ]
+      },
+      {
+        "recibo": "658.00982",
+        "data": "04/03",
+        "nome": "RODRIGO BATISTA PAULINO",
+        "valores_raw": [
+          "506,32",
+          "168,60",
+          "674,92"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "04/02/2026",
+        "descricao": "dizimos e primicias",
+        "valor": 9438.51
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "MISSIONÁRIOS ANOB",
+    "associacao": "ANOB"
+  },
+  {
+    "igreja_id_old": "658",
+    "mes": 3,
+    "ano": 2026,
+    "responsavel": "RANMSON CUSTÓDIO DE FREITAS",
+    "status": "confirmado",
+    "saldo_anterior": 0,
+    "recibos": [
+      {
+        "recibo": "658.00983",
+        "data": "31/03",
+        "nome": "ADEMILSON TELES DOS SANTOS",
+        "valores_raw": [
+          "543,01",
+          "180,82",
+          "723,83"
+        ]
+      },
+      {
+        "recibo": "658.00984",
+        "data": "31/03",
+        "nome": "BRUNO MATEUS BARBOSA DA SILVA",
+        "valores_raw": [
+          "261,78",
+          "87,17",
+          "348,95"
+        ]
+      },
+      {
+        "recibo": "658.00985",
+        "data": "31/03",
+        "nome": "GUILHERME ALVES GOMES",
+        "valores_raw": [
+          "796,60",
+          "265,27",
+          "1.061,87"
+        ]
+      },
+      {
+        "recibo": "658.00986",
+        "data": "31/03",
+        "nome": "HELYANDRO ARAÚJO CASTRO",
+        "valores_raw": [
+          "693,74",
+          "231,01",
+          "924,75"
+        ]
+      },
+      {
+        "recibo": "658.00987",
+        "data": "31/03",
+        "nome": "HERBERT CARMIN BARRA",
+        "valores_raw": [
+          "346,57",
+          "115,41",
+          "461,98"
+        ]
+      },
+      {
+        "recibo": "658.00988",
+        "data": "31/03",
+        "nome": "JOSÉ ADRIANO SILVA DE LIMA FILHO",
+        "valores_raw": [
+          "572,97",
+          "190,80",
+          "763,77"
+        ]
+      },
+      {
+        "recibo": "658.00989",
+        "data": "31/03",
+        "nome": "JOSIVALDO MACHADO DE SOUZA",
+        "valores_raw": [
+          "843,98",
+          "281,04",
+          "1.125,02"
+        ]
+      },
+      {
+        "recibo": "658.00990",
+        "data": "31/03",
+        "nome": "MADIANO DO NASCIMENTO SANTANA",
+        "valores_raw": [
+          "162,10",
+          "53,98",
+          "216,08"
+        ]
+      },
+      {
+        "recibo": "658.00991",
+        "data": "31/03",
+        "nome": "MANOEL ROOSEVELT GOMES DO NASCIMENTO JUNIOR",
+        "valores_raw": [
+          "1.160,40",
+          "386,41",
+          "1.546,81"
+        ]
+      },
+      {
+        "recibo": "658.00992",
+        "data": "31/03",
+        "nome": "RAIMUNDO GOMES FERREIRA",
+        "valores_raw": [
+          "343,58",
+          "114,41",
+          "457,99"
+        ]
+      },
+      {
+        "recibo": "658.00993",
+        "data": "31/03",
+        "nome": "RANMSON CUSTÓDIO DE FREITAS",
+        "valores_raw": [
+          "853,29",
+          "284,14",
+          "1.137,43"
+        ]
+      },
+      {
+        "recibo": "658.00994",
+        "data": "31/03",
+        "nome": "RODRIGO BATISTA PAULINO",
+        "valores_raw": [
+          "506,32",
+          "168,60",
+          "674,92"
+        ]
+      }
+    ],
+    "totais": {
+      "dizimos": 0,
+      "primicias": 0,
+      "assistencia_social": 0,
+      "escola_sabatina": 0,
+      "evangelismo": 0,
+      "radio_colportagem": 0,
+      "construcao": 0,
+      "musica": 0,
+      "gratidao_6pct": 0,
+      "diversos_assoc": 0,
+      "soma_associacao": 0,
+      "caixa_local_entradas": 0,
+      "missoes_estrangeiras": 0,
+      "caixa_local_saidas": 0
+    },
+    "ofertas_resumo": {
+      "cultos_construcao": 0,
+      "juvenil": 0,
+      "missionaria": 0,
+      "gratidao_pobres": 0,
+      "diversos": 0
+    },
+    "despesas_locais": [],
+    "pagamentos": [
+      {
+        "data": "30/03/2026",
+        "descricao": "DIZIMO E PRIMICIAS MISSIONÁRIOS",
+        "valor": 9443.4
+      }
+    ],
+    "soma_pagamentos": 0,
+    "caixa_associacao": 0,
+    "saldo_acerto": 0,
+    "igreja_nome": "MISSIONÁRIOS ANOB",
+    "associacao": "ANOB"
+  }
+]

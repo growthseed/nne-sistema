@@ -1,0 +1,597 @@
+[
+  {
+    "id": 208,
+    "nome": "ABADE",
+    "associacao": "ASPAR",
+    "membros_count": 65,
+    "interessados_count": 162
+  },
+  {
+    "id": 432,
+    "nome": "ABAETETUBA",
+    "associacao": "ASPAR",
+    "membros_count": 11,
+    "interessados_count": 60
+  },
+  {
+    "id": 209,
+    "nome": "ÁGUAS LINDAS",
+    "associacao": "ASPAR",
+    "membros_count": 30,
+    "interessados_count": 101
+  },
+  {
+    "id": 210,
+    "nome": "ALTAMIRA",
+    "associacao": "ASPAR",
+    "membros_count": 48,
+    "interessados_count": 143
+  },
+  {
+    "id": 211,
+    "nome": "ANAPÚ",
+    "associacao": "ASPAR",
+    "membros_count": 134,
+    "interessados_count": 92
+  },
+  {
+    "id": 399,
+    "nome": "APINAGÉS",
+    "associacao": "ASPAR",
+    "membros_count": 23,
+    "interessados_count": 20
+  },
+  {
+    "id": 216,
+    "nome": "BELÉM (SEDE)",
+    "associacao": "ASPAR",
+    "membros_count": 62,
+    "interessados_count": 55
+  },
+  {
+    "id": 217,
+    "nome": "BOA ESPERANÇA",
+    "associacao": "ASPAR",
+    "membros_count": 24,
+    "interessados_count": 74
+  },
+  {
+    "id": 218,
+    "nome": "BRAGANÇA",
+    "associacao": "ASPAR",
+    "membros_count": 56,
+    "interessados_count": 136
+  },
+  {
+    "id": 219,
+    "nome": "BREU BRANCO",
+    "associacao": "ASPAR",
+    "membros_count": 55,
+    "interessados_count": 80
+  },
+  {
+    "id": 220,
+    "nome": "CASTANHAL",
+    "associacao": "ASPAR",
+    "membros_count": 49,
+    "interessados_count": 153
+  },
+  {
+    "id": 363,
+    "nome": "CHIPAIÁ",
+    "associacao": "ASPAR",
+    "membros_count": 29,
+    "interessados_count": 48
+  },
+  {
+    "id": 223,
+    "nome": "CONCEIÇÃO",
+    "associacao": "ASPAR",
+    "membros_count": 30,
+    "interessados_count": 82
+  },
+  {
+    "id": 224,
+    "nome": "CONCÓRDIA",
+    "associacao": "ASPAR",
+    "membros_count": 26,
+    "interessados_count": 42
+  },
+  {
+    "id": 226,
+    "nome": "DOM ELISEU",
+    "associacao": "ASPAR",
+    "membros_count": 32,
+    "interessados_count": 71
+  },
+  {
+    "id": 502,
+    "nome": "GOIANÉSIA",
+    "associacao": "ASPAR",
+    "membros_count": 19,
+    "interessados_count": 45
+  },
+  {
+    "id": 232,
+    "nome": "JACUNDÁ",
+    "associacao": "ASPAR",
+    "membros_count": 24,
+    "interessados_count": 22
+  },
+  {
+    "id": 234,
+    "nome": "JANARÍ",
+    "associacao": "ASPAR",
+    "membros_count": 35,
+    "interessados_count": 13
+  },
+  {
+    "id": 241,
+    "nome": "JARDIM DO ÉDEN",
+    "associacao": "ASPAR",
+    "membros_count": 34,
+    "interessados_count": 105
+  },
+  {
+    "id": 236,
+    "nome": "LIBERDADE",
+    "associacao": "ASPAR",
+    "membros_count": 26,
+    "interessados_count": 71
+  },
+  {
+    "id": 239,
+    "nome": "MARABÁ",
+    "associacao": "ASPAR",
+    "membros_count": 90,
+    "interessados_count": 210
+  },
+  {
+    "id": 240,
+    "nome": "MARITUBA",
+    "associacao": "ASPAR",
+    "membros_count": 45,
+    "interessados_count": 119
+  },
+  {
+    "id": 242,
+    "nome": "NOVA IPIXUNA",
+    "associacao": "ASPAR",
+    "membros_count": 34,
+    "interessados_count": 26
+  },
+  {
+    "id": 244,
+    "nome": "PARAGOMINAS",
+    "associacao": "ASPAR",
+    "membros_count": 42,
+    "interessados_count": 82
+  },
+  {
+    "id": 245,
+    "nome": "PARAUAPEBAS",
+    "associacao": "ASPAR",
+    "membros_count": 111,
+    "interessados_count": 287
+  },
+  {
+    "id": 249,
+    "nome": "PRATINHA",
+    "associacao": "ASPAR",
+    "membros_count": 25,
+    "interessados_count": 89
+  },
+  {
+    "id": 261,
+    "nome": "QUATRO BOCAS",
+    "associacao": "ASPAR",
+    "membros_count": 34,
+    "interessados_count": 52
+  },
+  {
+    "id": 250,
+    "nome": "REDENÇÃO",
+    "associacao": "ASPAR",
+    "membros_count": 24,
+    "interessados_count": 89
+  },
+  {
+    "id": 252,
+    "nome": "SANTA IZABEL",
+    "associacao": "ASPAR",
+    "membros_count": 34,
+    "interessados_count": 110
+  },
+  {
+    "id": 657,
+    "nome": "SANTA JÚLIA",
+    "associacao": "ASPAR",
+    "membros_count": 32,
+    "interessados_count": 41
+  },
+  {
+    "id": 254,
+    "nome": "SANTARÉM",
+    "associacao": "ASPAR",
+    "membros_count": 52,
+    "interessados_count": 14
+  },
+  {
+    "id": 256,
+    "nome": "SÃO DOMINGOS",
+    "associacao": "ASPAR",
+    "membros_count": 175,
+    "interessados_count": 306
+  },
+  {
+    "id": 366,
+    "nome": "TABOCA",
+    "associacao": "ASPAR",
+    "membros_count": 23,
+    "interessados_count": 64
+  },
+  {
+    "id": 258,
+    "nome": "TAILÂNDIA",
+    "associacao": "ASPAR",
+    "membros_count": 35,
+    "interessados_count": 78
+  },
+  {
+    "id": 260,
+    "nome": "TUCUMÃ",
+    "associacao": "ASPAR",
+    "membros_count": 35,
+    "interessados_count": 56
+  },
+  {
+    "id": 503,
+    "nome": "TUCURUÍ",
+    "associacao": "ASPAR",
+    "membros_count": 21,
+    "interessados_count": 34
+  },
+  {
+    "id": 431,
+    "nome": ".",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 364,
+    "nome": "ABAETETUBA",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 212,
+    "nome": "ANJO DA GUARDA",
+    "associacao": "ASPAR",
+    "membros_count": 2,
+    "interessados_count": 27
+  },
+  {
+    "id": 610,
+    "nome": "ASPAR",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 530,
+    "nome": "ASPAR SEDE",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 213,
+    "nome": "AXIXÁ",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 7
+  },
+  {
+    "id": 214,
+    "nome": "BACABAL",
+    "associacao": "ASPAR",
+    "membros_count": 10,
+    "interessados_count": 88
+  },
+  {
+    "id": 215,
+    "nome": "BALSAS",
+    "associacao": "ASPAR",
+    "membros_count": 15,
+    "interessados_count": 108
+  },
+  {
+    "id": 393,
+    "nome": "BUJARU",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 2
+  },
+  {
+    "id": 414,
+    "nome": "CAJARÍ",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 11
+  },
+  {
+    "id": 221,
+    "nome": "CIDADE OLÍMPICA",
+    "associacao": "ASPAR",
+    "membros_count": 4,
+    "interessados_count": 29
+  },
+  {
+    "id": 222,
+    "nome": "CIGANA",
+    "associacao": "ASPAR",
+    "membros_count": 1,
+    "interessados_count": 0
+  },
+  {
+    "id": 378,
+    "nome": "COROATÁ",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 17
+  },
+  {
+    "id": 225,
+    "nome": "CURURUPÚ",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 0
+  },
+  {
+    "id": 228,
+    "nome": "FLORIANO",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 31
+  },
+  {
+    "id": 229,
+    "nome": "GOIANÉSIA",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 227,
+    "nome": "GOVERNADOR  NUNES FREIRE",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 9
+  },
+  {
+    "id": 358,
+    "nome": "ICATU",
+    "associacao": "ASPAR",
+    "membros_count": 14,
+    "interessados_count": 28
+  },
+  {
+    "id": 230,
+    "nome": "IMPERATRIZ",
+    "associacao": "ASPAR",
+    "membros_count": 8,
+    "interessados_count": 97
+  },
+  {
+    "id": 231,
+    "nome": "ITAITUBA",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 233,
+    "nome": "JANAÍNA",
+    "associacao": "ASPAR",
+    "membros_count": 5,
+    "interessados_count": 85
+  },
+  {
+    "id": 235,
+    "nome": "JOÃO CASTELO",
+    "associacao": "ASPAR",
+    "membros_count": 1,
+    "interessados_count": 27
+  },
+  {
+    "id": 422,
+    "nome": "KAYENA",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 237,
+    "nome": "MACAPÁ",
+    "associacao": "ASPAR",
+    "membros_count": 50,
+    "interessados_count": 342
+  },
+  {
+    "id": 238,
+    "nome": "MAGU",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 8
+  },
+  {
+    "id": 652,
+    "nome": "NOVO HORIZONTE",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 32
+  },
+  {
+    "id": 243,
+    "nome": "PALHAL",
+    "associacao": "ASPAR",
+    "membros_count": 8,
+    "interessados_count": 0
+  },
+  {
+    "id": 246,
+    "nome": "PARNAÍBA",
+    "associacao": "ASPAR",
+    "membros_count": 10,
+    "interessados_count": 27
+  },
+  {
+    "id": 376,
+    "nome": "PINDARÉ MIRIM",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 375,
+    "nome": "PINDARÉ MIRIM",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 1
+  },
+  {
+    "id": 654,
+    "nome": "PIRATIVA",
+    "associacao": "ASPAR",
+    "membros_count": 1,
+    "interessados_count": 6
+  },
+  {
+    "id": 653,
+    "nome": "PIRATIVA",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 247,
+    "nome": "PORTO GRANDE",
+    "associacao": "ASPAR",
+    "membros_count": 6,
+    "interessados_count": 66
+  },
+  {
+    "id": 248,
+    "nome": "PRAIA NORTE",
+    "associacao": "ASPAR",
+    "membros_count": 6,
+    "interessados_count": 14
+  },
+  {
+    "id": 379,
+    "nome": "SANTA FÉ",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 251,
+    "nome": "SANTA INÊS",
+    "associacao": "ASPAR",
+    "membros_count": 8,
+    "interessados_count": 83
+  },
+  {
+    "id": 253,
+    "nome": "SANTA ROSA",
+    "associacao": "ASPAR",
+    "membros_count": 2,
+    "interessados_count": 0
+  },
+  {
+    "id": 357,
+    "nome": "SÃO BERNARDO",
+    "associacao": "ASPAR",
+    "membros_count": 2,
+    "interessados_count": 18
+  },
+  {
+    "id": 255,
+    "nome": "SÃO CRISTOVÃO",
+    "associacao": "ASPAR",
+    "membros_count": 18,
+    "interessados_count": 69
+  },
+  {
+    "id": 257,
+    "nome": "SÃO FELIX DO XINGÚ",
+    "associacao": "ASPAR",
+    "membros_count": 5,
+    "interessados_count": 15
+  },
+  {
+    "id": 490,
+    "nome": "SÃO MIGUEL DO GUAMÁ",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 13
+  },
+  {
+    "id": 365,
+    "nome": "SÃO MIGUEL DO GUAMÁ",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 0
+  },
+  {
+    "id": 430,
+    "nome": "TERESINA",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 23
+  },
+  {
+    "id": 259,
+    "nome": "TIMON",
+    "associacao": "ASPAR",
+    "membros_count": 7,
+    "interessados_count": 46
+  },
+  {
+    "id": 262,
+    "nome": "URIBOCA",
+    "associacao": "ASPAR",
+    "membros_count": 3,
+    "interessados_count": 3
+  },
+  {
+    "id": 628,
+    "nome": "VILA MOISÉS",
+    "associacao": "ASPAR",
+    "membros_count": 6,
+    "interessados_count": 91
+  },
+  {
+    "id": 420,
+    "nome": "VILA UNIÃO",
+    "associacao": "ASPAR",
+    "membros_count": 0,
+    "interessados_count": 7
+  },
+  {
+    "id": 263,
+    "nome": "ZÉ DOCA",
+    "associacao": "ASPAR",
+    "membros_count": 10,
+    "interessados_count": 52
+  },
+  {
+    "id": 405,
+    "nome": "Z.MEMBROS SEM DEFINIÇÃO",
+    "associacao": "ASPAR",
+    "membros_count": 34,
+    "interessados_count": 1
+  }
+]

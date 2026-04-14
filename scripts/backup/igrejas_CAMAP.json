@@ -1,0 +1,58 @@
+[
+  {
+    "id": 758,
+    "nome": "CORRE ÁGUA",
+    "associacao": "CAMAP",
+    "membros_count": 6,
+    "interessados_count": 0
+  },
+  {
+    "id": 671,
+    "nome": "MACAPÁ",
+    "associacao": "CAMAP",
+    "membros_count": 57,
+    "interessados_count": 90
+  },
+  {
+    "id": 672,
+    "nome": "NOVO HORIZONTE",
+    "associacao": "CAMAP",
+    "membros_count": 19,
+    "interessados_count": 32
+  },
+  {
+    "id": 673,
+    "nome": "PIRATIVA",
+    "associacao": "CAMAP",
+    "membros_count": 11,
+    "interessados_count": 16
+  },
+  {
+    "id": 674,
+    "nome": "PORTO GRANDE",
+    "associacao": "CAMAP",
+    "membros_count": 19,
+    "interessados_count": 46
+  },
+  {
+    "id": 721,
+    "nome": "SANTANA",
+    "associacao": "CAMAP",
+    "membros_count": 1,
+    "interessados_count": 8
+  },
+  {
+    "id": 738,
+    "nome": "CAMAP - CONSTRUÇÕES",
+    "associacao": "CAMAP",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 685,
+    "nome": "CAMAP -SEDE",
+    "associacao": "CAMAP",
+    "membros_count": 0,
+    "interessados_count": 0
+  }
+]

@@ -1,0 +1,121 @@
+[
+  {
+    "id": 206,
+    "nome": "ALTO ALEGRE",
+    "associacao": "ARAM",
+    "membros_count": 6,
+    "interessados_count": 6
+  },
+  {
+    "id": 205,
+    "nome": "BOA VISTA",
+    "associacao": "ARAM",
+    "membros_count": 51,
+    "interessados_count": 213
+  },
+  {
+    "id": 751,
+    "nome": "CAREIRO DA VÁRZEA",
+    "associacao": "ARAM",
+    "membros_count": 15,
+    "interessados_count": 13
+  },
+  {
+    "id": 531,
+    "nome": "EXTRAS",
+    "associacao": "ARAM",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 203,
+    "nome": "MANAUS CENTRAL",
+    "associacao": "ARAM",
+    "membros_count": 108,
+    "interessados_count": 448
+  },
+  {
+    "id": 428,
+    "nome": "MANAUS MEMBROS ISOLADOS",
+    "associacao": "ARAM",
+    "membros_count": 13,
+    "interessados_count": 39
+  },
+  {
+    "id": 534,
+    "nome": "MISSIONARIOS",
+    "associacao": "ARAM",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 429,
+    "nome": "MUTIRÃO",
+    "associacao": "ARAM",
+    "membros_count": 29,
+    "interessados_count": 45
+  },
+  {
+    "id": 207,
+    "nome": "PURUPURU",
+    "associacao": "ARAM",
+    "membros_count": 55,
+    "interessados_count": 52
+  },
+  {
+    "id": 394,
+    "nome": "SANTA ETELVINA",
+    "associacao": "ARAM",
+    "membros_count": 44,
+    "interessados_count": 42
+  },
+  {
+    "id": 415,
+    "nome": "SANTA LUZIA",
+    "associacao": "ARAM",
+    "membros_count": 47,
+    "interessados_count": 61
+  },
+  {
+    "id": 739,
+    "nome": "SÃO MIGUEL",
+    "associacao": "ARAM",
+    "membros_count": 11,
+    "interessados_count": 2
+  },
+  {
+    "id": 204,
+    "nome": "TANCREDO NEVES",
+    "associacao": "ARAM",
+    "membros_count": 25,
+    "interessados_count": 200
+  },
+  {
+    "id": 396,
+    "nome": "TERRA NOVA",
+    "associacao": "ARAM",
+    "membros_count": 8,
+    "interessados_count": 18
+  },
+  {
+    "id": 504,
+    "nome": "KM 01",
+    "associacao": "ARAM",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 562,
+    "nome": "MARAÃ",
+    "associacao": "ARAM",
+    "membros_count": 0,
+    "interessados_count": 0
+  },
+  {
+    "id": 395,
+    "nome": "NOVA ESPERANÇA",
+    "associacao": "ARAM",
+    "membros_count": 12,
+    "interessados_count": 48
+  }
+]
