@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import TurnstileWidget from '@/components/public/TurnstileWidget'
+import { trackEvent, trackError } from '@/lib/observability'
 import {
   HiOutlineCursorClick,
   HiOutlineClock,
@@ -440,6 +441,8 @@ export default function CadastroPublicoPage() {
         throw new Error(data?.message || 'Não foi possível enviar o formulário.')
       }
 
+      trackEvent('cadastro_publico_sucesso', { responseId: data.id })
+
       // Clear draft from localStorage
       localStorage.removeItem(STORAGE_KEY)
       setResponseId(null)
@@ -448,6 +451,7 @@ export default function CadastroPublicoPage() {
       setCaptchaResetKey(current => current + 1)
       setSuccess(true)
     } catch (err: any) {
+      trackError(err, { context: 'cadastro_publico_submit', responseId: responseId ?? undefined })
       setError(err.message || 'Erro ao enviar formulário')
     } finally {
       setSubmitting(false)

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { FiMapPin, FiPhone, FiSearch, FiUser, FiHome } from 'react-icons/fi'
+import { VirtualTable, type VColumn } from '@/components/ui/VirtualTable'
 
 // ========== TYPES ==========
 interface Associacao {
@@ -214,70 +215,75 @@ export default function DiretorioIgrejasPage() {
           </div>
         ) : (
           <>
-            {/* Desktop table */}
+            {/* Desktop table — virtualized */}
             <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                      <th className="px-4 py-3">Igreja</th>
-                      <th className="px-4 py-3">Endere\u00e7o</th>
-                      <th className="px-4 py-3">Telefone</th>
-                      <th className="px-4 py-3">Pastor</th>
-                      <th className="px-4 py-3">Associa\u00e7\u00e3o</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {igrejasFiltradas.map(ig => (
-                      <tr key={ig.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-gray-800">{ig.nome}</p>
-                          {ig.endereco_estado && (
-                            <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#006D43]/10 text-[#006D43]">
-                              {ig.endereco_estado}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500 max-w-xs">
-                          <span className="flex items-start gap-1.5">
-                            <FiMapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gray-400" />
-                            <span>{formatEndereco(ig)}</span>
+              <VirtualTable<Igreja>
+                items={igrejasFiltradas}
+                getKey={(ig) => ig.id}
+                rowHeight={56}
+                maxHeight={560}
+                emptyMessage="Nenhuma igreja encontrada"
+                columns={[
+                  {
+                    key: 'nome',
+                    header: 'Igreja',
+                    width: '2fr',
+                    render: (ig) => (
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-800 truncate">{ig.nome}</p>
+                        {ig.endereco_estado && (
+                          <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#006D43]/10 text-[#006D43]">
+                            {ig.endereco_estado}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                          {ig.telefone ? (
-                            <span className="flex items-center gap-1.5">
-                              <FiPhone className="w-3.5 h-3.5 text-gray-400" />
-                              {ig.telefone}
-                            </span>
-                          ) : (
-                            <span className="text-gray-300">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">
-                          {ig.pastor ? (
-                            <span className="flex items-center gap-1.5">
-                              <FiUser className="w-3.5 h-3.5 text-gray-400" />
-                              {ig.pastor}
-                            </span>
-                          ) : (
-                            <span className="text-gray-300">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">
-                          {ig.associacao ? (
-                            <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
-                              {ig.associacao.sigla || ig.associacao.nome}
-                            </span>
-                          ) : (
-                            <span className="text-gray-300">-</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        )}
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'endereco',
+                    header: 'Endere\u00e7o',
+                    width: '3fr',
+                    render: (ig) => (
+                      <span className="flex items-start gap-1.5 text-gray-500 min-w-0">
+                        <FiMapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gray-400" />
+                        <span className="truncate" title={formatEndereco(ig)}>{formatEndereco(ig)}</span>
+                      </span>
+                    ),
+                  },
+                  {
+                    key: 'telefone',
+                    header: 'Telefone',
+                    width: '1fr',
+                    render: (ig) => ig.telefone ? (
+                      <span className="flex items-center gap-1.5 text-gray-500">
+                        <FiPhone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="truncate">{ig.telefone}</span>
+                      </span>
+                    ) : <span className="text-gray-300">-</span>,
+                  },
+                  {
+                    key: 'pastor',
+                    header: 'Pastor',
+                    width: '1fr',
+                    render: (ig) => ig.pastor ? (
+                      <span className="flex items-center gap-1.5 text-gray-500">
+                        <FiUser className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="truncate">{ig.pastor}</span>
+                      </span>
+                    ) : <span className="text-gray-300">-</span>,
+                  },
+                  {
+                    key: 'associacao',
+                    header: 'Associa\u00e7\u00e3o',
+                    width: '100px',
+                    render: (ig) => ig.associacao ? (
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 truncate">
+                        {ig.associacao.sigla || ig.associacao.nome}
+                      </span>
+                    ) : <span className="text-gray-300">-</span>,
+                  },
+                ] satisfies VColumn<Igreja>[]}
+              />
             </div>
 
             {/* Mobile/Tablet cards */}

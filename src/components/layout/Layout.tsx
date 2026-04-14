@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import Sidebar from './Sidebar'
 import Header from './Header'
 
@@ -45,7 +46,9 @@ export default function Layout() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuToggle={() => setSidebarOpen(prev => !prev)} />
         <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

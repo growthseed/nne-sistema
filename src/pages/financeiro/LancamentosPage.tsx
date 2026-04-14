@@ -1,11 +1,20 @@
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
+import { toastSuccess, toastError } from '@/lib/toast'
+import { FinanceiroTableSkeleton } from '@/components/financeiro/FinanceiroSkeletons'
 import { useAuth } from '@/contexts/AuthContext'
-import type { DadosFinanceiros, Igreja } from '@/types'
+import { VirtualTable, type VColumn } from '@/components/ui/VirtualTable'
+import {
+  type EntryWithIgreja,
+  useDeleteLancamento,
+  useFinanceiroLancamentos,
+  useSaveLancamento,
+  useScopedFinanceiroIgrejas,
+  useUpdateLancamentoStatus,
+} from '@/hooks/useFinanceiroLancamentos'
 
 const MESES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
@@ -61,30 +70,30 @@ interface FormData extends ReceitaFields, DespesaFields {
 }
 
 const receitaLabels: { key: keyof ReceitaFields; label: string }[] = [
-  { key: 'receita_dizimos', label: 'Dízimos' },
-  { key: 'receita_primicias', label: 'Primícias' },
+  { key: 'receita_dizimos', label: 'Dizimos' },
+  { key: 'receita_primicias', label: 'Primicias' },
   { key: 'receita_oferta_regular', label: 'Oferta Regular' },
   { key: 'receita_oferta_especial', label: 'Oferta Especial' },
-  { key: 'receita_oferta_missoes', label: 'Oferta Missões' },
+  { key: 'receita_oferta_missoes', label: 'Oferta Missoes' },
   { key: 'receita_oferta_agradecimento', label: 'Oferta Agradecimento' },
   { key: 'receita_oferta_es', label: 'Oferta Escola Sabatina' },
   { key: 'receita_evangelismo', label: 'Evangelismo' },
-  { key: 'receita_doacoes', label: 'Doações' },
+  { key: 'receita_doacoes', label: 'Doacoes' },
   { key: 'receita_fundo_assistencial', label: 'Fundo Assistencial' },
-  { key: 'receita_radio_colportagem', label: 'Rádio/Colportagem' },
-  { key: 'receita_construcao', label: 'Construção' },
-  { key: 'receita_proventos_imoveis', label: 'Proventos Imóveis' },
-  { key: 'receita_gratificacao_6', label: 'Gratificação 6%' },
-  { key: 'receita_missoes_mundial', label: 'Missões Mundial' },
-  { key: 'receita_missoes_autonomas', label: 'Missões Autônomas' },
+  { key: 'receita_radio_colportagem', label: 'Radio/Colportagem' },
+  { key: 'receita_construcao', label: 'Construcao' },
+  { key: 'receita_proventos_imoveis', label: 'Proventos Imoveis' },
+  { key: 'receita_gratificacao_6', label: 'Gratificacao 6%' },
+  { key: 'receita_missoes_mundial', label: 'Missoes Mundial' },
+  { key: 'receita_missoes_autonomas', label: 'Missoes Autonomas' },
   { key: 'receita_outras', label: 'Outras Receitas' },
 ]
 
 const despesaLabels: { key: keyof DespesaFields; label: string }[] = [
-  { key: 'despesa_salarios', label: 'Salários' },
+  { key: 'despesa_salarios', label: 'Salarios' },
   { key: 'despesa_aluguel', label: 'Aluguel' },
-  { key: 'despesa_manutencao', label: 'Manutenção' },
-  { key: 'despesa_agua', label: 'Água' },
+  { key: 'despesa_manutencao', label: 'Manutencao' },
+  { key: 'despesa_agua', label: 'Agua' },
   { key: 'despesa_energia', label: 'Energia' },
   { key: 'despesa_telefone', label: 'Telefone' },
   { key: 'despesa_internet', label: 'Internet' },
@@ -169,16 +178,10 @@ function calcTotalDespesas(d: DespesaFields): number {
   )
 }
 
-interface EntryWithIgreja extends DadosFinanceiros {
-  igreja?: { nome: string } | null
-}
-
 export default function LancamentosPage() {
   const { profile } = useAuth()
-  const [entries, setEntries] = useState<EntryWithIgreja[]>([])
-  const [igrejas, setIgrejas] = useState<Igreja[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [busyEntryId, setBusyEntryId] = useState<string | null>(null)
+  const [busyAction, setBusyAction] = useState<'approve' | 'reject' | 'delete' | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>(emptyForm)
@@ -187,101 +190,18 @@ export default function LancamentosPage() {
   const [filtroMes, setFiltroMes] = useState(new Date().getMonth() + 1)
   const [filtroAno, setFiltroAno] = useState(new Date().getFullYear())
 
+  const { entries, loading, error, refetch } = useFinanceiroLancamentos({
+    mes: filtroMes,
+    ano: filtroAno,
+    status: filtroStatus,
+  })
+  const { igrejas } = useScopedFinanceiroIgrejas()
+  const saveLancamento = useSaveLancamento()
+  const updateLancamentoStatus = useUpdateLancamentoStatus()
+  const deleteLancamento = useDeleteLancamento()
+
+  const saving = saveLancamento.isPending
   const canApprove = profile?.papel === 'admin' || profile?.papel === 'admin_uniao' || profile?.papel === 'admin_associacao'
-
-  useEffect(() => {
-    if (profile) {
-      fetchEntries()
-      fetchIgrejas()
-    }
-  }, [profile, filtroMes, filtroAno, filtroStatus])
-
-  async function fetchIgrejas() {
-    if (!profile) return
-    try {
-      let query = supabase
-        .from('igrejas')
-        .select('id, nome, associacao_id, uniao_id')
-        .eq('ativo', true)
-        .order('nome')
-
-      if (profile.papel === 'admin') {
-        // see all
-      } else if (profile.papel === 'admin_uniao') {
-        const { data: assocs } = await supabase
-          .from('associacoes')
-          .select('id')
-          .eq('uniao_id', profile.uniao_id!)
-        const assocIds = assocs?.map((a) => a.id) || []
-        if (assocIds.length > 0) {
-          query = query.in('associacao_id', assocIds)
-        } else {
-          query = query.eq('associacao_id', 'none')
-        }
-      } else if (profile.papel === 'admin_associacao') {
-        query = query.eq('associacao_id', profile.associacao_id!)
-      } else {
-        if (profile.igreja_id) {
-          query = query.eq('id', profile.igreja_id)
-        }
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      setIgrejas((data as Igreja[]) || [])
-    } catch (err) {
-      console.error('Erro ao buscar igrejas:', err)
-    }
-  }
-
-  const fetchEntries = useCallback(async () => {
-    if (!profile) return
-    setLoading(true)
-    try {
-      let query = supabase
-        .from('dados_financeiros')
-        .select('*, igreja:igrejas(nome)')
-        .eq('mes', filtroMes)
-        .eq('ano', filtroAno)
-        .order('created_at', { ascending: false })
-
-      // Hierarchical filter
-      if (profile.papel === 'admin') {
-        // admin sees all
-      } else if (profile.papel === 'admin_uniao') {
-        const { data: assocs } = await supabase
-          .from('associacoes')
-          .select('id')
-          .eq('uniao_id', profile.uniao_id!)
-        const assocIds = assocs?.map((a) => a.id) || []
-        if (assocIds.length > 0) {
-          query = query.in('associacao_id', assocIds)
-        } else {
-          query = query.eq('associacao_id', 'none')
-        }
-      } else if (profile.papel === 'admin_associacao') {
-        query = query.eq('associacao_id', profile.associacao_id!)
-      } else if (profile.papel === 'tesoureiro') {
-        query = query.eq('igreja_id', profile.igreja_id!)
-      } else {
-        if (profile.igreja_id) {
-          query = query.eq('igreja_id', profile.igreja_id)
-        }
-      }
-
-      if (filtroStatus !== 'todos') {
-        query = query.eq('status', filtroStatus)
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      setEntries((data as EntryWithIgreja[]) || [])
-    } catch (err) {
-      console.error('Erro ao buscar lançamentos:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [profile, filtroMes, filtroAno, filtroStatus])
 
   function handleNumericChange(field: string, value: string) {
     const num = value === '' ? 0 : parseFloat(value)
@@ -291,10 +211,11 @@ export default function LancamentosPage() {
   function openNewForm() {
     setEditingId(null)
     const newForm = { ...emptyForm }
-    // Pre-fill igreja_id if user has only one
+
     if (profile?.igreja_id && (profile.papel === 'tesoureiro' || profile.papel === 'secretario_igreja' || profile.papel === 'membro')) {
       newForm.igreja_id = profile.igreja_id
     }
+
     setForm(newForm)
     setShowForm(true)
   }
@@ -340,71 +261,64 @@ export default function LancamentosPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
     if (!form.igreja_id) {
-      alert('Selecione uma igreja')
+      toastError('Selecione uma igreja antes de salvar.')
       return
     }
-    setSaving(true)
+
     try {
-      // Find associacao_id from the selected igreja
-      const selectedIgreja = igrejas.find((i) => i.id === form.igreja_id)
+      const selectedIgreja = igrejas.find((igreja) => igreja.id === form.igreja_id)
       const payload = {
+        ...(editingId ? { id: editingId } : {}),
         ...form,
         associacao_id: selectedIgreja?.associacao_id || profile?.associacao_id || null,
         status: 'pendente' as const,
       }
 
-      if (editingId) {
-        const { error } = await supabase
-          .from('dados_financeiros')
-          .update({ ...payload, updated_at: new Date().toISOString() })
-          .eq('id', editingId)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('dados_financeiros')
-          .insert(payload)
-        if (error) throw error
-      }
+      await saveLancamento.mutateAsync(payload)
 
       setShowForm(false)
       setEditingId(null)
       setForm(emptyForm)
-      fetchEntries()
-    } catch (err) {
-      console.error('Erro ao salvar lançamento:', err)
-      alert('Erro ao salvar lançamento')
-    } finally {
-      setSaving(false)
+      toastSuccess(editingId ? 'Lancamento atualizado com sucesso.' : 'Lancamento salvo com sucesso.')
+    } catch (mutationError) {
+      console.error('Erro ao salvar lancamento:', mutationError)
+      toastError('Nao foi possivel salvar o lancamento agora.')
     }
   }
 
   async function handleStatusChange(id: string, newStatus: 'aprovado' | 'rejeitado') {
+    setBusyEntryId(id)
+    setBusyAction(newStatus === 'aprovado' ? 'approve' : 'reject')
+
     try {
-      const { error } = await supabase
-        .from('dados_financeiros')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', id)
-      if (error) throw error
-      fetchEntries()
-    } catch (err) {
-      console.error('Erro ao atualizar status:', err)
-      alert('Erro ao atualizar status')
+      await updateLancamentoStatus.mutateAsync({ id, status: newStatus })
+      toastSuccess(newStatus === 'aprovado' ? 'Lancamento aprovado.' : 'Lancamento rejeitado.')
+    } catch (mutationError) {
+      console.error('Erro ao atualizar status:', mutationError)
+      toastError('Nao foi possivel atualizar o status do lancamento.')
+    } finally {
+      setBusyEntryId(null)
+      setBusyAction(null)
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Tem certeza que deseja excluir este lançamento?')) return
+    if (!confirm('Tem certeza que deseja excluir este lancamento?')) return
+
+    setBusyEntryId(id)
+    setBusyAction('delete')
+
     try {
-      const { error } = await supabase
-        .from('dados_financeiros')
-        .delete()
-        .eq('id', id)
-      if (error) throw error
-      fetchEntries()
-    } catch (err) {
-      console.error('Erro ao excluir lançamento:', err)
-      alert('Erro ao excluir lançamento')
+      await deleteLancamento.mutateAsync(id)
+      toastSuccess('Lancamento excluido com sucesso.')
+    } catch (mutationError) {
+      console.error('Erro ao excluir lancamento:', mutationError)
+      toastError('Nao foi possivel excluir o lancamento.')
+    } finally {
+      setBusyEntryId(null)
+      setBusyAction(null)
     }
   }
 
@@ -415,61 +329,65 @@ export default function LancamentosPage() {
   const filteredEntries = useMemo(() => {
     if (!busca.trim()) return entries
     const term = busca.toLowerCase()
-    return entries.filter((e) =>
-      (e.igreja?.nome || '').toLowerCase().includes(term) ||
-      (e.observacoes || '').toLowerCase().includes(term)
+
+    return entries.filter((entry) =>
+      (entry.igreja?.nome || '').toLowerCase().includes(term) ||
+      (entry.observacoes || '').toLowerCase().includes(term),
     )
   }, [entries, busca])
 
+  function isEntryBusy(entryId: string, action?: 'approve' | 'reject' | 'delete') {
+    if (busyEntryId !== entryId) return false
+    if (!action) return true
+    return busyAction === action
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+          <div className="mb-1 flex items-center gap-2 text-sm text-gray-500">
             <Link to="/financeiro" className="hover:text-blue-600">Financeiro</Link>
             <span>/</span>
-            <span>Lançamentos</span>
+            <span>Lancamentos</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Lançamentos Financeiros</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Lancamentos Financeiros</h1>
         </div>
         <button className="btn-primary" onClick={() => showForm ? setShowForm(false) : openNewForm()}>
-          {showForm ? 'Cancelar' : '+ Novo Lançamento'}
+          {showForm ? 'Cancelar' : '+ Novo Lancamento'}
         </button>
       </div>
 
-      {/* Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="card space-y-6">
           <h2 className="text-lg font-semibold text-gray-800">
-            {editingId ? 'Editar Lançamento' : 'Novo Lançamento'}
+            {editingId ? 'Editar Lancamento' : 'Novo Lancamento'}
           </h2>
 
-          {/* Igreja + Período */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="label-field">Igreja</label>
               <select
                 value={form.igreja_id}
-                onChange={(e) => setForm((p) => ({ ...p, igreja_id: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, igreja_id: e.target.value }))}
                 className="input-field"
                 required
               >
                 <option value="">Selecione a igreja...</option>
-                {igrejas.map((ig) => (
-                  <option key={ig.id} value={ig.id}>{ig.nome}</option>
+                {igrejas.map((igreja) => (
+                  <option key={igreja.id} value={igreja.id}>{igreja.nome}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label-field">Mês</label>
+              <label className="label-field">Mes</label>
               <select
                 value={form.mes}
-                onChange={(e) => setForm((p) => ({ ...p, mes: Number(e.target.value) }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, mes: Number(e.target.value) }))}
                 className="input-field"
               >
-                {MESES.map((m, i) => (
-                  <option key={i} value={i + 1}>{m}</option>
+                {MESES.map((mes, index) => (
+                  <option key={index} value={index + 1}>{mes}</option>
                 ))}
               </select>
             </div>
@@ -477,23 +395,22 @@ export default function LancamentosPage() {
               <label className="label-field">Ano</label>
               <select
                 value={form.ano}
-                onChange={(e) => setForm((p) => ({ ...p, ano: Number(e.target.value) }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, ano: Number(e.target.value) }))}
                 className="input-field"
               >
-                {[2024, 2025, 2026, 2027].map((a) => (
-                  <option key={a} value={a}>{a}</option>
+                {[2024, 2025, 2026, 2027].map((ano) => (
+                  <option key={ano} value={ano}>{ano}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Receitas Section */}
           <div>
-            <h3 className="text-base font-semibold text-green-700 mb-3 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-500"></span>
+            <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-green-700">
+              <span className="h-3 w-3 rounded-full bg-green-500"></span>
               Receitas
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {receitaLabels.map(({ key, label }) => (
                 <div key={key}>
                   <label className="label-field">{label}</label>
@@ -516,13 +433,12 @@ export default function LancamentosPage() {
             </div>
           </div>
 
-          {/* Despesas Section */}
           <div>
-            <h3 className="text-base font-semibold text-red-700 mb-3 flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500"></span>
+            <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-red-700">
+              <span className="h-3 w-3 rounded-full bg-red-500"></span>
               Despesas
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {despesaLabels.map(({ key, label }) => (
                 <div key={key}>
                   <label className="label-field">{label}</label>
@@ -545,76 +461,94 @@ export default function LancamentosPage() {
             </div>
           </div>
 
-          {/* Saldo + Observacoes */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 border-t border-gray-200 pt-4">
+          <div className="flex flex-col items-start gap-4 border-t border-gray-200 pt-4 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <label className="label-field">Observações</label>
+              <label className="label-field">Observacoes</label>
               <textarea
                 value={form.observacoes}
-                onChange={(e) => setForm((p) => ({ ...p, observacoes: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, observacoes: e.target.value }))}
                 className="input-field"
                 rows={2}
-                placeholder="Observações opcionais..."
+                placeholder="Observacoes opcionais..."
               />
             </div>
-            <div className="text-right shrink-0">
-              <span className="text-sm text-gray-500 block">Saldo</span>
+            <div className="shrink-0 text-right">
+              <span className="block text-sm text-gray-500">Saldo</span>
               <span className={`text-2xl font-bold ${saldoForm >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                 {formatCurrency(saldoForm)}
               </span>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex justify-end gap-2">
             <button
               type="button"
               className="btn-secondary"
-              onClick={() => { setShowForm(false); setEditingId(null) }}
+              onClick={() => {
+                setShowForm(false)
+                setEditingId(null)
+              }}
             >
               Cancelar
             </button>
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Salvando...' : editingId ? 'Atualizar Lançamento' : 'Salvar Lançamento'}
+              {saving ? 'Salvando...' : editingId ? 'Atualizar Lancamento' : 'Salvar Lancamento'}
             </button>
           </div>
         </form>
       )}
 
-      {/* Filters */}
+      {error && (
+        <div className="card flex flex-col gap-3 border border-red-200 bg-red-50 text-sm text-red-700">
+          <div>
+            <p className="font-medium">Nao foi possivel carregar os lancamentos do periodo.</p>
+            <p className="mt-1 text-red-600/90">{error}</p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-100"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="card">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row">
           <div className="flex-1">
             <input
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="input-field"
-              placeholder="Buscar por igreja ou observação..."
+              placeholder="Buscar por igreja ou observacao..."
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex lg:items-center">
             <select
               value={filtroMes}
               onChange={(e) => setFiltroMes(Number(e.target.value))}
-              className="input-field w-auto"
+              className="input-field w-full lg:w-auto"
             >
-              {MESES.map((m, i) => (
-                <option key={i} value={i + 1}>{m}</option>
+              {MESES.map((mes, index) => (
+                <option key={index} value={index + 1}>{mes}</option>
               ))}
             </select>
             <select
               value={filtroAno}
               onChange={(e) => setFiltroAno(Number(e.target.value))}
-              className="input-field w-auto"
+              className="input-field w-full lg:w-auto"
             >
-              {[2024, 2025, 2026, 2027].map((a) => (
-                <option key={a} value={a}>{a}</option>
+              {[2024, 2025, 2026, 2027].map((ano) => (
+                <option key={ano} value={ano}>{ano}</option>
               ))}
             </select>
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
-              className="input-field w-auto"
+              className="input-field w-full lg:w-auto"
             >
               <option value="todos">Todos status</option>
               <option value="pendente">Pendente</option>
@@ -625,140 +559,156 @@ export default function LancamentosPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="card overflow-x-auto p-0">
+      <div className="card overflow-hidden p-0">
         {loading ? (
-          <p className="text-center text-gray-400 py-8">Carregando...</p>
-        ) : filteredEntries.length === 0 ? (
-          <p className="text-center text-gray-400 py-8">Nenhum lançamento encontrado</p>
+          <FinanceiroTableSkeleton titleWidth="w-48" rows={4} embedded />
         ) : (
           <>
-            {/* Desktop Table */}
             <div className="hidden lg:block">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3">Igreja</th>
-                    <th className="px-4 py-3">Período</th>
-                    <th className="px-4 py-3 text-right">Receitas</th>
-                    <th className="px-4 py-3 text-right">Despesas</th>
-                    <th className="px-4 py-3 text-right">Saldo</th>
-                    <th className="px-4 py-3 text-center">Status</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredEntries.map((entry) => {
-                    const receitas = calcTotalReceitas(entry)
-                    const despesas = calcTotalDespesas(entry)
-                    const saldo = receitas - despesas
-                    const st = statusConfig[entry.status] || statusConfig.pendente
-                    return (
-                      <tr key={entry.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-gray-800">
-                          {entry.igreja?.nome || '---'}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">
-                          {MESES[entry.mes - 1]} / {entry.ano}
-                        </td>
-                        <td className="px-4 py-3 text-right text-green-600 font-medium">
-                          {formatCurrency(receitas)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-red-600 font-medium">
-                          {formatCurrency(despesas)}
-                        </td>
-                        <td className={`px-4 py-3 text-right font-medium ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                          {formatCurrency(saldo)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${st.bg} ${st.text}`}>
-                            {st.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            {entry.status === 'pendente' && (
-                              <button
-                                onClick={() => openEditForm(entry)}
-                                className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                title="Editar"
-                              >
-                                Editar
-                              </button>
-                            )}
-                            {canApprove && entry.status === 'pendente' && (
-                              <>
-                                <button
-                                  onClick={() => handleStatusChange(entry.id, 'aprovado')}
-                                  className="px-2 py-1 text-xs rounded bg-green-100 text-green-700 hover:bg-green-200"
-                                >
-                                  Aprovar
-                                </button>
-                                <button
-                                  onClick={() => handleStatusChange(entry.id, 'rejeitado')}
-                                  className="px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200"
-                                >
-                                  Rejeitar
-                                </button>
-                              </>
-                            )}
-                            {entry.status === 'pendente' && (
-                              <button
-                                onClick={() => handleDelete(entry.id)}
-                                className="px-2 py-1 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100"
-                                title="Excluir"
-                              >
-                                Excluir
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+              <VirtualTable<EntryWithIgreja>
+                items={filteredEntries}
+                getKey={(e) => e.id}
+                rowHeight={52}
+                maxHeight={520}
+                emptyMessage="Nenhum lancamento encontrado"
+                columns={[
+                  {
+                    key: 'igreja',
+                    header: 'Igreja',
+                    width: '2fr',
+                    render: (e) => <span className="font-medium text-gray-800">{e.igreja?.nome || '---'}</span>,
+                  },
+                  {
+                    key: 'periodo',
+                    header: 'Periodo',
+                    width: '1fr',
+                    render: (e) => <span className="text-gray-500">{MESES[e.mes - 1]} / {e.ano}</span>,
+                  },
+                  {
+                    key: 'receitas',
+                    header: 'Receitas',
+                    width: '1fr',
+                    headerClass: 'text-right',
+                    cellClass: 'justify-end',
+                    render: (e) => <span className="font-medium text-green-600">{formatCurrency(calcTotalReceitas(e))}</span>,
+                  },
+                  {
+                    key: 'despesas',
+                    header: 'Despesas',
+                    width: '1fr',
+                    headerClass: 'text-right',
+                    cellClass: 'justify-end',
+                    render: (e) => <span className="font-medium text-red-600">{formatCurrency(calcTotalDespesas(e))}</span>,
+                  },
+                  {
+                    key: 'saldo',
+                    header: 'Saldo',
+                    width: '1fr',
+                    headerClass: 'text-right',
+                    cellClass: 'justify-end',
+                    render: (e) => {
+                      const s = calcTotalReceitas(e) - calcTotalDespesas(e)
+                      return <span className={`font-medium ${s >= 0 ? 'text-blue-600' : 'text-red-600'}`}>{formatCurrency(s)}</span>
+                    },
+                  },
+                  {
+                    key: 'status',
+                    header: 'Status',
+                    width: '100px',
+                    headerClass: 'text-center',
+                    cellClass: 'justify-center',
+                    render: (e) => {
+                      const st = statusConfig[e.status] || statusConfig.pendente
+                      return <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${st.bg} ${st.text}`}>{st.label}</span>
+                    },
+                  },
+                  {
+                    key: 'acoes',
+                    header: 'Acoes',
+                    width: '180px',
+                    headerClass: 'text-right',
+                    cellClass: 'justify-end gap-1',
+                    render: (e) => (
+                      <div className="flex items-center justify-end gap-1">
+                        {e.status === 'pendente' && (
+                          <button onClick={() => openEditForm(e)} disabled={isEntryBusy(e.id)}
+                            className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60">
+                            Editar
+                          </button>
+                        )}
+                        {canApprove && e.status === 'pendente' && (
+                          <>
+                            <button onClick={() => void handleStatusChange(e.id, 'aprovado')} disabled={isEntryBusy(e.id)}
+                              className="rounded bg-green-100 px-2 py-1 text-xs text-green-700 hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-60">
+                              {isEntryBusy(e.id, 'approve') ? 'Aprovando...' : 'Aprovar'}
+                            </button>
+                            <button onClick={() => void handleStatusChange(e.id, 'rejeitado')} disabled={isEntryBusy(e.id)}
+                              className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60">
+                              {isEntryBusy(e.id, 'reject') ? 'Rejeitando...' : 'Rejeitar'}
+                            </button>
+                          </>
+                        )}
+                        {e.status === 'pendente' && (
+                          <button onClick={() => void handleDelete(e.id)} disabled={isEntryBusy(e.id)}
+                            className="rounded bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60">
+                            {isEntryBusy(e.id, 'delete') ? 'Excluindo...' : 'Excluir'}
+                          </button>
+                        )}
+                      </div>
+                    ),
+                  },
+                ] satisfies VColumn<EntryWithIgreja>[]}
+              />
             </div>
 
-            {/* Mobile Cards */}
-            <div className="lg:hidden divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 lg:hidden">
               {filteredEntries.map((entry) => {
                 const receitas = calcTotalReceitas(entry)
                 const despesas = calcTotalDespesas(entry)
                 const saldo = receitas - despesas
                 const st = statusConfig[entry.status] || statusConfig.pendente
+
                 return (
-                  <div key={entry.id} className="p-4 space-y-3">
+                  <div key={entry.id} className="space-y-3 p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-gray-800">{entry.igreja?.nome || '---'}</p>
                         <p className="text-xs text-gray-400">{MESES[entry.mes - 1]} / {entry.ano}</p>
                       </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${st.bg} ${st.text}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${st.bg} ${st.text}`}>
                         {st.label}
                       </span>
                     </div>
+
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
                       <div>
-                        <span className="text-gray-400 block">Receitas</span>
-                        <span className="text-green-600 font-medium">{formatCurrency(receitas)}</span>
+                        <span className="block text-gray-400">Receitas</span>
+                        <span className="font-medium text-green-600">{formatCurrency(receitas)}</span>
                       </div>
                       <div>
-                        <span className="text-gray-400 block">Despesas</span>
-                        <span className="text-red-600 font-medium">{formatCurrency(despesas)}</span>
+                        <span className="block text-gray-400">Despesas</span>
+                        <span className="font-medium text-red-600">{formatCurrency(despesas)}</span>
                       </div>
                       <div>
-                        <span className="text-gray-400 block">Saldo</span>
+                        <span className="block text-gray-400">Saldo</span>
                         <span className={`font-medium ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                           {formatCurrency(saldo)}
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-1 flex-wrap">
+
+                    {entry.observacoes && (
+                      <div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                        {entry.observacoes}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-1">
                       {entry.status === 'pendente' && (
                         <button
                           onClick={() => openEditForm(entry)}
-                          className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          disabled={isEntryBusy(entry.id)}
+                          className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Editar
                         </button>
@@ -766,25 +716,28 @@ export default function LancamentosPage() {
                       {canApprove && entry.status === 'pendente' && (
                         <>
                           <button
-                            onClick={() => handleStatusChange(entry.id, 'aprovado')}
-                            className="px-2 py-1 text-xs rounded bg-green-100 text-green-700 hover:bg-green-200"
+                            onClick={() => void handleStatusChange(entry.id, 'aprovado')}
+                            disabled={isEntryBusy(entry.id)}
+                            className="rounded bg-green-100 px-2 py-1 text-xs text-green-700 hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            Aprovar
+                            {isEntryBusy(entry.id, 'approve') ? 'Aprovando...' : 'Aprovar'}
                           </button>
                           <button
-                            onClick={() => handleStatusChange(entry.id, 'rejeitado')}
-                            className="px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200"
+                            onClick={() => void handleStatusChange(entry.id, 'rejeitado')}
+                            disabled={isEntryBusy(entry.id)}
+                            className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            Rejeitar
+                            {isEntryBusy(entry.id, 'reject') ? 'Rejeitando...' : 'Rejeitar'}
                           </button>
                         </>
                       )}
                       {entry.status === 'pendente' && (
                         <button
-                          onClick={() => handleDelete(entry.id)}
-                          className="px-2 py-1 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100"
+                          onClick={() => void handleDelete(entry.id)}
+                          disabled={isEntryBusy(entry.id)}
+                          className="rounded bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          Excluir
+                          {isEntryBusy(entry.id, 'delete') ? 'Excluindo...' : 'Excluir'}
                         </button>
                       )}
                     </div>
@@ -798,3 +751,4 @@ export default function LancamentosPage() {
     </div>
   )
 }
+

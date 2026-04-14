@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@/types'
+import { logAudit } from '@/lib/audit'
+import { trackError } from '@/lib/observability'
 import {
   FiArrowLeft, FiSave, FiUser, FiShield, FiLock, FiKey,
   FiMail, FiCamera, FiEye, FiEyeOff, FiRefreshCw, FiLogIn,
@@ -116,7 +118,7 @@ function Msg({ msg }: { msg: { type: 'success' | 'error'; text: string } | null 
 export default function UsuarioDetalhePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { hasRole } = useAuth()
+  const { hasRole, user: actorUser } = useAuth()
   const canManage = hasRole(['admin', 'admin_uniao', 'admin_associacao'])
 
   const [usuario, setUsuario] = useState<UsuarioFull | null>(null)
@@ -275,6 +277,9 @@ export default function UsuarioDetalhePage() {
 
       const { error } = await supabase.from('usuarios').update(update).eq('id', usuario!.id)
       if (error) throw error
+      if (actorUser) {
+        await logAudit('USER_PERFIL_UPDATED', { target_id: usuario!.id, fields: Object.keys(update).filter(k => k !== 'updated_at') }, actorUser.id)
+      }
       setMsgPerfil({ type: 'success', text: 'Perfil atualizado com sucesso!' })
     } catch (err: any) {
       setMsgPerfil({ type: 'error', text: 'Erro: ' + err.message })
@@ -286,13 +291,31 @@ export default function UsuarioDetalhePage() {
   async function handleSalvarAcesso() {
     setSavingAcesso(true); setMsgAcesso(null)
     try {
+      const prev = { papel: usuario!.papel, uniao_id: usuario!.uniao_id, associacao_id: usuario!.associacao_id, igreja_id: usuario!.igreja_id, ativo: usuario!.ativo }
       const { error } = await supabase.from('usuarios').update({
         papel, uniao_id: uniaoId || null, associacao_id: associacaoId || null,
         igreja_id: igrejaId || null, ativo,
       }).eq('id', usuario!.id)
       if (error) throw error
+
+      if (actorUser) {
+        const actorId = actorUser.id
+        const targetId = usuario!.id
+        if (prev.papel !== papel) {
+          await logAudit('USER_ROLE_CHANGED', { target_id: targetId, from: prev.papel, to: papel }, actorId)
+        }
+        if (prev.ativo !== ativo) {
+          await logAudit(ativo ? 'USER_ENABLED' : 'USER_DISABLED', { target_id: targetId }, actorId)
+        }
+        if (prev.uniao_id !== (uniaoId || null) || prev.associacao_id !== (associacaoId || null) || prev.igreja_id !== (igrejaId || null)) {
+          await logAudit('USER_LOTACAO_CHANGED', { target_id: targetId, from: { uniao_id: prev.uniao_id, associacao_id: prev.associacao_id, igreja_id: prev.igreja_id }, to: { uniao_id: uniaoId || null, associacao_id: associacaoId || null, igreja_id: igrejaId || null } }, actorId)
+        }
+      }
+
+      setUsuario(u => u ? { ...u, papel, uniao_id: uniaoId || null, associacao_id: associacaoId || null, igreja_id: igrejaId || null, ativo } : u)
       setMsgAcesso({ type: 'success', text: 'Acesso atualizado!' })
     } catch (err: any) {
+      trackError(err, { context: 'admin_salvar_acesso', target_id: usuario?.id })
       setMsgAcesso({ type: 'error', text: 'Erro: ' + err.message })
     } finally { setSavingAcesso(false) }
   }
@@ -306,9 +329,12 @@ export default function UsuarioDetalhePage() {
         redirectTo: `${window.location.origin}/reset-password`,
       })
       if (error) throw error
+      if (actorUser) await logAudit('USER_RESET_PASSWORD', { target_id: usuario!.id, email: usuario!.email }, actorUser.id)
       setMsgSeg({ type: 'success', text: `Link enviado para ${usuario!.email}` })
-    } catch { setMsgSeg({ type: 'error', text: 'Erro ao enviar email' }) }
-    finally { setEnviandoReset(false) }
+    } catch (err) {
+      trackError(err, { context: 'admin_reset_senha', target_id: usuario?.id })
+      setMsgSeg({ type: 'error', text: 'Erro ao enviar email' })
+    } finally { setEnviandoReset(false) }
   }
 
   async function handleDefinirSenha() {
@@ -321,9 +347,11 @@ export default function UsuarioDetalhePage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
+      if (actorUser) await logAudit('USER_SET_PASSWORD', { target_id: usuario!.id }, actorUser.id)
       setMsgSeg({ type: 'success', text: 'Senha definida!' })
       setNovaSenha(''); setConfirmarSenha('')
     } catch (err: any) {
+      trackError(err, { context: 'admin_definir_senha', target_id: usuario?.id })
       setMsgSeg({ type: 'error', text: 'Erro: ' + (err.message || '') })
     } finally { setDefinindoSenha(false) }
   }
