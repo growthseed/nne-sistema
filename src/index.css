@@ -5,16 +5,19 @@
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 antialiased;
+    @apply dark:bg-gray-950 dark:text-gray-100;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary-700 text-white px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply dark:bg-primary-600 dark:hover:bg-primary-500;
   }
 
   .btn-secondary {
     @apply bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+    @apply dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700;
   }
 
   .btn-danger {
@@ -22,43 +25,53 @@
   }
 
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors bg-white text-gray-900;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none transition-colors bg-white text-gray-900;
+    @apply dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:focus:ring-primary-500 dark:focus:border-primary-500;
   }
 
   .label-field {
     @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply dark:text-gray-300;
   }
 
   .card {
     @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply dark:bg-gray-900 dark:border-gray-800;
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors;
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-700 transition-colors;
+    @apply dark:text-gray-400 dark:hover:bg-primary-900/30 dark:hover:text-primary-300;
   }
 
   .sidebar-link-active {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary-50 text-primary-600 font-medium;
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary-50 text-primary-700 font-medium;
+    @apply dark:bg-primary-900/40 dark:text-primary-300;
   }
 
   .sidebar-group-header {
     @apply flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-600 transition-colors select-none rounded-lg;
+    @apply dark:text-gray-500 dark:hover:text-gray-300;
   }
 
   .sidebar-group-header-active {
-    @apply flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-primary-500 uppercase tracking-wider cursor-pointer select-none rounded-lg;
+    @apply flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-primary-700 uppercase tracking-wider cursor-pointer select-none rounded-lg;
+    @apply dark:text-primary-400;
   }
 
   .sidebar-subitem {
-    @apply flex items-center gap-3 pl-7 pr-4 py-2 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-colors text-sm;
+    @apply flex items-center gap-3 pl-7 pr-4 py-2 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-700 transition-colors text-sm;
+    @apply dark:text-gray-400 dark:hover:bg-primary-900/30 dark:hover:text-primary-300;
   }
 
   .sidebar-subitem-active {
-    @apply flex items-center gap-3 pl-7 pr-4 py-2 rounded-lg bg-primary-50 text-primary-600 font-medium text-sm;
+    @apply flex items-center gap-3 pl-7 pr-4 py-2 rounded-lg bg-primary-50 text-primary-700 font-medium text-sm;
+    @apply dark:bg-primary-900/40 dark:text-primary-300;
   }
 
   /* Public form input (green theme) */
   .inp {
-    @apply w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors bg-white text-sm;
+    @apply w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-600 focus:border-primary-600 outline-none transition-colors bg-white text-sm;
+    @apply dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100;
   }
 }

@@ -2,13 +2,12 @@ import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useTeacherGamification } from '@/hooks/useTeacherGamification'
+// gamificação removida na simplificação
 import {
   HiOutlineAcademicCap, HiOutlineUserGroup, HiOutlineTrendingUp,
   HiOutlineOfficeBuilding, HiOutlineClipboardCheck, HiOutlineStar,
   HiOutlineChevronDown, HiOutlineChevronUp, HiOutlineEye,
-  HiOutlineExclamation, HiOutlineChartBar, HiOutlineFire,
-  HiOutlineChatAlt2, HiOutlineGlobe, HiOutlineLightningBolt,
+  HiOutlineExclamation,
 } from 'react-icons/hi'
 
 interface TurmaResumo {
@@ -27,15 +26,10 @@ interface AlunoResumo {
   pessoa: { nome: string; celular: string | null } | { nome: string; celular: string | null }[] | null
 }
 
-interface NpsResumo {
-  classe_id: string; total: number; media: number
-}
-
-type ViewMode = 'painel' | 'professores' | 'nps'
+type ViewMode = 'painel' | 'professores'
 
 function getViewFromPath(pathname: string): ViewMode {
   if (pathname.includes('/professores')) return 'professores'
-  if (pathname.includes('/nps')) return 'nps'
   return 'painel'
 }
 
@@ -45,17 +39,12 @@ export default function EBDashboardPage() {
   const viewMode = getViewFromPath(location.pathname)
   const [turmas, setTurmas] = useState<TurmaResumo[]>([])
   const [alunos, setAlunos] = useState<AlunoResumo[]>([])
-  const [npsData, setNpsData] = useState<NpsResumo[]>([])
   const [loading, setLoading] = useState(true)
   const [filtroAssoc, setFiltroAssoc] = useState('todas')
   const [expandedProf, setExpandedProf] = useState<string | null>(null)
   const [buscaAluno, setBuscaAluno] = useState('')
 
-  // Teacher gamification (for current logged-in user)
-  const teacherGam = useTeacherGamification(profile?.id || null)
-
-  // Forum/chat stats
-  const [forumStats, setForumStats] = useState({ topicos: 0, respostas: 0, mensagens: 0 })
+  // Forum/chat stats removidos na simplificação
 
   useEffect(() => { if (profile) loadData() }, [profile])
 
@@ -82,37 +71,7 @@ export default function EBDashboardPage() {
         .in('classe_id', turmaIds)
 
       setAlunos(alunosData || [])
-
-      // NPS aggregated
-      const { data: nps } = await supabase
-        .from('eb_nps')
-        .select('classe_id, nota')
-        .in('classe_id', turmaIds)
-
-      if (nps) {
-        const grouped: Record<string, { total: number; sum: number }> = {}
-        nps.forEach(n => {
-          if (!grouped[n.classe_id]) grouped[n.classe_id] = { total: 0, sum: 0 }
-          grouped[n.classe_id].total++
-          grouped[n.classe_id].sum += n.nota
-        })
-        setNpsData(Object.entries(grouped).map(([id, v]) => ({
-          classe_id: id, total: v.total, media: Math.round((v.sum / v.total) * 10) / 10,
-        })))
-      }
     }
-
-    // Forum/chat stats
-    const [topicosRes, msgRes] = await Promise.all([
-      supabase.from('eb_forum_topicos').select('id', { count: 'exact', head: true }),
-      supabase.from('eb_mensagens').select('id', { count: 'exact', head: true }),
-    ])
-    const respostasCount = await supabase.from('eb_forum_respostas').select('id', { count: 'exact', head: true })
-    setForumStats({
-      topicos: topicosRes.count || 0,
-      respostas: respostasCount.count || 0,
-      mensagens: msgRes.count || 0,
-    })
 
     setLoading(false)
   }
@@ -191,7 +150,6 @@ export default function EBDashboardPage() {
             <p className="text-green-100 text-sm">
               {viewMode === 'painel' && 'Painel Administrativo — Acompanhamento geral'}
               {viewMode === 'professores' && 'Ranking e desempenho dos professores'}
-              {viewMode === 'nps' && 'NPS & Avaliações das turmas'}
             </p>
           </div>
         </div>
@@ -358,56 +316,13 @@ export default function EBDashboardPage() {
 
       {/* ========== VIEW: PROFESSORES ========== */}
       {viewMode === 'professores' && <>
-        {/* My gamification (teacher) */}
-        {teacherGam.profile && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Minha Influência</h3>
-            <div className="flex items-center gap-4">
-              <div className="relative shrink-0">
-                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-                  <circle cx="32" cy="32" r="28" fill="none" stroke={teacherGam.currentLevel.color_hex} strokeWidth="4"
-                    strokeDasharray={`${teacherGam.progressToNextLevel * 1.76} 176`} strokeLinecap="round" className="transition-all duration-700" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-black" style={{ color: teacherGam.currentLevel.color_hex }}>{teacherGam.currentLevel.level_number}</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-bold text-gray-800">{teacherGam.currentLevel.name}</h3>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: teacherGam.currentLevel.color_hex + '20', color: teacherGam.currentLevel.color_hex }}>
-                    Nível {teacherGam.currentLevel.level_number}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400">{teacherGam.currentLevel.description}</p>
-                <div className="mt-2 grid grid-cols-3 gap-3">
-                  <div><p className="text-lg font-bold text-gray-800">{teacherGam.profile.xp_total.toLocaleString()}</p><p className="text-[10px] text-gray-400">XP Total</p></div>
-                  <div><p className="text-lg font-bold text-blue-600">{teacherGam.profile.xp_current_week}</p><p className="text-[10px] text-gray-400">XP Semana</p></div>
-                  <div><p className="text-lg font-bold text-green-600">{teacherGam.profile.xp_current_month}</p><p className="text-[10px] text-gray-400">XP Mês</p></div>
-                </div>
-              </div>
-            </div>
-            {/* Teacher badges */}
-            {teacherGam.badges.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-100 flex gap-1.5 overflow-x-auto">
-                {teacherGam.badges.map(b => (
-                  <span key={b.id} className={`shrink-0 text-[10px] px-2.5 py-1 rounded-full font-medium ${
-                    b.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' : b.rarity === 'rare' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'
-                  }`} title={b.description}>{b.name}</span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Stats do professor */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { value: totalAlunos, label: 'Total Alunos', color: 'text-blue-600 bg-blue-50', icon: HiOutlineUserGroup },
             { value: turmasAtivas, label: 'Turmas Ativas', color: 'text-green-600 bg-green-50', icon: HiOutlineAcademicCap },
             { value: totalDecisoes, label: 'Decisões', color: 'text-amber-600 bg-amber-50', icon: HiOutlineStar },
-            { value: forumStats.topicos + forumStats.respostas, label: 'Interações Fórum', color: 'text-purple-600 bg-purple-50', icon: HiOutlineChatAlt2 },
+            { value: mediaLicoes, label: 'Média Lições', color: 'text-purple-600 bg-purple-50', icon: HiOutlineClipboardCheck },
           ].map((s, i) => (
             <div key={i} className="card p-4">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${s.color}`}><s.icon className="w-5 h-5" /></div>
@@ -448,7 +363,6 @@ export default function EBDashboardPage() {
                     <div className="ml-12 mb-3 space-y-1.5">
                       {filteredTurmas.filter(t => t.instrutor_nome === p.nome).map(t => {
                         const tAlunos = alunos.filter(a => a.classe_id === t.id)
-                        const nps = npsData.find(n => n.classe_id === t.id)
                         const pctConcluido = t.total_licoes > 0 ? Math.round((tAlunos.reduce((s, a) => s + a.licoes_concluidas, 0) / (tAlunos.length * t.total_licoes || 1)) * 100) : 0
                         return (
                           <div key={t.id} className="bg-gray-50 rounded-xl p-3 space-y-2">
@@ -458,7 +372,6 @@ export default function EBDashboardPage() {
                                 <span className="text-xs font-medium text-gray-700">{t.nome}</span>
                                 <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">{t.modulo_id === 'principios_fe' ? 'PF' : 'CF'}</span>
                               </div>
-                              {nps && <span className={`text-xs font-bold ${nps.media >= 8 ? 'text-green-600' : nps.media >= 6 ? 'text-amber-600' : 'text-red-600'}`}>NPS {nps.media}</span>}
                             </div>
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <span>{tAlunos.length} alunos</span>
@@ -479,91 +392,9 @@ export default function EBDashboardPage() {
           )}
         </div>
 
-        {/* Comunidade / Fórum monitoring */}
-        <div className="card p-5">
-          <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <HiOutlineChatAlt2 className="w-4 h-4 text-purple-600" /> Comunidade & Fórum
-          </h2>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-purple-50 rounded-xl">
-              <p className="text-2xl font-bold text-purple-600">{forumStats.topicos}</p>
-              <p className="text-[10px] text-gray-500">Tópicos</p>
-            </div>
-            <div className="text-center p-3 bg-blue-50 rounded-xl">
-              <p className="text-2xl font-bold text-blue-600">{forumStats.respostas}</p>
-              <p className="text-[10px] text-gray-500">Respostas</p>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-xl">
-              <p className="text-2xl font-bold text-green-600">{forumStats.mensagens}</p>
-              <p className="text-[10px] text-gray-500">Mensagens Chat</p>
-            </div>
-          </div>
-          <a href="/portal/forum" target="_blank" rel="noopener noreferrer"
-            className="mt-3 flex items-center justify-center gap-2 text-xs text-purple-600 hover:text-purple-700 font-medium bg-purple-50 hover:bg-purple-100 py-2.5 rounded-xl transition-colors">
-            <HiOutlineGlobe className="w-4 h-4" /> Abrir Fórum da Comunidade
-          </a>
-        </div>
       </>}
 
-      {/* ========== VIEW: NPS ========== */}
-      {viewMode === 'nps' && <>
-        {/* NPS Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          {(() => {
-            const allNps = npsData
-            const totalAval = allNps.reduce((s, n) => s + n.total, 0)
-            const totalPeso = allNps.reduce((s, n) => s + n.total, 0)
-            const mediaGeral = totalPeso > 0 ? Math.round(allNps.reduce((s, n) => s + n.media * n.total, 0) / totalPeso * 10) / 10 : 0
-            return [
-              { value: totalAval, label: 'Avaliações', color: 'text-blue-600' },
-              { value: mediaGeral, label: 'Média Geral', color: mediaGeral >= 8 ? 'text-green-600' : mediaGeral >= 6 ? 'text-amber-600' : 'text-red-600' },
-              { value: allNps.length, label: 'Turmas avaliadas', color: 'text-purple-600' },
-            ].map((s, i) => (
-              <div key={i} className="card p-4 text-center">
-                <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-                <p className="text-xs text-gray-400 mt-1">{s.label}</p>
-              </div>
-            ))
-          })()}
-        </div>
-
-        {/* NPS por turma */}
-        {npsData.length === 0 ? (
-          <div className="card p-10 text-center">
-            <HiOutlineChartBar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Nenhuma avaliação NPS registrada</p>
-            <p className="text-xs text-gray-400 mt-1">As avaliações aparecem após os alunos responderem questionários</p>
-          </div>
-        ) : (
-          <div className="card p-5">
-            <h2 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <HiOutlineChartBar className="w-4 h-4 text-purple-600" /> NPS por Turma
-            </h2>
-            <div className="space-y-3">
-              {npsData.sort((a, b) => b.media - a.media).map(n => {
-                const turma = turmas.find(t => t.id === n.classe_id)
-                const color = n.media >= 8 ? 'bg-green-500' : n.media >= 6 ? 'bg-amber-500' : 'bg-red-500'
-                const textColor = n.media >= 8 ? 'text-green-600' : n.media >= 6 ? 'text-amber-600' : 'text-red-600'
-                const pct = (n.media / 10) * 100
-                return (
-                  <div key={n.classe_id}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700">{turma?.nome || '—'}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-lg font-bold ${textColor}`}>{n.media}</span>
-                        <span className="text-[10px] text-gray-400">{n.total} aval.</span>
-                      </div>
-                    </div>
-                    <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-      </>}
+      {/* NPS removido na simplificação */}
     </div>
   )
 }

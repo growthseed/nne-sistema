@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import {
   HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff,
@@ -10,6 +10,9 @@ type View = 'login' | 'register' | 'forgot' | 'reset-sent'
 
 export default function PortalLoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/portal'
+  const selfSignupEnabled = import.meta.env.VITE_PORTAL_SELF_SIGNUP_ENABLED === 'true'
   const [view, setView] = useState<View>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,12 +37,18 @@ export default function PortalLoginPage() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       // Only redirect if NOT in password recovery flow (use ref to avoid stale closure)
-      if (session && !showResetRef.current) navigate('/portal', { replace: true })
+      if (session && !showResetRef.current) navigate(redirectTo, { replace: true })
       setCheckingSession(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!selfSignupEnabled && view === 'register') {
+      setView('login')
+    }
+  }, [selfSignupEnabled, view])
 
   async function handleResetPassword(e: React.FormEvent) {
     e.preventDefault()
@@ -48,7 +57,7 @@ export default function PortalLoginPage() {
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) { setError(error.message); setLoading(false); return }
     setShowResetForm(false)
-    navigate('/portal', { replace: true })
+    navigate(redirectTo, { replace: true })
   }
 
   async function handleEmailLogin(e: React.FormEvent) {
@@ -65,7 +74,7 @@ export default function PortalLoginPage() {
       else
         setError(error.message || 'Erro ao fazer login. Tente novamente.')
     } else {
-      navigate('/portal', { replace: true })
+      navigate(redirectTo, { replace: true })
     }
     setLoading(false)
   }
@@ -73,6 +82,10 @@ export default function PortalLoginPage() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    if (!selfSignupEnabled) {
+      setError('O cadastro público do portal está desativado. Solicite seu acesso ao professor ou à secretaria.')
+      return
+    }
     if (password.length < 6) { setError('A senha deve ter pelo menos 6 caracteres'); return }
     setLoading(true)
     const { error } = await supabase.auth.signUp({
@@ -83,7 +96,7 @@ export default function PortalLoginPage() {
       setError(error.message)
     } else {
       const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
-      if (!loginErr) navigate('/portal', { replace: true })
+      if (!loginErr) navigate(redirectTo, { replace: true })
       else { setView('login'); setError('Conta criada! Faça login.') }
     }
     setLoading(false)
@@ -105,7 +118,7 @@ export default function PortalLoginPage() {
     setError('')
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/portal` }
+      options: { redirectTo: `${window.location.origin}${redirectTo}` }
     })
     if (error) setError(error.message)
   }
@@ -229,17 +242,24 @@ export default function PortalLoginPage() {
                 </button>
               </form>
 
-              <p className="text-center text-sm text-gray-500 mt-8">
+              {selfSignupEnabled && (
+                <p className="text-center text-sm text-gray-500 mt-8">
                 Não tem conta?{' '}
                 <button onClick={() => { setView('register'); setError('') }} className="text-green-600 hover:text-green-700 font-semibold">
                   Criar conta gratuita
                 </button>
-              </p>
+                </p>
+              )}
+              {!selfSignupEnabled && (
+                <p className="text-center text-sm text-gray-500 mt-8">
+                  O acesso é liberado pela equipe da escola bíblica.
+                </p>
+              )}
             </>
           )}
 
           {/* ===== REGISTER ===== */}
-          {view === 'register' && (
+          {view === 'register' && selfSignupEnabled && (
             <>
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900">Criar conta</h2>

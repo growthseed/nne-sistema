@@ -148,7 +148,7 @@ export default function Step1DadosPessoais() {
                 </select>
               </div>
             )
-          })()
+          })()}
           {errors.data_nascimento && <p className="text-sm text-red-600 mt-1">{errors.data_nascimento.message as string}</p>}
         </div>
 

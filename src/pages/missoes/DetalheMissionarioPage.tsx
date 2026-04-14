@@ -232,6 +232,7 @@ export default function DetalheMissionarioPage() {
   const [editForm, setEditForm] = useState<Record<string, any>>({})
   const [editHistorico, setEditHistorico] = useState<HistoricoMissionario[]>([])
   const [savingEdit, setSavingEdit] = useState(false)
+  const [allAssociacoes, setAllAssociacoes] = useState<{ id: string; sigla: string; nome: string; uniao_id: string | null }[]>([])
   const [showParamModal, setShowParamModal] = useState(false)
   const [editParamForm, setEditParamForm] = useState<Record<string, any>>({})
   const [savingParam, setSavingParam] = useState(false)
@@ -271,6 +272,19 @@ export default function DetalheMissionarioPage() {
   useEffect(() => {
     if (profile && id) fetchMissionario()
   }, [profile, id])
+
+  // Load available associações once (for the edit modal select)
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('associacoes')
+        .select('id, sigla, nome, uniao_id')
+        .order('sigla')
+      if (!cancelled && !error && data) setAllAssociacoes(data as any)
+    })()
+    return () => { cancelled = true }
+  }, [])
 
   // ---- Photo upload: resize + compress + save as data URL ----
   async function handleFotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -2278,6 +2292,29 @@ export default function DetalheMissionarioPage() {
                   <div>
                     <label className="label-field">Motivo Inativo</label>
                     <input className="input-field" value={editForm.motivo_inativo || ''} onChange={e => setEditForm(f => ({...f, motivo_inativo: e.target.value}))} />
+                  </div>
+                  <div>
+                    <label className="label-field">Associação / Campo</label>
+                    <select
+                      className="input-field"
+                      value={editForm.associacao_id || ''}
+                      onChange={e => {
+                        const newId = e.target.value || null
+                        const assoc = allAssociacoes.find(a => a.id === newId)
+                        setEditForm(f => ({
+                          ...f,
+                          associacao_id: newId,
+                          uniao_id: assoc?.uniao_id ?? f.uniao_id ?? null,
+                        }))
+                      }}
+                    >
+                      <option value="">— Sem associação —</option>
+                      {allAssociacoes.map(a => (
+                        <option key={a.id} value={a.id}>
+                          {a.sigla} — {a.nome}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </fieldset>

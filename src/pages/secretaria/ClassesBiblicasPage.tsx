@@ -1,175 +1,169 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+﻿import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import DateDropdowns from '@/components/ui/DateDropdowns'
 import { useAuth } from '@/contexts/AuthContext'
+import {
+  type ClasseBiblicaAluno as Aluno,
+  type ClasseBiblicaListItem as ClasseBiblica,
+  useAddAlunoClasseBiblica,
+  useAtivarAulaClasseBiblica,
+  useClasseBiblicaDetail,
+  useClassesBiblicas,
+  useCreateClasseBiblica,
+  useLiberarQuestionarioClasseBiblica,
+  useRegisterLicaoClasseBiblica,
+  useRemoveAlunoClasseBiblica,
+  useSearchPessoasClasse,
+  useToggleDecisaoClasseBiblica,
+} from '@/hooks/useClassesBiblicas'
+import { useScopedIgrejas } from '@/hooks/useScopedIgrejas'
 import { formatDateBR } from '@/lib/secretaria-constants'
 import {
-  HiOutlineAcademicCap, HiOutlinePlus, HiOutlineX, HiOutlineUserGroup,
-  HiOutlineCheck, HiOutlineBookOpen, HiOutlineRefresh, HiOutlineTrash,
-  HiOutlineChevronDown, HiOutlineChevronUp, HiOutlineSearch
+  HiOutlineAcademicCap,
+  HiOutlineBookOpen,
+  HiOutlineCheck,
+  HiOutlineChevronDown,
+  HiOutlinePlus,
+  HiOutlineSearch,
+  HiOutlineTrash,
+  HiOutlineUserGroup,
 } from 'react-icons/hi'
-
-interface ClasseBiblica {
-  id: string
-  nome: string
-  data_inicio: string | null
-  data_previsao_termino: string | null
-  status: string
-  total_licoes: number
-  observacoes: string | null
-  created_at: string
-  igreja: { nome: string } | { nome: string }[] | null
-  modulo_id: string | null
-  modulo_titulo: string | null
-  instrutor_nome: string | null
-  formato_typeform: boolean
-  classe_online: boolean
-  link_online: string | null
-  total_alunos: number
-  _alunos_count?: number
-  _licoes_dadas?: number
-}
-
-interface AulaEB {
-  id: string
-  classe_id: string
-  ponto_numero: number
-  ponto_titulo: string | null
-  professor_nome: string | null
-  data_aula: string
-  ativada: boolean
-  ativada_em: string | null
-  questionario_liberado: boolean
-  questionario_liberado_em: string | null
-  observacoes: string | null
-  _presentes?: number
-  _responderam?: number
-}
-
-interface Aluno {
-  id: string
-  pessoa_id: string
-  status: string
-  licoes_concluidas: number
-  decisao_batismo: boolean
-  data_decisao: string | null
-  pessoa: { nome: string; celular: string | null } | { nome: string; celular: string | null }[] | null
-}
-
-interface PessoaOption {
-  id: string
-  nome: string
-}
-
-interface PresencaRegistro {
-  id: string
-  licao_numero: number
-  licao_titulo: string | null
-  data: string
-  presentes: string[]
-  ausentes: string[]
-}
 
 export default function ClassesBiblicasPage() {
   const { profile } = useAuth()
-  const [classes, setClasses] = useState<ClasseBiblica[]>([])
-  const [loading, setLoading] = useState(true)
+  const { igrejas: scopedIgrejas } = useScopedIgrejas()
+  const { classes, loading, error, refetch } = useClassesBiblicas()
 
   // Detail view
   const [selectedClasse, setSelectedClasse] = useState<ClasseBiblica | null>(null)
-  const [alunos, setAlunos] = useState<Aluno[]>([])
-  const [presencas, setPresencas] = useState<PresencaRegistro[]>([])
-  const [loadingDetail, setLoadingDetail] = useState(false)
+  const {
+    detail,
+    loading: loadingDetail,
+    error: detailError,
+    refetch: refetchDetail,
+  } = useClasseBiblicaDetail(selectedClasse?.id)
+  const alunos = detail?.alunos ?? []
+  const presencas = detail?.presencas ?? []
+  const aulas = detail?.aulas ?? []
 
   // New class form
   const [showNovaClasse, setShowNovaClasse] = useState(false)
-  const [novaClasse, setNovaClasse] = useState({ nome: '', data_inicio: '', total_licoes: 37, modulo_id: 'principios_fe' as string })
+  const [novaClasse, setNovaClasse] = useState({
+    nome: '',
+    data_inicio: '',
+    total_licoes: 37,
+    modulo_id: 'principios_fe' as string,
+    igreja_id: '',
+  })
 
   // Add student
   const [showAddAluno, setShowAddAluno] = useState(false)
   const [pessoasSearch, setPessoasSearch] = useState('')
-  const [pessoasOptions, setPessoasOptions] = useState<PessoaOption[]>([])
-  const [searchingPessoas, setSearchingPessoas] = useState(false)
+  const {
+    pessoas: pessoasOptions,
+    loading: searchingPessoas,
+    error: pessoasError,
+  } = useSearchPessoasClasse(
+    pessoasSearch,
+    selectedClasse?.igreja_id || '',
+    alunos.map((aluno) => aluno.pessoa_id),
+    showAddAluno && !!selectedClasse,
+  )
 
   // New lesson
   const [showNovaLicao, setShowNovaLicao] = useState(false)
   const [novaLicao, setNovaLicao] = useState({ numero: 1, titulo: '', presentes: [] as string[] })
 
   // Aulas (novo sistema)
-  const [aulas, setAulas] = useState<AulaEB[]>([])
   const [showNovaAula, setShowNovaAula] = useState(false)
   const [novaAula, setNovaAula] = useState({ ponto_numero: 1, ponto_titulo: '', presentes: [] as string[] })
-
-  function buildScopeFilter(query: any) {
-    if (!profile) return query
-    if (profile.papel === 'admin') return query
-    if (profile.papel === 'admin_uniao') return query.eq('igreja.uniao_id', profile.uniao_id!)
-    if (profile.papel === 'admin_associacao') return query.eq('igreja.associacao_id', profile.associacao_id!)
-    return query.eq('igreja_id', profile.igreja_id!)
-  }
+  const createClasseMutation = useCreateClasseBiblica()
+  const addAlunoMutation = useAddAlunoClasseBiblica()
+  const removeAlunoMutation = useRemoveAlunoClasseBiblica()
+  const toggleDecisaoMutation = useToggleDecisaoClasseBiblica()
+  const registrarLicaoMutation = useRegisterLicaoClasseBiblica()
+  const ativarAulaMutation = useAtivarAulaClasseBiblica()
+  const liberarQuestionarioMutation = useLiberarQuestionarioClasseBiblica()
 
   useEffect(() => {
-    if (profile) fetchClasses()
-  }, [profile]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function fetchClasses() {
-    setLoading(true)
-    try {
-      let query = supabase
-        .from('classes_biblicas')
-        .select('id, nome, data_inicio, data_previsao_termino, status, total_licoes, observacoes, created_at, modulo_id, modulo_titulo, instrutor_nome, formato_typeform, classe_online, link_online, total_alunos, igreja:igrejas(nome)')
-        .order('created_at', { ascending: false })
-
-      if (profile!.papel !== 'admin') {
-        query = query.eq('igreja_id', profile!.igreja_id!)
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-
-      // Get counts per class
-      const classIds = (data || []).map(c => c.id)
-      if (classIds.length > 0) {
-        const [alunosRes, presencasRes] = await Promise.all([
-          supabase.from('classe_biblica_alunos').select('classe_id').in('classe_id', classIds),
-          supabase.from('classe_biblica_presenca').select('classe_id').in('classe_id', classIds),
-        ])
-
-        const alunosCounts: Record<string, number> = {}
-        ;(alunosRes.data || []).forEach(a => { alunosCounts[a.classe_id] = (alunosCounts[a.classe_id] || 0) + 1 })
-
-        const licoesCounts: Record<string, number> = {}
-        ;(presencasRes.data || []).forEach(p => { licoesCounts[p.classe_id] = (licoesCounts[p.classe_id] || 0) + 1 })
-
-        setClasses((data || []).map(c => ({
-          ...c,
-          _alunos_count: alunosCounts[c.id] || 0,
-          _licoes_dadas: licoesCounts[c.id] || 0,
-        })))
-      } else {
-        setClasses([])
-      }
-    } catch (err) {
-      console.error('Erro:', err)
-    } finally {
-      setLoading(false)
+    if (scopedIgrejas.length === 1 && !novaClasse.igreja_id) {
+      setNovaClasse((prev) => ({ ...prev, igreja_id: scopedIgrejas[0].id }))
     }
+  }, [scopedIgrejas, novaClasse.igreja_id])
+
+  useEffect(() => {
+    if (!selectedClasse) return
+
+    const classeAtualizada = classes.find((classe) => classe.id === selectedClasse.id)
+    if (classeAtualizada) {
+      setSelectedClasse(classeAtualizada)
+    }
+  }, [classes, selectedClasse?.id])
+
+  useEffect(() => {
+    if (!showAddAluno) {
+      setPessoasSearch('')
+    }
+  }, [showAddAluno])
+
+  useEffect(() => {
+    if (!selectedClasse || showNovaLicao) return
+
+    const maxLicao = presencas.reduce((max, presenca) => Math.max(max, presenca.licao_numero), 0)
+    setNovaLicao({ numero: maxLicao + 1, titulo: '', presentes: [] })
+  }, [presencas, selectedClasse?.id, showNovaLicao])
+
+  useEffect(() => {
+    if (!selectedClasse || showNovaAula) return
+
+    const maxAula = aulas.reduce((max, aula) => Math.max(max, aula.ponto_numero), 0)
+    setNovaAula({ ponto_numero: maxAula + 1, ponto_titulo: '', presentes: [] })
+  }, [aulas, selectedClasse?.id, showNovaAula])
+
+  function getNomePessoa(aluno: Aluno) {
+    if (Array.isArray(aluno.pessoa)) {
+      return aluno.pessoa[0]?.nome || '—'
+    }
+
+    return aluno.pessoa?.nome || '—'
+  }
+
+  function getNomeIgreja(classe: ClasseBiblica) {
+    if (Array.isArray(classe.igreja)) {
+      return classe.igreja[0]?.nome || ''
+    }
+
+    return classe.igreja?.nome || ''
   }
 
   async function criarClasse() {
-    if (!novaClasse.nome.trim() || !profile) return
+    if (!profile) return
+    if (!novaClasse.nome.trim()) {
+      toast.error('Informe o nome da classe.')
+      return
+    }
+
+    const igrejaId = novaClasse.igreja_id || scopedIgrejas[0]?.id || profile.igreja_id || ''
+    if (!igrejaId) {
+      toast.error('Selecione a igreja da classe.')
+      return
+    }
+
     const moduloTitulos: Record<string, string> = {
-      principios_fe: 'Princípios de Fé',
-      crencas_fundamentais: 'Crenças Fundamentais'
+      principios_fe: 'Principios de Fe',
+      crencas_fundamentais: 'Crencas Fundamentais',
     }
     const moduloPontos: Record<string, number> = {
       principios_fe: 37,
-      crencas_fundamentais: 25
+      crencas_fundamentais: 25,
     }
+
+    const igrejaSelecionada = scopedIgrejas.find((igreja) => igreja.id === igrejaId)
+
     try {
-      const { error } = await supabase.from('classes_biblicas').insert({
-        nome: novaClasse.nome,
-        igreja_id: profile.igreja_id,
+      await createClasseMutation.mutateAsync({
+        nome: novaClasse.nome.trim(),
+        igreja_id: igrejaId,
         instrutor_id: profile.id,
         instrutor_nome: profile.nome || null,
         data_inicio: novaClasse.data_inicio || null,
@@ -177,157 +171,98 @@ export default function ClassesBiblicasPage() {
         modulo_id: novaClasse.modulo_id,
         modulo_titulo: moduloTitulos[novaClasse.modulo_id] || null,
         formato_typeform: novaClasse.modulo_id === 'crencas_fundamentais',
-        associacao_id: profile.associacao_id || null,
-        uniao_id: profile.uniao_id || null,
+        associacao_id: igrejaSelecionada?.associacao_id || profile.associacao_id || null,
+        uniao_id: igrejaSelecionada?.uniao_id || profile.uniao_id || null,
       })
-      if (error) throw error
+
+      toast.success('Classe biblica criada com sucesso.')
       setShowNovaClasse(false)
-      setNovaClasse({ nome: '', data_inicio: '', total_licoes: 37, modulo_id: 'principios_fe' })
-      fetchClasses()
+      setNovaClasse({
+        nome: '',
+        data_inicio: '',
+        total_licoes: 37,
+        modulo_id: 'principios_fe',
+        igreja_id: igrejaId,
+      })
     } catch (err) {
       console.error('Erro ao criar classe:', err)
+      toast.error('Nao foi possivel criar a classe agora.')
     }
   }
 
-  async function openDetail(classe: ClasseBiblica) {
+  function openDetail(classe: ClasseBiblica) {
     setSelectedClasse(classe)
-    setLoadingDetail(true)
-    try {
-      const [alunosRes, presencasRes] = await Promise.all([
-        supabase
-          .from('classe_biblica_alunos')
-          .select('id, pessoa_id, status, licoes_concluidas, decisao_batismo, data_decisao, pessoa:pessoas(nome, celular)')
-          .eq('classe_id', classe.id)
-          .order('created_at'),
-        supabase
-          .from('classe_biblica_presenca')
-          .select('id, licao_numero, licao_titulo, data, presentes, ausentes')
-          .eq('classe_id', classe.id)
-          .order('licao_numero'),
-      ])
-
-      setAlunos(alunosRes.data || [])
-      setPresencas(presencasRes.data || [])
-      await fetchAulas(classe.id)
-
-      // Set next lesson number
-      const maxLicao = (presencasRes.data || []).reduce((max, p) => Math.max(max, p.licao_numero), 0)
-      setNovaLicao(prev => ({ ...prev, numero: maxLicao + 1 }))
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoadingDetail(false)
-    }
-  }
-
-  async function searchPessoas(q: string) {
-    setPessoasSearch(q)
-    if (q.length < 2) { setPessoasOptions([]); return }
-    setSearchingPessoas(true)
-    try {
-      let query = supabase
-        .from('pessoas')
-        .select('id, nome')
-        .ilike('nome', `%${q}%`)
-        .limit(10)
-
-      if (profile!.igreja_id) {
-        query = query.eq('igreja_id', profile!.igreja_id)
-      }
-
-      const { data } = await query
-      // Filter out already enrolled students
-      const enrolledIds = new Set(alunos.map(a => a.pessoa_id))
-      setPessoasOptions((data || []).filter(p => !enrolledIds.has(p.id)))
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSearchingPessoas(false)
-    }
+    setShowAddAluno(false)
+    setShowNovaLicao(false)
+    setShowNovaAula(false)
+    setPessoasSearch('')
   }
 
   async function addAluno(pessoaId: string) {
     if (!selectedClasse) return
+
     try {
-      const { error } = await supabase.from('classe_biblica_alunos').insert({
+      await addAlunoMutation.mutateAsync({
         classe_id: selectedClasse.id,
         pessoa_id: pessoaId,
       })
-      if (error) throw error
 
-      // Also update pessoa etapa_funil to classe_biblica
-      await supabase.from('pessoas').update({ etapa_funil: 'classe_biblica' }).eq('id', pessoaId)
-
+      toast.success('Aluno adicionado com sucesso.')
       setShowAddAluno(false)
       setPessoasSearch('')
-      setPessoasOptions([])
-      openDetail(selectedClasse)
     } catch (err) {
       console.error('Erro ao adicionar aluno:', err)
+      toast.error('Nao foi possivel adicionar o aluno agora.')
     }
   }
 
   async function removeAluno(alunoId: string) {
-    if (!selectedClasse) return
+    if (!confirm('Remover este aluno da classe?')) return
+
     try {
-      await supabase.from('classe_biblica_alunos').delete().eq('id', alunoId)
-      openDetail(selectedClasse)
+      await removeAlunoMutation.mutateAsync({ aluno_id: alunoId })
+      toast.success('Aluno removido da classe.')
     } catch (err) {
       console.error(err)
+      toast.error('Nao foi possivel remover o aluno agora.')
     }
   }
 
   async function toggleDecisao(aluno: Aluno) {
     try {
-      await supabase.from('classe_biblica_alunos').update({
-        decisao_batismo: !aluno.decisao_batismo,
-        data_decisao: !aluno.decisao_batismo ? new Date().toISOString().slice(0, 10) : null,
-      }).eq('id', aluno.id)
+      await toggleDecisaoMutation.mutateAsync({
+        aluno_id: aluno.id,
+        pessoa_id: aluno.pessoa_id,
+        decisao_atual: aluno.decisao_batismo,
+      })
 
-      // Update funil if decision
-      if (!aluno.decisao_batismo) {
-        await supabase.from('pessoas').update({ etapa_funil: 'decisao' }).eq('id', aluno.pessoa_id)
-      }
-
-      if (selectedClasse) openDetail(selectedClasse)
+      toast.success(aluno.decisao_batismo ? 'Decisao removida.' : 'Decisao registrada.')
     } catch (err) {
       console.error(err)
+      toast.error('Nao foi possivel atualizar a decisao agora.')
     }
   }
 
   async function registrarLicao() {
     if (!selectedClasse) return
+
     try {
-      const alunoIds = alunos.map(a => a.pessoa_id)
-      const ausentes = alunoIds.filter(id => !novaLicao.presentes.includes(id))
-
-      const { error } = await supabase.from('classe_biblica_presenca').insert({
+      await registrarLicaoMutation.mutateAsync({
         classe_id: selectedClasse.id,
-        licao_numero: novaLicao.numero,
-        licao_titulo: novaLicao.titulo || null,
-        data: new Date().toISOString().slice(0, 10),
+        numero: novaLicao.numero,
+        titulo: novaLicao.titulo,
         presentes: novaLicao.presentes,
-        ausentes,
+        alunos,
       })
-      if (error) throw error
 
-      // Update licoes_concluidas for present students
-      for (const aluno of alunos) {
-        if (novaLicao.presentes.includes(aluno.pessoa_id)) {
-          await supabase.from('classe_biblica_alunos').update({
-            licoes_concluidas: aluno.licoes_concluidas + 1,
-          }).eq('id', aluno.id)
-        }
-      }
-
+      toast.success('Licao registrada com sucesso.')
       setShowNovaLicao(false)
       setNovaLicao({ numero: novaLicao.numero + 1, titulo: '', presentes: [] })
-      openDetail(selectedClasse)
     } catch (err) {
-      console.error('Erro ao registrar lição:', err)
+      console.error('Erro ao registrar licao:', err)
+      toast.error('Nao foi possivel registrar a licao agora.')
     }
   }
-
   function togglePresente(pessoaId: string) {
     setNovaLicao(prev => ({
       ...prev,
@@ -337,63 +272,42 @@ export default function ClassesBiblicasPage() {
     }))
   }
 
-  async function fetchAulas(classeId: string) {
-    const { data } = await supabase
-      .from('classe_biblica_aulas')
-      .select('*')
-      .eq('classe_id', classeId)
-      .order('ponto_numero')
-    setAulas(data || [])
-  }
-
   async function ativarAula() {
     if (!selectedClasse || !profile) return
+
     try {
-      const { data, error } = await supabase.from('classe_biblica_aulas').insert({
+      await ativarAulaMutation.mutateAsync({
         classe_id: selectedClasse.id,
         ponto_numero: novaAula.ponto_numero,
-        ponto_titulo: novaAula.ponto_titulo || `Ponto ${novaAula.ponto_numero}`,
+        ponto_titulo: novaAula.ponto_titulo,
+        presentes: novaAula.presentes,
+        alunos,
         professor_id: profile.id,
         professor_nome: profile.nome || null,
-        data_aula: new Date().toISOString(),
-        ativada: true,
-        ativada_em: new Date().toISOString(),
-      }).select().single()
-      if (error) throw error
+      })
 
-      // Registrar presença dos marcados
-      if (data && novaAula.presentes.length > 0) {
-        const presencaRows = alunos.map(a => ({
-          aula_id: data.id,
-          aluno_id: a.id,
-          aluno_nome: (a.pessoa as any)?.nome || '',
-          presente: novaAula.presentes.includes(a.pessoa_id),
-          registrado_por: profile.id,
-        }))
-        await supabase.from('classe_biblica_aula_presenca').insert(presencaRows)
-      }
-
+      toast.success('Aula ativada com sucesso.')
       setShowNovaAula(false)
       setNovaAula({ ponto_numero: novaAula.ponto_numero + 1, ponto_titulo: '', presentes: [] })
-      fetchAulas(selectedClasse.id)
     } catch (err) {
       console.error('Erro ao ativar aula:', err)
+      toast.error('Nao foi possivel ativar a aula agora.')
     }
   }
 
   async function liberarQuestionario(aulaId: string) {
     try {
-      await supabase.from('classe_biblica_aulas').update({
-        questionario_liberado: true,
-        questionario_liberado_em: new Date().toISOString(),
-        questionario_liberado_por: profile?.id,
-      }).eq('id', aulaId)
-      if (selectedClasse) fetchAulas(selectedClasse.id)
+      await liberarQuestionarioMutation.mutateAsync({
+        aula_id: aulaId,
+        profile_id: profile?.id || null,
+      })
+
+      toast.success('Questionario liberado para a turma.')
     } catch (err) {
-      console.error('Erro ao liberar questionário:', err)
+      console.error('Erro ao liberar questionario:', err)
+      toast.error('Nao foi possivel liberar o questionario agora.')
     }
   }
-
   function toggleAulaPresente(pessoaId: string) {
     setNovaAula(prev => ({
       ...prev,
@@ -409,7 +323,7 @@ export default function ClassesBiblicasPage() {
     cancelada: 'bg-red-100 text-red-700',
   }
 
-  if (loading) {
+  if (loading && classes.length === 0) {
     return (
       <div className="space-y-6">
         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
@@ -433,8 +347,22 @@ export default function ClassesBiblicasPage() {
           onClick={() => setSelectedClasse(null)}
           className="text-sm text-gray-500 hover:text-primary-600 flex items-center gap-1"
         >
-          <HiOutlineChevronDown className="w-4 h-4 rotate-90" /> Voltar às classes
+          <HiOutlineChevronDown className="w-4 h-4 rotate-90" /> Voltar Ã s classes
         </button>
+
+        {detailError && (
+          <div className="card border border-red-200 bg-red-50/70 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar os detalhes da classe.</p>
+                <p className="text-xs text-red-600 mt-1">{detailError}</p>
+              </div>
+              <button onClick={() => refetchDetail()} className="btn-secondary text-sm w-fit">
+                Tentar novamente
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Class header */}
         <div className="card p-5">
@@ -442,8 +370,8 @@ export default function ClassesBiblicasPage() {
             <div>
               <h1 className="text-xl font-bold text-gray-800">{selectedClasse.nome}</h1>
               <p className="text-sm text-gray-500 mt-1">
-                {(selectedClasse.igreja as any)?.nome || ''}
-                {selectedClasse.data_inicio && ` • Início: ${formatDateBR(selectedClasse.data_inicio)}`}
+                {getNomeIgreja(selectedClasse)}
+                {selectedClasse.data_inicio && ` â€¢ InÃ­cio: ${formatDateBR(selectedClasse.data_inicio)}`}
               </p>
             </div>
             <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${statusColors[selectedClasse.status] || 'bg-gray-100 text-gray-600'}`}>
@@ -453,7 +381,7 @@ export default function ClassesBiblicasPage() {
           {/* Progress bar */}
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{presencas.length} de {selectedClasse.total_licoes} lições</span>
+              <span>{presencas.length} de {selectedClasse.total_licoes} liÃ§Ãµes</span>
               <span>{progresso}%</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -468,11 +396,11 @@ export default function ClassesBiblicasPage() {
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-green-600">{decisoes}</p>
-              <p className="text-[10px] text-gray-400">Decisões</p>
+              <p className="text-[10px] text-gray-400">DecisÃµes</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-primary-600">{presencas.length}</p>
-              <p className="text-[10px] text-gray-400">Lições Dadas</p>
+              <p className="text-[10px] text-gray-400">LiÃ§Ãµes Dadas</p>
             </div>
           </div>
         </div>
@@ -483,7 +411,11 @@ export default function ClassesBiblicasPage() {
             <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
               <HiOutlineUserGroup className="w-4 h-4" /> Alunos
             </h2>
-            <button onClick={() => setShowAddAluno(!showAddAluno)} className="btn-primary text-xs flex items-center gap-1">
+            <button
+              onClick={() => setShowAddAluno(!showAddAluno)}
+              className="btn-primary text-xs flex items-center gap-1 disabled:opacity-60"
+              disabled={addAlunoMutation.isPending}
+            >
               <HiOutlinePlus className="w-3.5 h-3.5" /> Adicionar
             </button>
           </div>
@@ -495,20 +427,25 @@ export default function ClassesBiblicasPage() {
                 <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   value={pessoasSearch}
-                  onChange={e => searchPessoas(e.target.value)}
+                  onChange={e => setPessoasSearch(e.target.value)}
                   className="input-field pl-10 text-sm"
                   placeholder="Buscar pessoa por nome..."
                   autoFocus
                 />
               </div>
               {searchingPessoas && <p className="text-xs text-gray-400">Buscando...</p>}
+              {pessoasError && <p className="text-xs text-red-500">{pessoasError}</p>}
+              {!searchingPessoas && pessoasSearch.trim().length >= 2 && pessoasOptions.length === 0 && !pessoasError && (
+                <p className="text-xs text-gray-400">Nenhuma pessoa disponivel para esta classe.</p>
+              )}
               {pessoasOptions.length > 0 && (
                 <div className="space-y-1 max-h-40 overflow-y-auto">
                   {pessoasOptions.map(p => (
                     <button
                       key={p.id}
                       onClick={() => addAluno(p.id)}
-                      className="w-full text-left text-sm px-3 py-2 rounded hover:bg-primary-50 text-gray-700"
+                      className="w-full text-left text-sm px-3 py-2 rounded hover:bg-primary-50 text-gray-700 disabled:opacity-60"
+                      disabled={addAlunoMutation.isPending}
                     >
                       {p.nome}
                     </button>
@@ -529,12 +466,12 @@ export default function ClassesBiblicasPage() {
               {alunos.map(a => (
                 <div key={a.id} className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-50">
                   <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold shrink-0">
-                    {(a.pessoa as any)?.nome?.charAt(0) || '?'}
+                    {getNomePessoa(a).charAt(0) || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{(a.pessoa as any)?.nome || '—'}</p>
+                    <p className="text-sm font-medium text-gray-800 truncate">{getNomePessoa(a)}</p>
                     <p className="text-[10px] text-gray-400">
-                      {a.licoes_concluidas} lições • {a.status}
+                      {a.licoes_concluidas} liÃ§Ãµes â€¢ {a.status}
                     </p>
                   </div>
                   <button
@@ -544,15 +481,17 @@ export default function ClassesBiblicasPage() {
                         ? 'border-green-400 bg-green-50 text-green-700'
                         : 'border-gray-200 text-gray-400 hover:border-green-300 hover:text-green-600'
                     }`}
-                    title={a.decisao_batismo ? 'Decisão registrada' : 'Registrar decisão de batismo'}
+                    title={a.decisao_batismo ? 'DecisÃ£o registrada' : 'Registrar decisÃ£o de batismo'}
+                    disabled={toggleDecisaoMutation.isPending}
                   >
                     <HiOutlineCheck className="w-3.5 h-3.5 inline mr-0.5" />
-                    {a.decisao_batismo ? 'Decisão' : 'Batismo?'}
+                    {a.decisao_batismo ? 'DecisÃ£o' : 'Batismo?'}
                   </button>
                   <button
                     onClick={() => removeAluno(a.id)}
-                    className="p-1 text-gray-300 hover:text-red-500"
+                    className="p-1 text-gray-300 hover:text-red-500 disabled:opacity-60"
                     title="Remover aluno"
+                    disabled={removeAlunoMutation.isPending}
                   >
                     <HiOutlineTrash className="w-3.5 h-3.5" />
                   </button>
@@ -566,14 +505,14 @@ export default function ClassesBiblicasPage() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-              <HiOutlineBookOpen className="w-4 h-4" /> Lições & Presença
+              <HiOutlineBookOpen className="w-4 h-4" /> LiÃ§Ãµes & PresenÃ§a
             </h2>
             <button
               onClick={() => { setShowNovaLicao(!showNovaLicao); setNovaLicao(prev => ({ ...prev, presentes: [] })) }}
               className="btn-primary text-xs flex items-center gap-1"
-              disabled={alunos.length === 0}
+              disabled={alunos.length === 0 || registrarLicaoMutation.isPending}
             >
-              <HiOutlinePlus className="w-3.5 h-3.5" /> Registrar Lição
+              <HiOutlinePlus className="w-3.5 h-3.5" /> Registrar LiÃ§Ã£o
             </button>
           </div>
 
@@ -582,7 +521,7 @@ export default function ClassesBiblicasPage() {
             <div className="mb-4 p-3 bg-primary-50/30 border border-primary-200 rounded-lg space-y-3">
               <div className="flex gap-2">
                 <div className="w-20">
-                  <label className="text-[10px] text-gray-400">Lição nº</label>
+                  <label className="text-[10px] text-gray-400">LiÃ§Ã£o nÂº</label>
                   <input
                     type="number"
                     value={novaLicao.numero}
@@ -592,19 +531,19 @@ export default function ClassesBiblicasPage() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] text-gray-400">Título (opcional)</label>
+                  <label className="text-[10px] text-gray-400">TÃ­tulo (opcional)</label>
                   <input
                     value={novaLicao.titulo}
                     onChange={e => setNovaLicao(prev => ({ ...prev, titulo: e.target.value }))}
                     className="input-field text-sm"
-                    placeholder="Título da lição..."
+                    placeholder="TÃ­tulo da liÃ§Ã£o..."
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[10px] text-gray-400">Presença</label>
+                  <label className="text-[10px] text-gray-400">PresenÃ§a</label>
                   <button
                     onClick={() => setNovaLicao(prev => ({
                       ...prev,
@@ -624,7 +563,7 @@ export default function ClassesBiblicasPage() {
                         onChange={() => togglePresente(a.pessoa_id)}
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
-                      <span className="text-sm text-gray-700">{(a.pessoa as any)?.nome || '—'}</span>
+                      <span className="text-sm text-gray-700">{getNomePessoa(a)}</span>
                     </label>
                   ))}
                 </div>
@@ -634,7 +573,13 @@ export default function ClassesBiblicasPage() {
                 <span>{novaLicao.presentes.length} de {alunos.length} presentes</span>
                 <div className="flex gap-2">
                   <button onClick={() => setShowNovaLicao(false)} className="btn-secondary text-xs">Cancelar</button>
-                  <button onClick={registrarLicao} className="btn-primary text-xs">Salvar</button>
+                  <button
+                    onClick={registrarLicao}
+                    className="btn-primary text-xs disabled:opacity-60"
+                    disabled={registrarLicaoMutation.isPending}
+                  >
+                    {registrarLicaoMutation.isPending ? 'Salvando...' : 'Salvar'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -642,7 +587,7 @@ export default function ClassesBiblicasPage() {
 
           {/* Lesson history */}
           {presencas.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">Nenhuma lição registrada</p>
+            <p className="text-sm text-gray-400 text-center py-4">Nenhuma liÃ§Ã£o registrada</p>
           ) : (
             <div className="space-y-1">
               {presencas.map(p => (
@@ -651,7 +596,7 @@ export default function ClassesBiblicasPage() {
                     {p.licao_numero}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 truncate">{p.licao_titulo || `Lição ${p.licao_numero}`}</p>
+                    <p className="text-sm text-gray-700 truncate">{p.licao_titulo || `LiÃ§Ã£o ${p.licao_numero}`}</p>
                     <p className="text-[10px] text-gray-400">{formatDateBR(p.data)}</p>
                   </div>
                   <div className="text-right shrink-0">
@@ -674,19 +619,19 @@ export default function ClassesBiblicasPage() {
             </h2>
             <button
               onClick={() => { setShowNovaAula(!showNovaAula); setNovaAula(prev => ({ ...prev, presentes: [] })) }}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
-              disabled={alunos.length === 0}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 disabled:opacity-60"
+              disabled={alunos.length === 0 || ativarAulaMutation.isPending}
             >
               <HiOutlinePlus className="w-3.5 h-3.5" /> Ativar Aula
             </button>
           </div>
 
-          {/* Formulário nova aula */}
+          {/* FormulÃ¡rio nova aula */}
           {showNovaAula && alunos.length > 0 && (
             <div className="mb-4 p-3 bg-blue-50/50 border border-blue-200 rounded-lg space-y-3">
               <div className="flex gap-2">
                 <div className="w-20">
-                  <label className="text-[10px] text-gray-400">Ponto nº</label>
+                  <label className="text-[10px] text-gray-400">Ponto nÂº</label>
                   <input
                     type="number"
                     value={novaAula.ponto_numero}
@@ -696,7 +641,7 @@ export default function ClassesBiblicasPage() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] text-gray-400">Título do ponto</label>
+                  <label className="text-[10px] text-gray-400">TÃ­tulo do ponto</label>
                   <input
                     value={novaAula.ponto_titulo}
                     onChange={e => setNovaAula(prev => ({ ...prev, ponto_titulo: e.target.value }))}
@@ -708,7 +653,7 @@ export default function ClassesBiblicasPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[10px] text-gray-400">Presença</label>
+                  <label className="text-[10px] text-gray-400">PresenÃ§a</label>
                   <button
                     onClick={() => setNovaAula(prev => ({
                       ...prev,
@@ -721,7 +666,6 @@ export default function ClassesBiblicasPage() {
                 </div>
                 <div className="space-y-1">
                   {alunos.map(a => {
-                    const nome = Array.isArray(a.pessoa) ? a.pessoa[0]?.nome : (a.pessoa as any)?.nome
                     return (
                       <label key={a.id} className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white cursor-pointer">
                         <input
@@ -730,7 +674,7 @@ export default function ClassesBiblicasPage() {
                           onChange={() => toggleAulaPresente(a.pessoa_id)}
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <span className="text-sm text-gray-700">{nome || '—'}</span>
+                        <span className="text-sm text-gray-700">{getNomePessoa(a)}</span>
                       </label>
                     )
                   })}
@@ -741,7 +685,13 @@ export default function ClassesBiblicasPage() {
                 <span>{novaAula.presentes.length} de {alunos.length} presentes</span>
                 <div className="flex gap-2">
                   <button onClick={() => setShowNovaAula(false)} className="btn-secondary text-xs">Cancelar</button>
-                  <button onClick={ativarAula} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg">Ativar Aula</button>
+                  <button
+                    onClick={ativarAula}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg disabled:opacity-60"
+                    disabled={ativarAulaMutation.isPending}
+                  >
+                    {ativarAulaMutation.isPending ? 'Ativando...' : 'Ativar Aula'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -761,18 +711,19 @@ export default function ClassesBiblicasPage() {
                     <p className="text-sm text-gray-700 truncate">{a.ponto_titulo || `Ponto ${a.ponto_numero}`}</p>
                     <p className="text-[10px] text-gray-400">
                       {a.data_aula ? formatDateBR(a.data_aula) : ''}
-                      {a.ativada && ' • Ativada'}
+                      {a.ativada && ' â€¢ Ativada'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {a.questionario_liberado ? (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700">Questionário liberado</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700">QuestionÃ¡rio liberado</span>
                     ) : (
                       <button
                         onClick={() => liberarQuestionario(a.id)}
-                        className="text-[10px] px-2 py-1 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50"
+                        className="text-[10px] px-2 py-1 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-60"
+                        disabled={liberarQuestionarioMutation.isPending}
                       >
-                        Liberar Questionário
+                        Liberar QuestionÃ¡rio
                       </button>
                     )}
                   </div>
@@ -790,7 +741,7 @@ export default function ClassesBiblicasPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Classes Bíblicas</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Classes BÃ­blicas</h1>
           <p className="text-gray-500 mt-1">Gerencie turmas e acompanhe o progresso dos estudos</p>
         </div>
         <button
@@ -802,12 +753,58 @@ export default function ClassesBiblicasPage() {
         </button>
       </div>
 
+      {error && (
+        <div className="card border border-red-200 bg-red-50/70 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar as classes biblicas.</p>
+              <p className="text-xs text-red-600 mt-1">{error}</p>
+            </div>
+            <button onClick={() => refetch()} className="btn-secondary text-sm w-fit">
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* New class form */}
       {showNovaClasse && (
         <div className="card p-5 space-y-4 border-blue-200">
-          <h3 className="text-sm font-semibold text-gray-700">Criar Nova Classe Bíblica</h3>
+          <h3 className="text-sm font-semibold text-gray-700">Criar Nova Classe BÃ­blica</h3>
 
-          {/* Seleção de Módulo */}
+          {scopedIgrejas.length > 1 && (
+            <div>
+              <label className="text-xs text-gray-500 mb-1.5 block">Igreja da classe</label>
+              <select
+                value={novaClasse.igreja_id}
+                onChange={e => setNovaClasse(prev => ({ ...prev, igreja_id: e.target.value }))}
+                className="input-field"
+              >
+                <option value="">Selecione uma igreja...</option>
+                {scopedIgrejas.map((igreja) => (
+                  <option key={igreja.id} value={igreja.id}>
+                    {igreja.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {scopedIgrejas.length === 1 && (
+            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+              <p className="text-xs text-blue-600 uppercase tracking-wide">Igreja vinculada</p>
+              <p className="text-sm font-semibold text-blue-900 mt-1">{scopedIgrejas[0].nome}</p>
+            </div>
+          )}
+
+          {scopedIgrejas.length === 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="text-sm font-medium text-amber-800">Nenhuma igreja disponivel neste escopo.</p>
+              <p className="text-xs text-amber-700 mt-1">Revise a lotacao do usuario antes de criar uma classe.</p>
+            </div>
+          )}
+
+          {/* SeleÃ§Ã£o de MÃ³dulo */}
           <div>
             <label className="text-xs text-gray-500 mb-1.5 block">Material de Estudo</label>
             <div className="grid grid-cols-2 gap-3">
@@ -820,8 +817,8 @@ export default function ClassesBiblicasPage() {
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-800">Princípios de Fé</p>
-                <p className="text-xs text-gray-500 mt-0.5">37 pontos doutrinários</p>
+                <p className="text-sm font-semibold text-gray-800">PrincÃ­pios de FÃ©</p>
+                <p className="text-xs text-gray-500 mt-0.5">37 pontos doutrinÃ¡rios</p>
               </button>
               <button
                 type="button"
@@ -832,7 +829,7 @@ export default function ClassesBiblicasPage() {
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-800">Crenças Fundamentais</p>
+                <p className="text-sm font-semibold text-gray-800">CrenÃ§as Fundamentais</p>
                 <p className="text-xs text-gray-500 mt-0.5">25 temas (formato Typeform)</p>
               </button>
             </div>
@@ -842,12 +839,12 @@ export default function ClassesBiblicasPage() {
             value={novaClasse.nome}
             onChange={e => setNovaClasse(prev => ({ ...prev, nome: e.target.value }))}
             className="input-field"
-            placeholder="Nome da classe (ex: Classe Bíblica Central - Sábado Manhã)"
+            placeholder="Nome da classe (ex: Classe BÃ­blica Central - SÃ¡bado ManhÃ£)"
             autoFocus
           />
           <div className="flex gap-3">
             <div className="flex-1">
-              <DateDropdowns label="Data de início" value={novaClasse.data_inicio} onChange={v => setNovaClasse(prev => ({ ...prev, data_inicio: v }))} yearRange={2} futureYears={1} />
+              <DateDropdowns label="Data de inÃ­cio" value={novaClasse.data_inicio} onChange={v => setNovaClasse(prev => ({ ...prev, data_inicio: v }))} yearRange={2} futureYears={1} />
             </div>
             <div className="w-28">
               <label className="text-xs text-gray-400">Total de pontos</label>
@@ -862,7 +859,13 @@ export default function ClassesBiblicasPage() {
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowNovaClasse(false)} className="btn-secondary text-sm">Cancelar</button>
-            <button onClick={criarClasse} className="btn-primary text-sm" disabled={!novaClasse.nome.trim()}>Criar Classe</button>
+            <button
+              onClick={criarClasse}
+              className="btn-primary text-sm disabled:opacity-60"
+              disabled={!novaClasse.nome.trim() || scopedIgrejas.length === 0 || createClasseMutation.isPending}
+            >
+              {createClasseMutation.isPending ? 'Criando...' : 'Criar Classe'}
+            </button>
           </div>
         </div>
       )}
@@ -879,7 +882,7 @@ export default function ClassesBiblicasPage() {
         </div>
         <div className="card py-3 text-center">
           <p className="text-2xl font-bold text-blue-600">{classes.filter(c => c.status === 'concluida').length}</p>
-          <p className="text-xs text-gray-500">Concluídas</p>
+          <p className="text-xs text-gray-500">ConcluÃ­das</p>
         </div>
       </div>
 
@@ -887,7 +890,7 @@ export default function ClassesBiblicasPage() {
       {classes.length === 0 ? (
         <div className="card py-12 text-center">
           <HiOutlineAcademicCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Nenhuma classe bíblica criada</p>
+          <p className="text-gray-500">Nenhuma classe bÃ­blica criada</p>
           <button onClick={() => setShowNovaClasse(true)} className="text-primary-600 hover:underline text-sm mt-2">
             Criar primeira classe
           </button>
@@ -917,9 +920,9 @@ export default function ClassesBiblicasPage() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {c.modulo_titulo || ''}{c.modulo_titulo && (Array.isArray(c.igreja) ? c.igreja[0]?.nome : (c.igreja as any)?.nome) ? ' • ' : ''}
-                      {Array.isArray(c.igreja) ? c.igreja[0]?.nome || '' : (c.igreja as any)?.nome || ''}
-                      {c.data_inicio && ` • Início: ${formatDateBR(c.data_inicio)}`}
+                      {c.modulo_titulo || ''}{c.modulo_titulo && getNomeIgreja(c) ? ' â€¢ ' : ''}
+                      {getNomeIgreja(c)}
+                      {c.data_inicio && ` â€¢ InÃ­cio: ${formatDateBR(c.data_inicio)}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-4 shrink-0 text-right">
@@ -929,7 +932,7 @@ export default function ClassesBiblicasPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-primary-600">{c._licoes_dadas || 0}/{c.total_licoes}</p>
-                      <p className="text-[10px] text-gray-400">lições</p>
+                      <p className="text-[10px] text-gray-400">liÃ§Ãµes</p>
                     </div>
                   </div>
                 </div>
@@ -945,3 +948,6 @@ export default function ClassesBiblicasPage() {
     </div>
   )
 }
+
+
+

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { SkeletonCard, SkeletonLine } from '@/components/ui/Skeleton'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js'
 import { Bar, Doughnut } from 'react-chartjs-2'
 import {
@@ -151,7 +152,21 @@ export default function Dashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-400">Carregando painel...</p></div>
+    return (
+      <div className="space-y-6">
+        <div>
+          <SkeletonLine className="w-48 h-7 mb-2" />
+          <SkeletonLine className="w-56 h-4" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+          {[1, 2, 3, 4, 5].map(i => <SkeletonCard key={i} />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <SkeletonCard className="h-64" />
+          <SkeletonCard className="h-64" />
+        </div>
+      </div>
+    )
   }
 
   return (

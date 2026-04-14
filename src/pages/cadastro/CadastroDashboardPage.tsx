@@ -88,7 +88,7 @@ function getAgeGroup(age: number): string {
   return '65+'
 }
 
-type TabFilter = 'todos' | 'completos' | 'parciais'
+type TabFilter = 'todos' | 'completos' | 'parciais' | 'parou_final'
 type PageTab = 'dashboard' | 'gestao'
 
 interface AssociacaoInfo {
@@ -225,6 +225,7 @@ export default function CadastroDashboardPage() {
     // Tab filter
     if (tabFilter === 'completos' && !r.completo) return false
     if (tabFilter === 'parciais' && r.completo) return false
+    if (tabFilter === 'parou_final' && (r.completo || r.etapa_atual !== 11)) return false
     // Search
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
@@ -243,6 +244,9 @@ export default function CadastroDashboardPage() {
   const total = respostasByAssoc.length
   const completos = respostasByAssoc.filter(r => r.completo).length
   const parciais = total - completos
+  // "Parou na final": chegou até a última etapa (11) mas não submeteu (não clicou "Enviar").
+  // Candidatos a recuperação via WhatsApp/email — o formulário já está 99% preenchido.
+  const parouFinal = respostasByAssoc.filter(r => !r.completo && r.etapa_atual === 11).length
   const taxaComplecao = total > 0 ? Math.round((completos / total) * 100) : 0
 
   // Gender
@@ -585,9 +589,22 @@ export default function CadastroDashboardPage() {
                                     {r.email && <span className="block text-gray-400">{r.email}</span>}
                                   </td>
                                   <td className="px-4 py-2.5 text-center">
-                                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${r.completo ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                                      {r.completo ? 'Completo' : `Parcial (${r.etapa_atual}/11)`}
-                                    </span>
+                                    {r.completo ? (
+                                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                                        Completo
+                                      </span>
+                                    ) : r.etapa_atual === 11 ? (
+                                      <span
+                                        className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700"
+                                        title="Chegou até a última etapa mas não clicou em Enviar"
+                                      >
+                                        Parou na final
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                                        Parcial ({r.etapa_atual}/11)
+                                      </span>
+                                    )}
                                   </td>
                                   <td className="px-4 py-2.5 text-center">
                                     {r.nome && (
@@ -617,7 +634,6 @@ export default function CadastroDashboardPage() {
         </div>
         )
       })()}
-      )}
 
       {/* ========== TAB: DASHBOARD ========== */}
       {pageTab === 'dashboard' && <>
@@ -642,7 +658,7 @@ export default function CadastroDashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5">
         <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => setTabFilter('todos')}>
           <div className="bg-blue-500 p-3 rounded-xl text-white">
             <HiOutlineDocumentText className="w-6 h-6" />
@@ -668,6 +684,19 @@ export default function CadastroDashboardPage() {
           <div>
             <p className="text-sm text-gray-500">Parciais</p>
             <p className="text-2xl font-bold text-gray-800">{parciais}</p>
+          </div>
+        </div>
+        <div
+          className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all"
+          onClick={() => setTabFilter('parou_final')}
+          title="Chegaram até a última etapa mas não clicaram 'Enviar'. Candidatos a recuperação."
+        >
+          <div className="bg-orange-500 p-3 rounded-xl text-white">
+            <HiOutlineExternalLink className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Parou na Final</p>
+            <p className="text-2xl font-bold text-gray-800">{parouFinal}</p>
           </div>
         </div>
         <div className="card flex items-start gap-4">
@@ -916,9 +945,19 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
             <p className="text-sm text-gray-500">
               Respondido em {new Date(r.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
               {' '}
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${r.completo ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                {r.completo ? 'Completo' : `Parcial (etapa ${r.etapa_atual}/11)`}
-              </span>
+              {r.completo ? (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                  Completo
+                </span>
+              ) : r.etapa_atual === 11 ? (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                  Parou na final
+                </span>
+              ) : (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                  Parcial (etapa {r.etapa_atual}/11)
+                </span>
+              )}
             </p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">

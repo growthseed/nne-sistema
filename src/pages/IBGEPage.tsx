@@ -92,16 +92,59 @@ export default function IBGEPage() {
   )
 
   // ---------- Fetch estados on mount ----------
+  // Filtra os estados do IBGE pra mostrar apenas onde existem igrejas da União do usuário.
+  // Pra super-admin (papel='admin') e admin_uniao, limita aos estados da NNE (ou da união dele).
+  // Isso evita mostrar estados do Brasil inteiro onde não há igreja cadastrada nessa união.
 
   useEffect(() => {
     async function fetchEstados() {
+      if (!profile) return
       setLoadingEstados(true)
       try {
+        // 1. Busca todos os estados do IBGE
         const res = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados')
         if (!res.ok) throw new Error('Erro ao buscar estados do IBGE')
-        const data: EstadoIBGE[] = await res.json()
-        data.sort((a, b) => a.nome.localeCompare(b.nome))
-        setEstados(data)
+        const allEstados: EstadoIBGE[] = await res.json()
+
+        // 2. Busca os estados DISTINTOS onde existem igrejas ativas do escopo do usuário.
+        // Aplica o mesmo filtro de uniao/associacao/igreja que usamos em outras queries.
+        let igrejasQuery = supabase
+          .from('igrejas')
+          .select('endereco_estado, uniao_id, associacao_id')
+          .eq('ativo', true)
+          .not('endereco_estado', 'is', null)
+
+        // Super-admin nesta página fica restrito à União Norte (NNE) por padrão —
+        // esta é a página "IBGE NNE". Se um dia houver outras uniões, ajuste aqui.
+        if (profile.papel === 'admin' || profile.papel === 'admin_uniao') {
+          const targetUniao = profile.uniao_id || 'a0000000-0000-0000-0000-000000000001' // NNE fallback
+          igrejasQuery = igrejasQuery.eq('uniao_id', targetUniao)
+        } else if (profile.papel === 'admin_associacao' && profile.associacao_id) {
+          igrejasQuery = igrejasQuery.eq('associacao_id', profile.associacao_id)
+        } else if (profile.igreja_id) {
+          igrejasQuery = igrejasQuery.eq('id', profile.igreja_id)
+        }
+
+        const { data: igrejasData, error: igrejasErr } = await igrejasQuery
+        if (igrejasErr) throw igrejasErr
+
+        const ufsComIgreja = new Set(
+          (igrejasData || [])
+            .map(i => (i.endereco_estado || '').trim().toUpperCase())
+            .filter(Boolean)
+        )
+
+        // 3. Filtra allEstados pra manter apenas os que existem no banco
+        const filtered = allEstados.filter(e => ufsComIgreja.has(e.sigla.toUpperCase()))
+        filtered.sort((a, b) => a.nome.localeCompare(b.nome))
+
+        if (filtered.length === 0) {
+          // Fallback: se nenhuma igreja tem estado cadastrado, mostra todos (não deixa tela vazia)
+          allEstados.sort((a, b) => a.nome.localeCompare(b.nome))
+          setEstados(allEstados)
+        } else {
+          setEstados(filtered)
+        }
       } catch (err: any) {
         setError(err.message || 'Erro ao buscar estados')
       } finally {
@@ -109,7 +152,7 @@ export default function IBGEPage() {
       }
     }
     fetchEstados()
-  }, [])
+  }, [profile])
 
   // ---------- Fetch municipios when estado changes ----------
 
@@ -203,14 +246,23 @@ export default function IBGEPage() {
     async function fetchMembrosCidade() {
       setLoadingMembros(true)
       try {
-        // First find churches in this city
-        const { data: igrejasNaCidade } = await supabase
+        // First find churches in this city — filtering by the user's union scope.
+        // This garantees that "IBGE NNE" page never shows churches of outra união.
+        let igrejasQuery = supabase
           .from('igrejas')
           .select('id')
           .eq('endereco_cidade', selectedMunicipio)
           .eq('endereco_estado', selectedEstado)
           .eq('ativo', true)
 
+        if (profile?.papel === 'admin' || profile?.papel === 'admin_uniao') {
+          const targetUniao = profile.uniao_id || 'a0000000-0000-0000-0000-000000000001' // NNE fallback
+          igrejasQuery = igrejasQuery.eq('uniao_id', targetUniao)
+        } else if (profile?.papel === 'admin_associacao' && profile.associacao_id) {
+          igrejasQuery = igrejasQuery.eq('associacao_id', profile.associacao_id)
+        }
+
+        const { data: igrejasNaCidade } = await igrejasQuery
         const igrejaIds = (igrejasNaCidade || []).map(ig => ig.id)
 
         if (igrejaIds.length === 0) {

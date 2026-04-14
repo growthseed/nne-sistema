@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
+import { FinanceiroStatsSkeleton, FinanceiroTableSkeleton } from '@/components/financeiro/FinanceiroSkeletons'
+import { useFinanceiroLancamentos } from '@/hooks/useFinanceiroLancamentos'
 import type { DadosFinanceiros } from '@/types'
 
 const MESES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
@@ -59,77 +59,24 @@ function calcTotalDespesas(d: DadosFinanceiros): number {
   )
 }
 
-interface EntryWithIgreja extends DadosFinanceiros {
-  igreja?: { nome: string } | null
-}
-
 export default function FinanceiroPage() {
-  const { profile } = useAuth()
-  const [entries, setEntries] = useState<EntryWithIgreja[]>([])
-  const [loading, setLoading] = useState(true)
   const [mes, setMes] = useState(new Date().getMonth() + 1)
   const [ano, setAno] = useState(new Date().getFullYear())
-
-  useEffect(() => {
-    if (profile) fetchData()
-  }, [profile, mes, ano])
-
-  async function fetchData() {
-    if (!profile) return
-    setLoading(true)
-    try {
-      let query = supabase
-        .from('dados_financeiros')
-        .select('*, igreja:igrejas(nome)')
-        .eq('mes', mes)
-        .eq('ano', ano)
-        .order('created_at', { ascending: false })
-
-      // Hierarchical filter based on user role
-      if (profile.papel === 'admin') {
-        // admin sees all
-      } else if (profile.papel === 'admin_uniao') {
-        // get associacao_ids that belong to this uniao
-        const { data: assocs } = await supabase
-          .from('associacoes')
-          .select('id')
-          .eq('uniao_id', profile.uniao_id!)
-        const assocIds = assocs?.map((a) => a.id) || []
-        if (assocIds.length > 0) {
-          query = query.in('associacao_id', assocIds)
-        } else {
-          query = query.eq('associacao_id', 'none')
-        }
-      } else if (profile.papel === 'admin_associacao') {
-        query = query.eq('associacao_id', profile.associacao_id!)
-      } else if (profile.papel === 'tesoureiro') {
-        query = query.eq('igreja_id', profile.igreja_id!)
-      } else {
-        // Other roles: filter by own igreja
-        if (profile.igreja_id) {
-          query = query.eq('igreja_id', profile.igreja_id)
-        }
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      setEntries((data as EntryWithIgreja[]) || [])
-    } catch (err) {
-      console.error('Erro ao buscar dados financeiros:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { entries, loading, error, refetch } = useFinanceiroLancamentos({
+    mes,
+    ano,
+    status: 'todos',
+  })
 
   const stats = useMemo(() => {
     let totalReceitas = 0
     let totalDespesas = 0
     let totalDizimos = 0
 
-    entries.forEach((d) => {
-      totalReceitas += calcTotalReceitas(d)
-      totalDespesas += calcTotalDespesas(d)
-      totalDizimos += (d.receita_dizimos || 0) + ((d as any).dizimo || 0)
+    entries.forEach((entry) => {
+      totalReceitas += calcTotalReceitas(entry)
+      totalDespesas += calcTotalDespesas(entry)
+      totalDizimos += (entry.receita_dizimos || 0) + ((entry as any).dizimo || 0)
     })
 
     return {
@@ -141,37 +88,35 @@ export default function FinanceiroPage() {
   }, [entries])
 
   const statCards = [
-    { label: 'Total Receitas', value: formatCurrency(stats.totalReceitas), color: 'text-green-600', bgIcon: 'bg-green-100' },
-    { label: 'Total Despesas', value: formatCurrency(stats.totalDespesas), color: 'text-red-600', bgIcon: 'bg-red-100' },
-    { label: 'Saldo', value: formatCurrency(stats.saldo), color: stats.saldo >= 0 ? 'text-blue-600' : 'text-red-600', bgIcon: 'bg-blue-100' },
-    { label: 'Dízimos', value: formatCurrency(stats.totalDizimos), color: 'text-purple-600', bgIcon: 'bg-purple-100' },
+    { label: 'Total Receitas', value: formatCurrency(stats.totalReceitas), color: 'text-green-600' },
+    { label: 'Total Despesas', value: formatCurrency(stats.totalDespesas), color: 'text-red-600' },
+    { label: 'Saldo', value: formatCurrency(stats.saldo), color: stats.saldo >= 0 ? 'text-blue-600' : 'text-red-600' },
+    { label: 'Dizimos', value: formatCurrency(stats.totalDizimos), color: 'text-purple-600' },
   ]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Financeiro</h1>
-          <p className="text-gray-500 mt-1">Gestão de receitas, despesas e movimentação financeira</p>
+          <p className="mt-1 text-gray-500">Gestao de receitas, despesas e movimentacao financeira</p>
         </div>
-        <Link to="/financeiro/lancamentos" className="btn-primary inline-flex items-center gap-2 w-fit">
-          + Novo Lançamento
+        <Link to="/financeiro/lancamentos" className="btn-primary inline-flex w-fit items-center gap-2">
+          + Novo Lancamento
         </Link>
       </div>
 
-      {/* Filters */}
       <div className="card">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Mês:</label>
+            <label className="text-sm font-medium text-gray-600">Mes:</label>
             <select
               value={mes}
               onChange={(e) => setMes(Number(e.target.value))}
               className="input-field w-auto"
             >
-              {MESES.map((m, i) => (
-                <option key={i} value={i + 1}>{m}</option>
+              {MESES.map((mesAtual, index) => (
+                <option key={index} value={index + 1}>{mesAtual}</option>
               ))}
             </select>
           </div>
@@ -182,43 +127,63 @@ export default function FinanceiroPage() {
               onChange={(e) => setAno(Number(e.target.value))}
               className="input-field w-auto"
             >
-              {[2024, 2025, 2026, 2027].map((a) => (
-                <option key={a} value={a}>{a}</option>
+              {[2024, 2025, 2026, 2027].map((anoAtual) => (
+                <option key={anoAtual} value={anoAtual}>{anoAtual}</option>
               ))}
             </select>
           </div>
-          <span className="text-sm text-gray-400 ml-auto">
+          <span className="ml-auto text-sm text-gray-400">
             {entries.length} registro{entries.length !== 1 ? 's' : ''} em {MESES[mes - 1]}/{ano}
           </span>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((s) => (
-          <div key={s.label} className="card flex flex-col items-center py-6">
-            <span className={`text-2xl font-bold ${s.color}`}>{s.value}</span>
-            <span className="text-sm text-gray-500 mt-1">{s.label}</span>
+      {error && (
+        <div className="card flex flex-col gap-3 border border-red-200 bg-red-50 text-sm text-red-700">
+          <div>
+            <p className="font-medium">Nao foi possivel carregar o resumo financeiro do periodo.</p>
+            <p className="mt-1 text-red-600/90">{error}</p>
           </div>
-        ))}
-      </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-100"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Quick Links */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {loading ? (
+        <FinanceiroStatsSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((card) => (
+            <div key={card.label} className="card flex flex-col items-center py-6">
+              <span className={`text-2xl font-bold ${card.color}`}>{card.value}</span>
+              <span className="mt-1 text-sm text-gray-500">{card.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Link
           to="/financeiro/lancamentos"
-          className="card hover:shadow-lg transition-shadow group"
+          className="card group transition-shadow hover:shadow-lg"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-green-600 text-xl font-bold">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 text-xl font-bold text-green-600">
               $
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
-                Lançamentos
+              <h3 className="font-semibold text-gray-800 transition-colors group-hover:text-green-600">
+                Lancamentos
               </h3>
               <p className="text-sm text-gray-500">
-                Registrar receitas, despesas e movimentações financeiras
+                Registrar receitas, despesas e movimentacoes financeiras
               </p>
             </div>
           </div>
@@ -226,83 +191,137 @@ export default function FinanceiroPage() {
 
         <Link
           to="/financeiro/receita-campo"
-          className="card hover:shadow-lg transition-shadow group"
+          className="card group transition-shadow hover:shadow-lg"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-xl font-bold">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 text-xl font-bold text-purple-600">
               #
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+              <h3 className="font-semibold text-gray-800 transition-colors group-hover:text-purple-600">
                 Receita do Campo
               </h3>
               <p className="text-sm text-gray-500">
-                Resumo por associação, comparativos e totais
+                Resumo por associacao, comparativos e totais
               </p>
             </div>
           </div>
         </Link>
       </div>
 
-      {/* Recent Entries Table */}
-      <div className="card overflow-x-auto">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Lançamentos do Período</h2>
+      {loading ? (
+        <FinanceiroTableSkeleton titleWidth="w-48" rows={4} />
+      ) : (
+        <div className="card overflow-hidden p-0">
+          <div className="border-b border-gray-100 px-4 py-4">
+            <h2 className="text-lg font-semibold text-gray-800">Lancamentos do Periodo</h2>
+          </div>
 
-        {loading ? (
-          <p className="text-center text-gray-400 py-8">Carregando...</p>
-        ) : entries.length === 0 ? (
-          <p className="text-center text-gray-400 py-8">Nenhum lançamento encontrado para este período</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-2 font-semibold text-gray-600">Igreja</th>
-                <th className="text-left py-3 px-2 font-semibold text-gray-600">Período</th>
-                <th className="text-right py-3 px-2 font-semibold text-gray-600">Receitas</th>
-                <th className="text-right py-3 px-2 font-semibold text-gray-600">Despesas</th>
-                <th className="text-right py-3 px-2 font-semibold text-gray-600">Saldo</th>
-                <th className="text-right py-3 px-2 font-semibold text-gray-600">Dízimos</th>
-                <th className="text-center py-3 px-2 font-semibold text-gray-600">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          {entries.length === 0 ? (
+            <p className="py-8 text-center text-gray-400">Nenhum lancamento encontrado para este periodo</p>
+          ) : (
+            <>
+              <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="px-2 py-3 text-left font-semibold text-gray-600">Igreja</th>
+                    <th className="px-2 py-3 text-left font-semibold text-gray-600">Periodo</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Receitas</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Despesas</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Saldo</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Dizimos</th>
+                    <th className="px-2 py-3 text-center font-semibold text-gray-600">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map((entry) => {
+                    const receitas = calcTotalReceitas(entry)
+                    const despesas = calcTotalDespesas(entry)
+                    const saldo = receitas - despesas
+                    const st = statusConfig[entry.status] || statusConfig.pendente
+
+                    return (
+                      <tr key={entry.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-2 py-3 font-medium text-gray-800">
+                          {entry.igreja?.nome || '---'}
+                        </td>
+                        <td className="px-2 py-3 text-gray-500">
+                          {MESES[entry.mes - 1]} / {entry.ano}
+                        </td>
+                        <td className="px-2 py-3 text-right font-medium text-green-600">
+                          {formatCurrency(receitas)}
+                        </td>
+                        <td className="px-2 py-3 text-right font-medium text-red-600">
+                          {formatCurrency(despesas)}
+                        </td>
+                        <td className={`px-2 py-3 text-right font-medium ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                          {formatCurrency(saldo)}
+                        </td>
+                        <td className="px-2 py-3 text-right font-medium text-purple-600">
+                          {formatCurrency((entry.receita_dizimos || 0) + ((entry as any).dizimo || 0))}
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${st.bg} ${st.text}`}>
+                            {st.label}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+              <div className="divide-y divide-gray-100 lg:hidden">
               {entries.map((entry) => {
                 const receitas = calcTotalReceitas(entry)
                 const despesas = calcTotalDespesas(entry)
                 const saldo = receitas - despesas
                 const st = statusConfig[entry.status] || statusConfig.pendente
+
                 return (
-                  <tr key={entry.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-2 font-medium text-gray-800">
-                      {entry.igreja?.nome || '---'}
-                    </td>
-                    <td className="py-3 px-2 text-gray-500">
-                      {MESES[entry.mes - 1]} / {entry.ano}
-                    </td>
-                    <td className="py-3 px-2 text-right text-green-600 font-medium">
-                      {formatCurrency(receitas)}
-                    </td>
-                    <td className="py-3 px-2 text-right text-red-600 font-medium">
-                      {formatCurrency(despesas)}
-                    </td>
-                    <td className={`py-3 px-2 text-right font-medium ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                      {formatCurrency(saldo)}
-                    </td>
-                    <td className="py-3 px-2 text-right text-purple-600 font-medium">
-                      {formatCurrency((entry.receita_dizimos || 0) + ((entry as any).dizimo || 0))}
-                    </td>
-                    <td className="py-3 px-2 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${st.bg} ${st.text}`}>
+                  <div key={entry.id} className="space-y-3 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium text-gray-800">{entry.igreja?.nome || '---'}</p>
+                        <p className="text-xs text-gray-400">{MESES[entry.mes - 1]} / {entry.ano}</p>
+                      </div>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${st.bg} ${st.text}`}>
                         {st.label}
                       </span>
-                    </td>
-                  </tr>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="rounded-lg bg-gray-50 px-3 py-2">
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">Receitas</p>
+                        <p className="mt-1 font-medium text-green-600">{formatCurrency(receitas)}</p>
+                      </div>
+                      <div className="rounded-lg bg-gray-50 px-3 py-2">
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">Despesas</p>
+                        <p className="mt-1 font-medium text-red-600">{formatCurrency(despesas)}</p>
+                      </div>
+                      <div className="rounded-lg bg-gray-50 px-3 py-2">
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">Saldo</p>
+                        <p className={`mt-1 font-medium ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                          {formatCurrency(saldo)}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-gray-50 px-3 py-2">
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">Dizimos</p>
+                        <p className="mt-1 font-medium text-purple-600">
+                          {formatCurrency((entry.receita_dizimos || 0) + ((entry as any).dizimo || 0))}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )
               })}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

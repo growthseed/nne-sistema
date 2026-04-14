@@ -3,6 +3,7 @@
 interface TurnstileWidgetProps {
   siteKey: string
   resetKey?: number
+  action?: string
   onSuccess: (token: string) => void
   onExpire?: () => void
   onError?: () => void
@@ -44,7 +45,7 @@ function loadTurnstileScript() {
   })
 }
 
-export default function TurnstileWidget({ siteKey, resetKey = 0, onSuccess, onExpire, onError }: TurnstileWidgetProps) {
+export default function TurnstileWidget({ siteKey, resetKey = 0, action = 'default', onSuccess, onExpire, onError }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
 
@@ -66,7 +67,7 @@ export default function TurnstileWidget({ siteKey, resetKey = 0, onSuccess, onEx
         containerRef.current.innerHTML = ''
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
-          action: 'cadastro_publico',
+          action,
           theme: 'light',
           callback: (token: string) => onSuccess(token),
           'expired-callback': () => onExpire?.(),

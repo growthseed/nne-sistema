@@ -8,9 +8,11 @@ interface AuthContextType {
   user: User | null
   profile: UserProfile | null
   loading: boolean
+  sessionExpired: boolean
+  clearSessionExpired: () => void
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
-  hasRole: (roles: UserRole[]) => boolean
+  hasRole: (roles: readonly UserRole[]) => boolean
   hasScope: (scope: { uniao_id?: string; associacao_id?: string; igreja_id?: string }) => boolean
 }
 
@@ -21,8 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sessionExpired, setSessionExpired] = useState(false)
   const currentUserIdRef = useRef<string | null>(null)
   const sessionRef = useRef<Session | null>(null)
+  const manualSignOutRef = useRef(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -39,11 +43,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Always keep the latest session in ref (for signOut/signIn checks)
+      const hadSession = sessionRef.current !== null
       sessionRef.current = session
 
       // Token refresh: silently update ref, no re-render needed
       if (event === 'TOKEN_REFRESHED') {
         return
+      }
+
+      if (event === 'SIGNED_OUT') {
+        if (!manualSignOutRef.current && hadSession) {
+          // Session expired (not a manual sign-out)
+          setSessionExpired(true)
+        }
+        manualSignOutRef.current = false
+      }
+
+      if (event === 'SIGNED_IN') {
+        setSessionExpired(false)
       }
 
       setSession(session)
@@ -91,15 +108,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           const { data: newProfile, error: insertError } = await supabase
             .from('usuarios')
-            .upsert({
+            .insert({
               id: userId,
               nome,
               email,
-              papel: 'admin' as UserRole,
+              papel: 'membro' as UserRole,
               ativo: true,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-            }, { onConflict: 'id' })
+            })
             .select()
             .single()
 
@@ -122,11 +139,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
+    manualSignOutRef.current = true
     await supabase.auth.signOut()
     setProfile(null)
+    setSessionExpired(false)
   }
 
-  function hasRole(roles: UserRole[]) {
+  function clearSessionExpired() {
+    setSessionExpired(false)
+  }
+
+  function hasRole(roles: readonly UserRole[]) {
     if (!profile) return false
     return roles.includes(profile.papel)
   }
@@ -141,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signIn, signOut, hasRole, hasScope }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, sessionExpired, clearSessionExpired, signIn, signOut, hasRole, hasScope }}>
       {children}
     </AuthContext.Provider>
   )

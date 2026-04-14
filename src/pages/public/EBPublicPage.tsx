@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect, useCallback } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { awardXP, logStreakDay } from '@/lib/gamification'
+import TurnstileWidget from '@/components/public/TurnstileWidget'
 import {
   HiOutlineAcademicCap, HiOutlineCheck, HiOutlineChevronLeft,
-  HiOutlineBookOpen, HiOutlineStar, HiOutlineClipboardCheck,
-  HiOutlineLockClosed, HiOutlineUserCircle, HiOutlineThumbUp,
+  HiOutlineBookOpen, HiOutlineClipboardCheck,
+  HiOutlineLockClosed,
 } from 'react-icons/hi'
 
 // =============================================
@@ -20,7 +20,6 @@ interface ClasseInfo {
 
 interface AlunoInfo {
   id: string; pessoa_id: string; licoes_concluidas: number
-  pessoa: { nome: string } | { nome: string }[] | null
 }
 
 interface AulaInfo {
@@ -48,14 +47,18 @@ interface CompromissoFe { id: string; texto: string }
 
 export default function EBPublicPage() {
   const { classeId } = useParams<{ classeId: string }>()
+  const navigate = useNavigate()
+
   const [classe, setClasse] = useState<ClasseInfo | null>(null)
-  const [alunos, setAlunos] = useState<AlunoInfo[]>([])
+  const [aluno, setAluno] = useState<AlunoInfo | null>(null)
+  const [userName, setUserName] = useState('')
   const [aulas, setAulas] = useState<AulaInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [authChecked, setAuthChecked] = useState(false)
+  const [notEnrolled, setNotEnrolled] = useState(false)
 
-  // Step: identify → browse → quiz
-  const [selectedAluno, setSelectedAluno] = useState<AlunoInfo | null>(null)
+  // Quiz navigation
   const [selectedAula, setSelectedAula] = useState<AulaInfo | null>(null)
   const [ponto, setPonto] = useState<PontoInfo | null>(null)
   const [loadingPonto, setLoadingPonto] = useState(false)
@@ -67,46 +70,89 @@ export default function EBPublicPage() {
   const [score, setScore] = useState({ corretas: 0, total: 0 })
   const [submitting, setSubmitting] = useState(false)
 
-  // NPS state
-  const [npsNota, setNpsNota] = useState<number | null>(null)
-  const [npsComentario, setNpsComentario] = useState('')
-  const [npsSent, setNpsSent] = useState(false)
-
   // Typeform quiz step
   const [quizStep, setQuizStep] = useState(0)
 
+  // Turnstile CAPTCHA
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
+  const captchaEnabled = Boolean(turnstileSiteKey)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaResetKey, setCaptchaResetKey] = useState(0)
+  const handleCaptchaSuccess = useCallback((token: string) => setCaptchaToken(token), [])
+  const handleCaptchaExpire = useCallback(() => setCaptchaToken(null), [])
+  const handleCaptchaError = useCallback(() => setCaptchaToken(null), [])
+
   useEffect(() => {
-    if (classeId) loadClasse()
+    checkAuthAndLoad()
   }, [classeId])
 
-  async function loadClasse() {
+  async function checkAuthAndLoad() {
     setLoading(true)
-    try {
-      const { data: classeData, error: err } = await supabase
-        .from('classes_biblicas')
-        .select('id, nome, modulo_id, modulo_titulo, total_licoes, instrutor_nome, status, igreja:igrejas(nome)')
-        .eq('id', classeId!)
-        .single()
 
-      if (err || !classeData) { setError('Classe não encontrada'); setLoading(false); return }
-      setClasse(classeData)
-
-      const [alunosRes, aulasRes] = await Promise.all([
-        supabase.from('classe_biblica_alunos')
-          .select('id, pessoa_id, licoes_concluidas, pessoa:pessoas(nome)')
-          .eq('classe_id', classeId!).order('created_at'),
-        supabase.from('classe_biblica_aulas')
-          .select('id, ponto_numero, ponto_titulo, questionario_liberado')
-          .eq('classe_id', classeId!).eq('ativada', true).order('ponto_numero'),
-      ])
-
-      setAlunos(alunosRes.data || [])
-      setAulas(aulasRes.data || [])
-    } catch (e) {
-      setError('Erro ao carregar classe')
-    } finally {
-      setLoading(false)
+    // 1. Check authentication
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      // Redirect to login with return URL
+      navigate(`/portal/login?redirect=/eb/${classeId}`, { replace: true })
+      return
     }
+
+    setAuthChecked(true)
+    const userEmail = session.user.email!
+    const displayName = session.user.user_metadata?.full_name
+      || session.user.user_metadata?.nome
+      || userEmail.split('@')[0]
+    setUserName(displayName)
+
+    // 2. Load class info
+    const { data: classeData, error: err } = await supabase
+      .from('classes_biblicas')
+      .select('id, nome, modulo_id, modulo_titulo, total_licoes, instrutor_nome, status, igreja:igrejas(nome)')
+      .eq('id', classeId!)
+      .single()
+
+    if (err || !classeData) { setError('Classe não encontrada'); setLoading(false); return }
+    setClasse(classeData)
+
+    // 3. Find pessoa by email
+    const { data: pessoaArr } = await supabase
+      .from('pessoas')
+      .select('id')
+      .eq('email', userEmail)
+      .limit(1)
+
+    if (!pessoaArr || pessoaArr.length === 0) {
+      setNotEnrolled(true)
+      setLoading(false)
+      return
+    }
+
+    // 4. Check enrollment in this class
+    const { data: matricula } = await supabase
+      .from('classe_biblica_alunos')
+      .select('id, pessoa_id, licoes_concluidas')
+      .eq('classe_id', classeId!)
+      .eq('pessoa_id', pessoaArr[0].id)
+      .limit(1)
+
+    if (!matricula || matricula.length === 0) {
+      setNotEnrolled(true)
+      setLoading(false)
+      return
+    }
+
+    setAluno(matricula[0])
+
+    // 5. Load available lessons
+    const { data: aulasData } = await supabase
+      .from('classe_biblica_aulas')
+      .select('id, ponto_numero, ponto_titulo, questionario_liberado')
+      .eq('classe_id', classeId!)
+      .eq('ativada', true)
+      .order('ponto_numero')
+
+    setAulas(aulasData || [])
+    setLoading(false)
   }
 
   async function loadPonto(aula: AulaInfo) {
@@ -129,7 +175,11 @@ export default function EBPublicPage() {
   }
 
   async function submitQuiz() {
-    if (!ponto || !selectedAluno || !selectedAula || !classe) return
+    if (!ponto || !aluno || !selectedAula || !classe) return
+    if (captchaEnabled && !captchaToken) {
+      setError('Complete a verificação de segurança antes de enviar.')
+      return
+    }
     setSubmitting(true)
 
     // Check if already submitted (prevent duplicate)
@@ -137,7 +187,7 @@ export default function EBPublicPage() {
       .from('classe_biblica_respostas')
       .select('id')
       .eq('classe_id', classe.id)
-      .eq('aluno_id', selectedAluno.id)
+      .eq('aluno_id', aluno.id)
       .eq('ponto_numero', ponto.ponto_numero)
       .limit(1)
 
@@ -156,8 +206,8 @@ export default function EBPublicPage() {
 
     const { error: insertErr } = await supabase.from('classe_biblica_respostas').insert({
       classe_id: classe.id,
-      aluno_id: selectedAluno.id,
-      aluno_nome: getNome(selectedAluno),
+      aluno_id: aluno.id,
+      aluno_nome: userName,
       ponto_numero: ponto.ponto_numero,
       ponto_titulo: ponto.titulo,
       pontuacao: corretas,
@@ -175,40 +225,14 @@ export default function EBPublicPage() {
 
     // Update licoes_concluidas
     await supabase.from('classe_biblica_alunos').update({
-      licoes_concluidas: selectedAluno.licoes_concluidas + 1,
-    }).eq('id', selectedAluno.id)
-
-    // Gamification: award XP
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user?.id) {
-      const uid = session.user.id
-      await awardXP(uid, 'student', 'lesson_complete', ponto.id, 'lesson')
-      if (percentual === 100) await awardXP(uid, 'student', 'quiz_perfect', ponto.id, 'quiz')
-      else if (percentual >= 80) await awardXP(uid, 'student', 'quiz_good', ponto.id, 'quiz')
-      await logStreakDay(uid, 'quiz')
-    }
+      licoes_concluidas: aluno.licoes_concluidas + 1,
+    }).eq('id', aluno.id)
 
     setScore({ corretas, total })
     setSubmitted(true)
     setSubmitting(false)
-  }
-
-  async function submitNps() {
-    if (npsNota === null || !selectedAluno || !selectedAula || !classe) return
-    // Upsert to prevent duplicate NPS
-    await supabase.from('eb_nps').upsert({
-      classe_id: classe.id,
-      aluno_id: selectedAluno.id,
-      aula_id: selectedAula.id,
-      ponto_numero: selectedAula.ponto_numero,
-      nota: npsNota,
-      comentario: npsComentario || null,
-    }, { onConflict: 'classe_id,aluno_id,aula_id' })
-    setNpsSent(true)
-  }
-
-  function getNome(a: AlunoInfo) {
-    return Array.isArray(a.pessoa) ? a.pessoa[0]?.nome || '—' : (a.pessoa as any)?.nome || '—'
+    setCaptchaToken(null)
+    setCaptchaResetKey(k => k + 1)
   }
 
   const igrejaNome = classe ? (Array.isArray(classe.igreja) ? classe.igreja[0]?.nome : (classe.igreja as any)?.nome) : ''
@@ -219,17 +243,37 @@ export default function EBPublicPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto" />
-          <p className="mt-4 text-gray-500">Carregando classe...</p>
+          <p className="mt-4 text-gray-500">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // ---- NOT ENROLLED ----
+  if (notEnrolled) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center max-w-sm">
+          <HiOutlineAcademicCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h1 className="text-lg font-bold text-gray-800">Acesso não autorizado</h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Você não está matriculado nesta turma. Peça ao seu professor para adicionar seu email à turma.
+          </p>
+          <p className="text-xs text-gray-400 mt-3">Logado como: {userName}</p>
+          <button onClick={() => navigate('/portal')}
+            className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium">
+            Ir para o Portal
+          </button>
         </div>
       </div>
     )
   }
 
   // ---- ERROR ----
-  if (error || !classe) {
+  if (error && !ponto) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="card p-8 text-center max-w-sm">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center max-w-sm">
           <HiOutlineAcademicCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h1 className="text-lg font-bold text-gray-800">Classe não encontrada</h1>
           <p className="text-sm text-gray-500 mt-2">Verifique se o link está correto ou entre em contato com seu professor.</p>
@@ -237,6 +281,8 @@ export default function EBPublicPage() {
       </div>
     )
   }
+
+  if (!classe || !aluno) return null
 
   // ---- RESULT SCREEN ----
   if (submitted && ponto) {
@@ -256,7 +302,7 @@ export default function EBPublicPage() {
           </div>
 
           {/* Gabarito */}
-          <div className="card p-5 space-y-3">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
             <h3 className="text-sm font-semibold text-gray-700">Gabarito</h3>
             {ponto.perguntas.map((p, i) => {
               const acertou = respostas[p.id] === p.resposta_correta
@@ -281,53 +327,8 @@ export default function EBPublicPage() {
             })}
           </div>
 
-          {/* NPS */}
-          <div className="card p-5">
-            {npsSent ? (
-              <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-2">
-                  <HiOutlineCheck className="w-6 h-6" />
-                </div>
-                <p className="text-sm font-medium text-gray-700">Obrigado pela sua avaliação!</p>
-              </div>
-            ) : (
-              <>
-                <h3 className="text-sm font-semibold text-gray-700 text-center mb-3">
-                  O quanto você gostou desta aula?
-                </h3>
-                <div className="flex justify-center gap-1.5 mb-3 flex-wrap">
-                  {[0,1,2,3,4,5,6,7,8,9,10].map(n => (
-                    <button key={n} onClick={() => setNpsNota(n)}
-                      className={`w-8 h-11 rounded-lg text-sm font-bold transition-all ${
-                        npsNota === n
-                          ? n <= 6 ? 'bg-red-500 text-white scale-110' : n <= 8 ? 'bg-yellow-500 text-white scale-110' : 'bg-green-500 text-white scale-110'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      }`}>
-                      {n}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex justify-between text-[10px] text-gray-400 mb-4 px-1">
-                  <span>Não gostei</span>
-                  <span>Adorei!</span>
-                </div>
-                {npsNota !== null && (
-                  <>
-                    <textarea value={npsComentario} onChange={e => setNpsComentario(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-primary-500 mb-3"
-                      placeholder="Deixe um comentário (opcional)..." rows={2} />
-                    <button onClick={submitNps}
-                      className="w-full bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium py-2.5 rounded-xl transition-colors">
-                      Enviar avaliação
-                    </button>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-
-          <button onClick={() => { setSelectedAula(null); setPonto(null); setSubmitted(false); setNpsNota(null); setNpsSent(false); setNpsComentario('') }}
-            className="w-full btn-primary py-3 text-center">
+          <button onClick={() => { setSelectedAula(null); setPonto(null); setSubmitted(false) }}
+            className="w-full bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium py-3 rounded-xl transition-colors">
             Voltar às Aulas
           </button>
         </div>
@@ -344,9 +345,6 @@ export default function EBPublicPage() {
     const isIntro = ponto.introducao && quizStep === 0
     const isCompromissos = quizStep >= introOffset + ponto.perguntas.length
     const progressPct = Math.round((quizStep / totalSteps) * 100)
-    const canGoNext = isIntro
-      || (currentPergunta && respostas[currentPergunta.id])
-      || isCompromissos
     const isLastQuestion = currentPerguntaIdx === ponto.perguntas.length - 1 && !ponto.compromissos_fe?.length
 
     function nextStep() {
@@ -360,7 +358,6 @@ export default function EBPublicPage() {
 
     function selectAnswer(perguntaId: string, opcaoId: string) {
       setRespostas(prev => ({ ...prev, [perguntaId]: opcaoId }))
-      // No auto-advance — student sees feedback first, then clicks "Próxima"
     }
 
     return (
@@ -454,7 +451,7 @@ export default function EBPublicPage() {
                         disabled={answered}
                         className={`w-full text-left flex items-center gap-4 px-5 py-4 rounded-2xl border-2 transition-all duration-300 ${borderClass}`}>
                         <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${badgeClass}`}>
-                          {answered && isCorrectOption ? '✓' : answered && isSelected && !isCorrectOption ? '✗' : letter}
+                          {answered && isCorrectOption ? '\u2713' : answered && isSelected && !isCorrectOption ? '\u2717' : letter}
                         </span>
                         <span className={`text-sm leading-snug ${textClass}`}>{o.texto}</span>
                       </button>
@@ -529,8 +526,22 @@ export default function EBPublicPage() {
                   ))}
                 </div>
 
+                {captchaEnabled && turnstileSiteKey && (
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold text-gray-600 mb-2">Confirme a verificação para enviar</p>
+                    <TurnstileWidget
+                      siteKey={turnstileSiteKey}
+                      action="eb_quiz"
+                      resetKey={captchaResetKey}
+                      onSuccess={handleCaptchaSuccess}
+                      onExpire={handleCaptchaExpire}
+                      onError={handleCaptchaError}
+                    />
+                  </div>
+                )}
+
                 <button onClick={submitQuiz}
-                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
+                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length || (captchaEnabled && !captchaToken)}
                   className="w-full bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-primary-600/20 disabled:opacity-50 text-sm flex items-center justify-center gap-2">
                   {submitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -547,9 +558,22 @@ export default function EBPublicPage() {
 
             {/* If no compromissos, show submit after last question */}
             {!isIntro && !isCompromissos && currentPerguntaIdx === ponto.perguntas.length - 1 && !ponto.compromissos_fe?.length && respostas[currentPergunta?.id] && (
-              <div className="mt-6 animate-fade-in">
+              <div className="mt-6 space-y-3 animate-fade-in">
+                {captchaEnabled && turnstileSiteKey && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-600 mb-2">Confirme a verificação para enviar</p>
+                    <TurnstileWidget
+                      siteKey={turnstileSiteKey}
+                      action="eb_quiz"
+                      resetKey={captchaResetKey}
+                      onSuccess={handleCaptchaSuccess}
+                      onExpire={handleCaptchaExpire}
+                      onError={handleCaptchaError}
+                    />
+                  </div>
+                )}
                 <button onClick={submitQuiz}
-                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
+                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length || (captchaEnabled && !captchaToken)}
                   className="w-full bg-gradient-to-r from-primary-600 to-emerald-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-primary-600/20 disabled:opacity-50">
                   {submitting ? 'Enviando...' : 'Enviar Respostas'}
                 </button>
@@ -571,7 +595,7 @@ export default function EBPublicPage() {
     )
   }
 
-  // ---- SELECT STUDENT + BROWSE AULAS ----
+  // ---- BROWSE AULAS (authenticated, enrolled) ----
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -584,7 +608,7 @@ export default function EBPublicPage() {
             <div>
               <h1 className="text-xl font-bold">{classe.nome}</h1>
               <p className="text-white/70 text-sm">
-                {igrejaNome}{classe.instrutor_nome && ` • Prof. ${classe.instrutor_nome}`}
+                {igrejaNome}{classe.instrutor_nome && ` \u2022 Prof. ${classe.instrutor_nome}`}
               </p>
             </div>
           </div>
@@ -594,98 +618,60 @@ export default function EBPublicPage() {
             )}
             <span className="text-xs text-white/60">{classe.total_licoes} pontos</span>
           </div>
+          {/* Logged-in user badge */}
+          <div className="mt-3 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-xs text-white/70">{userName}</span>
+          </div>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 -mt-10 space-y-4 pb-8">
-        {/* Identificação */}
-        {!selectedAluno ? (
-          <div className="card p-5 shadow-lg">
-            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
-              <HiOutlineUserCircle className="w-5 h-5" /> Quem é você?
-            </h2>
-            <p className="text-xs text-gray-500 mb-4">Selecione seu nome para acessar as aulas e questionários.</p>
-            <div className="space-y-1">
-              {alunos.map(a => (
-                <button key={a.id} onClick={() => setSelectedAluno(a)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary-50 text-left transition-colors">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                    {getNome(a).charAt(0)}
+        {/* Aulas disponíveis */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
+            <HiOutlineBookOpen className="w-4 h-4" /> Aulas Disponíveis
+          </h2>
+          {aulas.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-6">Nenhuma aula disponível no momento.</p>
+          ) : (
+            <div className="space-y-2">
+              {aulas.map(a => (
+                <button key={a.id}
+                  onClick={() => a.questionario_liberado ? loadPonto(a) : null}
+                  disabled={!a.questionario_liberado}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                    a.questionario_liberado
+                      ? 'hover:bg-blue-50 hover:shadow-sm border border-blue-200 bg-white'
+                      : 'bg-gray-50 border border-gray-100 opacity-60 cursor-not-allowed'
+                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${
+                    a.questionario_liberado
+                      ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white'
+                      : 'bg-gray-200 text-gray-400'
+                  }`}>
+                    {a.ponto_numero}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{getNome(a)}</p>
-                    <p className="text-[10px] text-gray-400">{a.licoes_concluidas} lições concluídas</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">
+                      {a.ponto_titulo || `Ponto ${a.ponto_numero}`}
+                    </p>
+                    <p className="text-[10px] text-gray-400">
+                      {a.questionario_liberado ? 'Questionário disponível' : 'Aguardando liberação'}
+                    </p>
                   </div>
+                  {a.questionario_liberado ? (
+                    <HiOutlineClipboardCheck className="w-5 h-5 text-blue-500 shrink-0" />
+                  ) : (
+                    <HiOutlineLockClosed className="w-5 h-5 text-gray-300 shrink-0" />
+                  )}
                 </button>
               ))}
             </div>
-            {alunos.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">Nenhum aluno matriculado nesta turma.</p>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* Aluno selecionado */}
-            <div className="card p-4 shadow-lg flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white flex items-center justify-center text-xs font-bold">
-                  {getNome(selectedAluno).charAt(0)}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{getNome(selectedAluno)}</p>
-                  <p className="text-[10px] text-gray-400">{selectedAluno.licoes_concluidas} lições concluídas</p>
-                </div>
-              </div>
-              <button onClick={() => setSelectedAluno(null)} className="text-xs text-gray-400 hover:text-gray-600">
-                Trocar
-              </button>
-            </div>
-
-            {/* Aulas disponíveis */}
-            <div className="card p-5">
-              <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
-                <HiOutlineBookOpen className="w-4 h-4" /> Aulas Disponíveis
-              </h2>
-              {aulas.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">Nenhuma aula disponível no momento.</p>
-              ) : (
-                <div className="space-y-2">
-                  {aulas.map(a => (
-                    <button key={a.id}
-                      onClick={() => a.questionario_liberado ? loadPonto(a) : null}
-                      disabled={!a.questionario_liberado}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        a.questionario_liberado
-                          ? 'hover:bg-blue-50 hover:shadow-sm border border-blue-200 bg-white'
-                          : 'bg-gray-50 border border-gray-100 opacity-60 cursor-not-allowed'
-                      }`}>
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${
-                        a.questionario_liberado
-                          ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white'
-                          : 'bg-gray-200 text-gray-400'
-                      }`}>
-                        {a.ponto_numero}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">
-                          {a.ponto_titulo || `Ponto ${a.ponto_numero}`}
-                        </p>
-                        <p className="text-[10px] text-gray-400">
-                          {a.questionario_liberado ? 'Questionário disponível' : 'Aguardando liberação'}
-                        </p>
-                      </div>
-                      {a.questionario_liberado ? (
-                        <HiOutlineClipboardCheck className="w-5 h-5 text-blue-500 shrink-0" />
-                      ) : (
-                        <HiOutlineLockClosed className="w-5 h-5 text-gray-300 shrink-0" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

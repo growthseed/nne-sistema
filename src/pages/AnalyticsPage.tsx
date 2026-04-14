@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { SkeletonCard, SkeletonLine } from '@/components/ui/Skeleton'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -430,10 +431,16 @@ export default function AnalyticsPage() {
   // ------- Render -------
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-[#006D43] border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-500 text-sm">Carregando análises...</span>
+      <div className="space-y-6">
+        <div>
+          <SkeletonLine className="w-32 h-7 mb-2" />
+          <SkeletonLine className="w-64 h-4" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} className="h-24" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} className="h-64" />)}
         </div>
       </div>
     )

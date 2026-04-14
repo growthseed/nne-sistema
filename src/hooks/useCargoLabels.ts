@@ -4,7 +4,7 @@ import { CARGO_LABELS, STATUS_LABELS } from '@/lib/missoes-constants'
 
 type LabelsMap = Record<string, string>
 
-function useConfigLabels(chave: string, defaults: LabelsMap, cached: { val: LabelsMap | null }, descricao: string) {
+function useConfigLabels(chave: string, defaults: LabelsMap, cached: { val: LabelsMap | null; fromDb: boolean }, descricao: string) {
   const [labels, setLabels] = useState<LabelsMap>(cached.val || defaults)
   const [loading, setLoading] = useState(!cached.val)
 
@@ -22,9 +22,11 @@ function useConfigLabels(chave: string, defaults: LabelsMap, cached: { val: Labe
         .single()
 
       if (!error && data?.valor) {
-        const merged = { ...defaults, ...data.valor } as LabelsMap
-        cached.val = merged
-        setLabels(merged)
+        // Use DB values as-is (respect deletions), don't merge with defaults
+        const dbLabels = data.valor as LabelsMap
+        cached.val = dbLabels
+        cached.fromDb = true
+        setLabels(dbLabels)
       }
     } catch {
       // fallback to hardcoded
@@ -35,6 +37,9 @@ function useConfigLabels(chave: string, defaults: LabelsMap, cached: { val: Labe
 
   async function updateLabels(newLabels: LabelsMap): Promise<boolean> {
     try {
+      // Detect which keys were removed
+      const removedKeys = Object.keys(labels).filter(k => !(k in newLabels))
+
       const { error } = await supabase
         .from('configuracoes')
         .upsert(
@@ -42,7 +47,18 @@ function useConfigLabels(chave: string, defaults: LabelsMap, cached: { val: Labe
           { onConflict: 'chave' }
         )
       if (error) throw error
+
+      // Clean up missionarios that had a deleted cargo/status
+      if (removedKeys.length > 0) {
+        const column = chave === 'cargo_labels' ? 'cargo_ministerial' : 'status'
+        await supabase
+          .from('missionarios')
+          .update({ [column]: null })
+          .in(column, removedKeys)
+      }
+
       cached.val = newLabels
+      cached.fromDb = true
       setLabels(newLabels)
       return true
     } catch (err) {
@@ -53,13 +69,14 @@ function useConfigLabels(chave: string, defaults: LabelsMap, cached: { val: Labe
 
   function invalidateCache() {
     cached.val = null
+    cached.fromDb = false
   }
 
   return { labels, loading, updateLabels, invalidateCache }
 }
 
-const _cargoCache = { val: null as LabelsMap | null }
-const _statusCache = { val: null as LabelsMap | null }
+const _cargoCache = { val: null as LabelsMap | null, fromDb: false }
+const _statusCache = { val: null as LabelsMap | null, fromDb: false }
 
 export function useCargoLabels() {
   return useConfigLabels('cargo_labels', CARGO_LABELS, _cargoCache, 'Nomes de exibição dos cargos ministeriais.')

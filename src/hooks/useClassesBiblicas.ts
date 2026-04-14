@@ -59,6 +59,11 @@ export interface ClasseBiblicaAula {
   observacoes: string | null
 }
 
+export interface ClasseBiblicaPontoDisponivel {
+  ponto_numero: number
+  titulo: string
+}
+
 export interface PessoaOption {
   id: string
   nome: string
@@ -120,6 +125,23 @@ interface AtivarAulaPayload {
 interface LiberarQuestionarioPayload {
   aula_id: string
   profile_id: string | null
+}
+
+interface CreateInteressadoClasseBiblicaPayload {
+  classe_id: string
+  nome: string
+  celular: string | null
+  email: string | null
+  tipo: string
+  igreja_id: string
+  associacao_id: string | null
+  uniao_id: string | null
+}
+
+interface RegistrarBatismoClasseBiblicaPayload {
+  aluno_id: string
+  pessoa_id: string
+  data_batismo: string
 }
 
 interface SearchPessoasParams {
@@ -216,6 +238,21 @@ async function fetchClasseBiblicaDetail(classeId: string): Promise<ClasseBiblica
     presencas: (presencasRes.data as ClasseBiblicaPresenca[]) || [],
     aulas: (aulasRes.data as ClasseBiblicaAula[]) || [],
   }
+}
+
+async function fetchClasseBiblicaPontos(moduloId: string): Promise<ClasseBiblicaPontoDisponivel[]> {
+  if (!moduloId) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('eb_pontos')
+    .select('ponto_numero, titulo')
+    .eq('modulo_id', moduloId)
+    .order('ponto_numero')
+
+  if (error) throw error
+  return (data as ClasseBiblicaPontoDisponivel[]) || []
 }
 
 async function searchPessoasClasse(params: SearchPessoasParams): Promise<PessoaOption[]> {
@@ -369,6 +406,58 @@ async function liberarQuestionarioClasseBiblica(payload: LiberarQuestionarioPayl
   if (error) throw error
 }
 
+async function createInteressadoClasseBiblica(payload: CreateInteressadoClasseBiblicaPayload) {
+  const { data, error } = await supabase
+    .from('pessoas')
+    .insert({
+      nome: payload.nome,
+      celular: payload.celular,
+      email: payload.email,
+      tipo: payload.tipo,
+      situacao: 'ativo',
+      etapa_funil: 'classe_biblica',
+      igreja_id: payload.igreja_id,
+      associacao_id: payload.associacao_id,
+      uniao_id: payload.uniao_id,
+    })
+    .select('id')
+    .single()
+
+  if (error || !data) throw error || new Error('Pessoa nao criada.')
+
+  await addAlunoClasseBiblica({
+    classe_id: payload.classe_id,
+    pessoa_id: data.id,
+  })
+}
+
+async function registrarBatismoClasseBiblica(payload: RegistrarBatismoClasseBiblicaPayload) {
+  const dataBatismo = new Date(`${payload.data_batismo}T12:00:00`).toLocaleDateString('pt-BR')
+
+  const { error: pessoaError } = await supabase
+    .from('pessoas')
+    .update({
+      etapa_funil: 'batismo',
+      data_batismo: payload.data_batismo,
+      tipo: 'membro',
+      situacao: 'ativo',
+      data_ultimo_contato: new Date().toISOString().slice(0, 10),
+      observacoes_funil: `Batizado em ${dataBatismo}. Concluiu Escola Biblica.`,
+    })
+    .eq('id', payload.pessoa_id)
+
+  if (pessoaError) throw pessoaError
+
+  const { error: alunoError } = await supabase
+    .from('classe_biblica_alunos')
+    .update({
+      status: 'batizado',
+    })
+    .eq('id', payload.aluno_id)
+
+  if (alunoError) throw alunoError
+}
+
 export function useClassesBiblicas() {
   const { profile } = useAuth()
 
@@ -397,6 +486,24 @@ export function useClasseBiblicaDetail(classeId?: string | null) {
     detail: query.data ?? null,
     loading: query.isLoading,
     error: query.error instanceof Error ? query.error.message : query.error ? 'Erro ao carregar os detalhes da classe.' : null,
+    refetch: query.refetch,
+  }
+}
+
+export function useClasseBiblicaPontosDisponiveis(moduloId: string | null | undefined, aulas: Pick<ClasseBiblicaAula, 'ponto_numero'>[] = []) {
+  const query = useQuery({
+    queryKey: ['classe-biblica-pontos', moduloId],
+    queryFn: () => fetchClasseBiblicaPontos(moduloId!),
+    enabled: !!moduloId,
+  })
+
+  const aulasNums = new Set(aulas.map((aula) => aula.ponto_numero))
+  const pontosDisponiveis = (query.data ?? []).filter((ponto) => !aulasNums.has(ponto.ponto_numero))
+
+  return {
+    pontosDisponiveis,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : query.error ? 'Erro ao carregar os pontos disponiveis desta turma.' : null,
     refetch: query.refetch,
   }
 }
@@ -494,6 +601,28 @@ export function useLiberarQuestionarioClasseBiblica() {
 
   return useMutation({
     mutationFn: liberarQuestionarioClasseBiblica,
+    onSuccess: async () => {
+      await invalidateClasseBiblicaQueries(queryClient)
+    },
+  })
+}
+
+export function useCreateInteressadoClasseBiblica() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: createInteressadoClasseBiblica,
+    onSuccess: async () => {
+      await invalidateClasseBiblicaQueries(queryClient)
+    },
+  })
+}
+
+export function useRegistrarBatismoClasseBiblica() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: registrarBatismoClasseBiblica,
     onSuccess: async () => {
       await invalidateClasseBiblicaQueries(queryClient)
     },

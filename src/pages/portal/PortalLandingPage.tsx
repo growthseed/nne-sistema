@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
   HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineUserGroup,
-  HiOutlineClipboardCheck, HiOutlineStar, HiOutlineChatAlt2,
+  HiOutlineClipboardCheck, HiOutlineStar,
   HiOutlineArrowRight, HiOutlineGlobe,
 } from 'react-icons/hi'
 
@@ -31,7 +31,7 @@ const FEATURES = [
   { icon: HiOutlineClipboardCheck, title: 'Questionários Interativos', desc: 'Responda perguntas e receba gabarito instantâneo com explicações' },
   { icon: HiOutlineUserGroup, title: 'Turmas Online', desc: 'Participe de turmas com professor, chamada e acompanhamento' },
   { icon: HiOutlineStar, title: 'Compromissos de Fé', desc: 'Registre seus compromissos a cada ponto doutrinário estudado' },
-  { icon: HiOutlineChatAlt2, title: 'Comunidade', desc: 'Interaja com outros alunos no fórum e chat da turma' },
+  { icon: HiOutlineBookOpen, title: 'Certificado Digital', desc: 'Receba seu certificado ao concluir cada módulo de estudo' },
   { icon: HiOutlineGlobe, title: 'Acesso de Qualquer Lugar', desc: 'Estude pelo celular, tablet ou computador a qualquer hora' },
 ]
 

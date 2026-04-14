@@ -1,16 +1,12 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import jsPDF from 'jspdf'
 import {
   HiOutlineAcademicCap, HiOutlineBookOpen, HiOutlineLogout,
-  HiOutlineChevronRight, HiOutlineTrendingUp, HiOutlineBell,
-  HiOutlineStar, HiOutlineClipboardCheck, HiOutlineChatAlt2,
-  HiOutlinePaperAirplane, HiOutlineChevronLeft, HiOutlineDownload,
-  HiOutlineFire, HiOutlineLightningBolt,
+  HiOutlineTrendingUp, HiOutlineBell,
+  HiOutlineStar, HiOutlineClipboardCheck, HiOutlineDownload,
 } from 'react-icons/hi'
-import { useStudentGamification } from '@/hooks/useGamification'
-import { awardXP, logStreakDay } from '@/lib/gamification'
 
 // =============================================
 // TYPES
@@ -30,12 +26,6 @@ interface UserInfo {
   id: string; email: string; nome: string; avatar: string | null
 }
 
-interface Mensagem {
-  id: string; autor_nome: string; autor_tipo: string; mensagem: string; created_at: string
-}
-
-type PageView = 'dashboard' | 'turma-chat'
-
 // =============================================
 // COMPONENT
 // =============================================
@@ -47,18 +37,8 @@ export default function PortalDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ totalAulas: 0, totalRespostas: 0, mediaAcerto: 0 })
 
-  // Chat
-  const [pageView, setPageView] = useState<PageView>('dashboard')
-  const [chatTurma, setChatTurma] = useState<MinhaClasse | null>(null)
-  const [mensagens, setMensagens] = useState<Mensagem[]>([])
-  const [novaMensagem, setNovaMensagem] = useState('')
-  const [loadingChat, setLoadingChat] = useState(false)
-  const chatEndRef = useRef<HTMLDivElement>(null)
-  const chatChannelRef = useRef<any>(null)
-
   useEffect(() => {
     checkAuth()
-    return () => { if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current) }
   }, [])
 
   async function checkAuth() {
@@ -69,12 +49,10 @@ export default function PortalDashboardPage() {
     // Try to get display name from multiple sources
     let displayName = u.user_metadata?.nome || u.user_metadata?.full_name || ''
     if (!displayName) {
-      // Try usuarios table
       const { data: usuario } = await supabase.from('usuarios').select('nome').eq('id', u.id).limit(1)
       if (usuario?.[0]?.nome) displayName = usuario[0].nome
     }
     if (!displayName) {
-      // Try eb_perfis_aluno
       const { data: perfil } = await supabase.from('eb_perfis_aluno').select('nome').eq('id', u.id).limit(1)
       if (perfil?.[0]?.nome) displayName = perfil[0].nome
     }
@@ -106,10 +84,13 @@ export default function PortalDashboardPage() {
 
       setClasses(matriculas || [])
 
-      const { data: respostas } = await supabase
-        .from('classe_biblica_respostas')
-        .select('percentual_acerto')
-        .eq('aluno_id', pessoa.id)
+      const matriculaIds = (matriculas || []).map(matricula => matricula.id)
+      const { data: respostas } = matriculaIds.length > 0
+        ? await supabase
+            .from('classe_biblica_respostas')
+            .select('percentual_acerto')
+            .in('aluno_id', matriculaIds)
+        : { data: [] as { percentual_acerto: number }[] }
 
       if (respostas && respostas.length > 0) {
         const media = respostas.reduce((s, r) => s + Number(r.percentual_acerto), 0) / respostas.length
@@ -121,52 +102,6 @@ export default function PortalDashboardPage() {
       }
     }
     setLoading(false)
-  }
-
-  async function openChat(m: MinhaClasse) {
-    // Clean up previous channel
-    if (chatChannelRef.current) {
-      supabase.removeChannel(chatChannelRef.current)
-      chatChannelRef.current = null
-    }
-    setChatTurma(m)
-    setPageView('turma-chat')
-    setLoadingChat(true)
-    const { data } = await supabase
-      .from('eb_mensagens')
-      .select('*')
-      .eq('classe_id', m.classe_id)
-      .order('created_at', { ascending: true })
-      .limit(100)
-    setMensagens(data || [])
-    setLoadingChat(false)
-    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
-
-    // Realtime subscription
-    const channel = supabase
-      .channel(`chat-${m.classe_id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'eb_mensagens', filter: `classe_id=eq.${m.classe_id}` },
-        (payload) => {
-          setMensagens(prev => [...prev, payload.new as Mensagem])
-          setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-        }
-      )
-      .subscribe()
-    chatChannelRef.current = channel
-  }
-
-  async function enviarMensagem() {
-    if (!novaMensagem.trim() || !chatTurma || !user) return
-    await supabase.from('eb_mensagens').insert({
-      classe_id: chatTurma.classe_id,
-      autor_nome: user.nome,
-      autor_email: user.email,
-      autor_tipo: 'aluno',
-      mensagem: novaMensagem.trim(),
-    })
-    // Gamification
-    awardXP(user.id, 'student', 'chat_message')
-    setNovaMensagem('')
   }
 
   function gerarCertificado(nomeAluno: string, moduloTitulo: string, turmaNome: string) {
@@ -236,9 +171,6 @@ export default function PortalDashboardPage() {
     navigate('/portal/login', { replace: true })
   }
 
-  // Gamification — MUST be before any conditional returns (React hooks rule)
-  const gam = useStudentGamification(user?.id || null)
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -249,7 +181,7 @@ export default function PortalDashboardPage() {
 
   const initial = user?.nome?.charAt(0).toUpperCase() || 'A'
 
-  // ===== TOP NAV (shared) =====
+  // ===== TOP NAV =====
   const TopNav = () => (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -262,16 +194,6 @@ export default function PortalDashboardPage() {
             </div>
             <span className="text-sm font-bold text-gray-800 hidden sm:block">Escola Bíblica</span>
           </Link>
-          <nav className="flex items-center gap-1">
-            <button onClick={() => setPageView('dashboard')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                pageView === 'dashboard' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}>Início</button>
-            <Link to="/portal/forum"
-              className="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors">
-              Comunidade
-            </Link>
-          </nav>
         </div>
         <div className="flex items-center gap-3">
           <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -294,95 +216,6 @@ export default function PortalDashboardPage() {
       </div>
     </header>
   )
-
-  // ===== CHAT VIEW =====
-  if (pageView === 'turma-chat' && chatTurma) {
-    const c = chatTurma.classe as any
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <TopNav />
-        <div className="max-w-3xl mx-auto w-full px-4 py-4 flex-1 flex flex-col">
-          <button onClick={() => setPageView('dashboard')}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-green-600 mb-3">
-            <HiOutlineChevronLeft className="w-4 h-4" /> Voltar
-          </button>
-
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col flex-1 overflow-hidden">
-            {/* Chat Header */}
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-bold text-gray-800">{c?.nome || 'Turma'}</h2>
-                <p className="text-xs text-gray-400">{c?.instrutor_nome && `Prof. ${c.instrutor_nome}`}</p>
-              </div>
-              <Link to={`/eb/${chatTurma.classe_id}`}
-                className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
-                Ir para aulas <HiOutlineChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[300px] max-h-[60vh]">
-              {loadingChat ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-3 border-green-200 border-t-green-600 rounded-full animate-spin" />
-                </div>
-              ) : mensagens.length === 0 ? (
-                <div className="text-center py-12">
-                  <HiOutlineChatAlt2 className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">Nenhuma mensagem ainda</p>
-                  <p className="text-xs text-gray-300">Seja o primeiro a escrever!</p>
-                </div>
-              ) : (
-                mensagens.map(m => {
-                  const isMe = (m as any).autor_email === user?.email || m.autor_nome === user?.nome
-                  return (
-                    <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] ${isMe ? 'order-2' : ''}`}>
-                        {!isMe && (
-                          <p className="text-[10px] text-gray-400 mb-0.5 ml-1">
-                            {m.autor_nome}
-                            {m.autor_tipo === 'professor' && <span className="ml-1 text-green-600 font-medium">Professor</span>}
-                          </p>
-                        )}
-                        <div className={`px-4 py-2.5 rounded-2xl text-sm ${
-                          isMe
-                            ? 'bg-green-600 text-white rounded-br-md'
-                            : m.autor_tipo === 'professor'
-                              ? 'bg-blue-50 text-gray-800 border border-blue-100 rounded-bl-md'
-                              : 'bg-gray-100 text-gray-800 rounded-bl-md'
-                        }`}>
-                          {m.mensagem}
-                        </div>
-                        <p className={`text-[9px] text-gray-300 mt-0.5 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
-                          {new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="px-4 py-3 border-t border-gray-100">
-              <div className="flex items-center gap-2">
-                <input value={novaMensagem}
-                  onChange={e => setNovaMensagem(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && enviarMensagem()}
-                  className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-green-500/30 focus:border-green-500 outline-none transition-all"
-                  placeholder="Digite sua mensagem..." />
-                <button onClick={enviarMensagem} disabled={!novaMensagem.trim()}
-                  className="w-10 h-10 rounded-xl bg-green-600 hover:bg-green-700 text-white flex items-center justify-center transition-colors disabled:opacity-40 shrink-0">
-                  <HiOutlinePaperAirplane className="w-5 h-5 rotate-90" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // ===== DASHBOARD =====
   return (
@@ -412,92 +245,6 @@ export default function PortalDashboardPage() {
                 </div>
               </div>
             </div>
-
-            {/* Gamification Widget */}
-            {gam.profile && (
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-                <div className="flex items-center gap-4">
-                  {/* Level circle */}
-                  <div className="relative shrink-0">
-                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                      <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-                      <circle cx="32" cy="32" r="28" fill="none" stroke={gam.currentLevel.color_hex} strokeWidth="4"
-                        strokeDasharray={`${gam.progressToNextLevel * 1.76} 176`} strokeLinecap="round" className="transition-all duration-700" />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-lg font-black" style={{ color: gam.currentLevel.color_hex }}>{gam.currentLevel.level_number}</span>
-                    </div>
-                  </div>
-
-                  {/* Level info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-gray-800">{gam.currentLevel.name}</h3>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: gam.currentLevel.color_hex + '20', color: gam.currentLevel.color_hex }}>
-                        Nível {gam.currentLevel.level_number}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">{gam.currentLevel.description}</p>
-                    {gam.currentLevel.bible_ref && (
-                      <p className="text-[10px] text-gray-300 italic mt-0.5">{gam.currentLevel.bible_ref}</p>
-                    )}
-
-                    {/* XP bar */}
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
-                        <span>{gam.profile.xp_total.toLocaleString()} XP</span>
-                        {gam.nextLevel && <span>{gam.nextLevel.xp_min.toLocaleString()} XP</span>}
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${gam.progressToNextLevel}%`, backgroundColor: gam.currentLevel.color_hex }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Streak */}
-                  <div className="shrink-0 text-center">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${gam.profile.streak_current > 0 ? 'bg-orange-50' : 'bg-gray-50'}`}>
-                      <HiOutlineFire className={`w-6 h-6 ${gam.profile.streak_current > 0 ? 'text-orange-500' : 'text-gray-300'}`} />
-                    </div>
-                    <p className={`text-lg font-bold mt-1 ${gam.profile.streak_current > 0 ? 'text-orange-600' : 'text-gray-300'}`}>
-                      {gam.profile.streak_current}
-                    </p>
-                    <p className="text-[9px] text-gray-400">dias</p>
-                    {gam.streakMultiplier > 1 && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full mt-0.5">
-                        <HiOutlineLightningBolt className="w-2.5 h-2.5" /> {gam.streakMultiplier}x
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Badges preview */}
-                {gam.badges.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] text-gray-400 font-medium">Conquistas ({gam.badges.length}/{gam.allBadges.length})</p>
-                    </div>
-                    <div className="flex gap-1.5 overflow-x-auto">
-                      {gam.badges.slice(0, 8).map(b => (
-                        <div key={b.id} className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold ${
-                          b.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' :
-                          b.rarity === 'rare' ? 'bg-purple-100 text-purple-700' :
-                          b.rarity === 'uncommon' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`} title={`${b.name}: ${b.description}`}>
-                          {b.name.charAt(0)}
-                        </div>
-                      ))}
-                      {gam.badges.length > 8 && (
-                        <div className="shrink-0 w-9 h-9 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center text-[10px] font-medium">
-                          +{gam.badges.length - 8}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-3">
@@ -588,11 +335,6 @@ export default function PortalDashboardPage() {
                                 <HiOutlineDownload className="w-4 h-4" />
                               </button>
                             )}
-                            <button onClick={() => openChat(m)}
-                              className="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg text-gray-400 hover:text-green-600 hover:border-green-300 transition-colors"
-                              title="Chat da turma">
-                              <HiOutlineChatAlt2 className="w-4 h-4" />
-                            </button>
                           </div>
 
                           {m.decisao_batismo && (
@@ -617,7 +359,6 @@ export default function PortalDashboardPage() {
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { icon: HiOutlineBookOpen, label: 'Meus Estudos', color: 'bg-blue-50 text-blue-600', action: () => { if (classes[0]) window.location.href = `/eb/${(classes[0].classe as any)?.id}` } },
-                  { icon: HiOutlineClipboardCheck, label: 'Comunidade', color: 'bg-green-50 text-green-600', action: () => navigate('/portal/forum') },
                   { icon: HiOutlineTrendingUp, label: 'Meu Perfil', color: 'bg-purple-50 text-purple-600', action: () => navigate('/portal/perfil') },
                   { icon: HiOutlineStar, label: 'Certificados', color: 'bg-amber-50 text-amber-600', action: () => { const c = classes.find(m => m.licoes_concluidas >= ((m.classe as any)?.total_licoes || 999)); if (c) gerarCertificado(user?.nome || '', (c.classe as any)?.modulo_titulo || '', (c.classe as any)?.nome || ''); else alert('Complete um módulo para gerar seu certificado.') } },
                 ].map((item, i) => (

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+﻿import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Chart as ChartJS,
@@ -54,7 +54,7 @@ function SkeletonChart() {
 }
 
 export default function SecretariaPage() {
-  const { stats, loading } = useSecretariaStats()
+  const { stats, loading, error, refetch } = useSecretariaStats()
   const anoAtual = new Date().getFullYear()
 
   // Chart: Membros por status (Doughnut)
@@ -77,7 +77,7 @@ export default function SecretariaPage() {
     }
   }, [stats])
 
-  // Chart: Membros por associação (Bar)
+  // Chart: Membros por associaÃ§Ã£o (Bar)
   const assocChartData = useMemo(() => {
     if (!stats?.membrosPorAssociacao.length) return null
     return {
@@ -91,11 +91,11 @@ export default function SecretariaPage() {
     }
   }, [stats])
 
-  // Chart: Distribuição por sexo (Doughnut)
+  // Chart: DistribuiÃ§Ã£o por sexo (Doughnut)
   const sexoChartData = useMemo(() => {
     if (!stats?.membrosPorSexo.length) return null
     const colors: Record<string, string> = { masculino: '#3b82f6', feminino: '#ec4899', nao_informado: '#9ca3af' }
-    const labels: Record<string, string> = { masculino: 'Masculino', feminino: 'Feminino', nao_informado: 'Não informado' }
+    const labels: Record<string, string> = { masculino: 'Masculino', feminino: 'Feminino', nao_informado: 'NÃ£o informado' }
     return {
       labels: stats.membrosPorSexo.map(s => labels[s.sexo] || s.sexo),
       datasets: [{
@@ -106,7 +106,7 @@ export default function SecretariaPage() {
     }
   }, [stats])
 
-  // Chart: Distribuição etária (Bar)
+  // Chart: DistribuiÃ§Ã£o etÃ¡ria (Bar)
   const idadeChartData = useMemo(() => {
     if (!stats?.distribuicaoEtaria.length) return null
     return {
@@ -135,7 +135,7 @@ export default function SecretariaPage() {
           tension: 0.3,
         },
         {
-          label: 'Exclusões',
+          label: 'ExclusÃµes',
           data: stats.crescimentoMensal.map(c => c.exclusoes),
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239,68,68,0.1)',
@@ -143,7 +143,7 @@ export default function SecretariaPage() {
           tension: 0.3,
         },
         {
-          label: 'Óbitos',
+          label: 'Ã“bitos',
           data: stats.crescimentoMensal.map(c => c.obitos),
           borderColor: '#a855f7',
           backgroundColor: 'rgba(168,85,247,0.1)',
@@ -174,11 +174,11 @@ export default function SecretariaPage() {
 
   const quickLinks = [
     { to: '/membros', label: 'Membros', desc: 'Buscar e gerenciar membros', icon: HiOutlineUserGroup, color: 'bg-blue-100 text-blue-600' },
-    { to: '/membros/familias', label: 'Famílias', desc: 'Gestão de famílias e endereços', icon: HiOutlineUsers, color: 'bg-indigo-100 text-indigo-600' },
+    { to: '/membros/familias', label: 'FamÃ­lias', desc: 'GestÃ£o de famÃ­lias e endereÃ§os', icon: HiOutlineUsers, color: 'bg-indigo-100 text-indigo-600' },
     { to: '/secretaria/contagem', label: 'Contagem', desc: 'Registrar contagem mensal', icon: HiOutlineClipboardCheck, color: 'bg-green-100 text-green-600' },
-    { to: '/secretaria/transferencias', label: 'Transferências', desc: 'Cartas e transferências', icon: HiOutlineSwitchHorizontal, color: 'bg-amber-100 text-amber-600' },
-    { to: '/secretaria/aniversariantes', label: 'Aniversariantes', desc: 'Felicitações e WhatsApp', icon: HiOutlineCalendar, color: 'bg-pink-100 text-pink-600' },
-    { to: '/membros/cartao', label: 'Cartão', desc: 'Gerar cartão de membro', icon: HiOutlineIdentification, color: 'bg-purple-100 text-purple-600' },
+    { to: '/secretaria/transferencias', label: 'TransferÃªncias', desc: 'Cartas e transferÃªncias', icon: HiOutlineSwitchHorizontal, color: 'bg-amber-100 text-amber-600' },
+    { to: '/secretaria/aniversariantes', label: 'Aniversariantes', desc: 'FelicitaÃ§Ãµes e WhatsApp', icon: HiOutlineCalendar, color: 'bg-pink-100 text-pink-600' },
+    { to: '/membros/cartao', label: 'CartÃ£o', desc: 'Gerar cartÃ£o de membro', icon: HiOutlineIdentification, color: 'bg-purple-100 text-purple-600' },
   ]
 
   return (
@@ -186,8 +186,20 @@ export default function SecretariaPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-800">Secretaria</h1>
-        <p className="text-gray-500 mt-1">Visão geral da membresia e movimentações</p>
+        <p className="text-gray-500 mt-1">VisÃ£o geral da membresia e movimentaÃ§Ãµes</p>
       </div>
+
+      {error && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-amber-800">Não foi possível atualizar os indicadores agora.</p>
+            <p className="text-xs text-amber-700 mt-1">{error}</p>
+          </div>
+          <button onClick={() => refetch()} className="px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition-colors">
+            Tentar novamente
+          </button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       {loading ? (
@@ -200,12 +212,12 @@ export default function SecretariaPage() {
           <KPICard label="Interessados" value={stats.interessados} icon={HiOutlineUsers} color="bg-blue-100 text-blue-600" />
           <KPICard label={`Batismos (${anoAtual})`} value={stats.batismosAno} icon={HiOutlineHeart} color="bg-emerald-100 text-emerald-600" />
           <KPICard label="Transf. Pendentes" value={stats.transferenciasPendentes} icon={HiOutlineSwitchHorizontal} color="bg-amber-100 text-amber-600" />
-          <KPICard label={`Exclusões (${anoAtual})`} value={stats.exclusoesAno} icon={HiOutlineTrendingDown} color="bg-red-100 text-red-600" />
-          <KPICard label={`Óbitos (${anoAtual})`} value={stats.obitosAno} icon={HiOutlineTrendingDown} color="bg-purple-100 text-purple-600" />
+          <KPICard label={`ExclusÃµes (${anoAtual})`} value={stats.exclusoesAno} icon={HiOutlineTrendingDown} color="bg-red-100 text-red-600" />
+          <KPICard label={`Ã“bitos (${anoAtual})`} value={stats.obitosAno} icon={HiOutlineTrendingDown} color="bg-purple-100 text-purple-600" />
         </div>
       )}
 
-      {/* Row 1: Status + Associações */}
+      {/* Row 1: Status + AssociaÃ§Ãµes */}
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <SkeletonChart /><SkeletonChart />
@@ -221,7 +233,7 @@ export default function SecretariaPage() {
             </div>
           </div>
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Membros Ativos por Associação</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Membros Ativos por AssociaÃ§Ã£o</h3>
             <div className="h-64">
               {assocChartData ? <Bar data={assocChartData} options={barOptions} /> : (
                 <p className="text-center text-gray-400 pt-20">Sem dados</p>
@@ -239,7 +251,7 @@ export default function SecretariaPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Movimentação Mensal ({anoAtual})</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">MovimentaÃ§Ã£o Mensal ({anoAtual})</h3>
             <div className="h-64">
               {crescimentoChartData ? <Line data={crescimentoChartData} options={chartOptions} /> : (
                 <p className="text-center text-gray-400 pt-20">Sem dados de contagem mensal</p>
@@ -247,7 +259,7 @@ export default function SecretariaPage() {
             </div>
           </div>
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Distribuição Etária</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">DistribuiÃ§Ã£o EtÃ¡ria</h3>
             <div className="h-64">
               {idadeChartData ? <Bar data={idadeChartData} options={barOptions} /> : (
                 <p className="text-center text-gray-400 pt-20">Sem dados</p>
@@ -265,7 +277,7 @@ export default function SecretariaPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Distribuição por Sexo</h3>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">DistribuiÃ§Ã£o por Sexo</h3>
             <div className="h-64">
               {sexoChartData ? <Doughnut data={sexoChartData} options={doughnutOptions} /> : (
                 <p className="text-center text-gray-400 pt-20">Sem dados</p>
@@ -278,7 +290,7 @@ export default function SecretariaPage() {
               <Link to="/secretaria/aniversariantes" className="text-xs text-primary-600 hover:underline">Ver todos</Link>
             </div>
             {stats?.aniversariantes7dias.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">Nenhum aniversariante nos próximos 7 dias</p>
+              <p className="text-center text-gray-400 py-8">Nenhum aniversariante nos prÃ³ximos 7 dias</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {stats?.aniversariantes7dias.map(p => {
@@ -292,7 +304,7 @@ export default function SecretariaPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">{p.nome}</p>
-                        <p className="text-xs text-gray-500">{p.igreja_nome || '—'}</p>
+                        <p className="text-xs text-gray-500">{p.igreja_nome || 'â€”'}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-semibold text-pink-600">{diaMes}</p>
@@ -309,7 +321,7 @@ export default function SecretariaPage() {
 
       {/* Quick Links */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Acesso Rápido</h2>
+        <h2 className="text-sm font-semibold text-gray-700 mb-3">Acesso RÃ¡pido</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {quickLinks.map(link => (
             <Link key={link.to} to={link.to} className="card hover:shadow-md transition-all py-4 px-3 text-center group">
@@ -325,3 +337,4 @@ export default function SecretariaPage() {
     </div>
   )
 }
+

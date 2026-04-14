@@ -2,8 +2,10 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import PageLoader from '@/components/ui/PageLoader'
+import SessionExpired from '@/components/ui/SessionExpired'
 import type { UserRole } from '@/types'
 import { getAccessRule, type AccessRuleKey } from '@/lib/access'
+import { canAccessDomain, type AppDomain } from '@/lib/permissions'
 
 interface GuardProps {
   children?: ReactNode
@@ -24,17 +26,24 @@ interface AccessGuardProps extends GuardProps {
   redirectTo?: string
 }
 
+interface DomainGuardProps extends GuardProps {
+  domain: AppDomain
+  redirectTo?: string
+}
+
 function GuardOutlet({ children }: GuardProps) {
   return <>{children ?? <Outlet />}</>
 }
 
 export function RequireSession({ children, redirectTo = '/login', preserveRedirect = true }: SessionGuardProps) {
-  const { session, loading } = useAuth()
+  const { session, loading, sessionExpired } = useAuth()
   const location = useLocation()
 
   if (loading) return <PageLoader />
 
   if (!session) {
+    if (sessionExpired) return <SessionExpired />
+
     const destination = preserveRedirect
       ? `${redirectTo}${redirectTo.includes('?') ? '&' : '?'}redirect=${encodeURIComponent(location.pathname + location.search)}`
       : redirectTo
@@ -67,4 +76,14 @@ export function RequireAccess({ children, accessKey, redirectTo }: AccessGuardPr
       {children}
     </RequireRoles>
   )
+}
+
+export function RequireDomain({ children, domain, redirectTo = '/' }: DomainGuardProps) {
+  const { profile, loading } = useAuth()
+
+  if (loading) return <PageLoader />
+  if (!profile) return <Navigate to="/login" replace />
+  if (!canAccessDomain(profile.papel, domain)) return <Navigate to={redirectTo} replace />
+
+  return <GuardOutlet>{children}</GuardOutlet>
 }
