@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import TurnstileWidget from '@/components/public/TurnstileWidget'
 import {
   HiOutlineAcademicCap, HiOutlineCheck, HiOutlineChevronLeft,
   HiOutlineBookOpen, HiOutlineClipboardCheck,
@@ -72,15 +71,6 @@ export default function EBPublicPage() {
 
   // Typeform quiz step
   const [quizStep, setQuizStep] = useState(0)
-
-  // Turnstile CAPTCHA
-  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined
-  const captchaEnabled = Boolean(turnstileSiteKey)
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
-  const [captchaResetKey, setCaptchaResetKey] = useState(0)
-  const handleCaptchaSuccess = useCallback((token: string) => setCaptchaToken(token), [])
-  const handleCaptchaExpire = useCallback(() => setCaptchaToken(null), [])
-  const handleCaptchaError = useCallback(() => setCaptchaToken(null), [])
 
   useEffect(() => {
     checkAuthAndLoad()
@@ -176,10 +166,6 @@ export default function EBPublicPage() {
 
   async function submitQuiz() {
     if (!ponto || !aluno || !selectedAula || !classe) return
-    if (captchaEnabled && !captchaToken) {
-      setError('Complete a verificação de segurança antes de enviar.')
-      return
-    }
     setSubmitting(true)
 
     // Check if already submitted (prevent duplicate)
@@ -231,8 +217,6 @@ export default function EBPublicPage() {
     setScore({ corretas, total })
     setSubmitted(true)
     setSubmitting(false)
-    setCaptchaToken(null)
-    setCaptchaResetKey(k => k + 1)
   }
 
   const igrejaNome = classe ? (Array.isArray(classe.igreja) ? classe.igreja[0]?.nome : (classe.igreja as any)?.nome) : ''
@@ -526,22 +510,8 @@ export default function EBPublicPage() {
                   ))}
                 </div>
 
-                {captchaEnabled && turnstileSiteKey && (
-                  <div className="mt-2">
-                    <p className="text-xs font-semibold text-gray-600 mb-2">Confirme a verificação para enviar</p>
-                    <TurnstileWidget
-                      siteKey={turnstileSiteKey}
-                      action="eb_quiz"
-                      resetKey={captchaResetKey}
-                      onSuccess={handleCaptchaSuccess}
-                      onExpire={handleCaptchaExpire}
-                      onError={handleCaptchaError}
-                    />
-                  </div>
-                )}
-
                 <button onClick={submitQuiz}
-                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length || (captchaEnabled && !captchaToken)}
+                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
                   className="w-full bg-gradient-to-r from-primary-600 to-emerald-600 hover:from-primary-700 hover:to-emerald-700 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-primary-600/20 disabled:opacity-50 text-sm flex items-center justify-center gap-2">
                   {submitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -559,21 +529,8 @@ export default function EBPublicPage() {
             {/* If no compromissos, show submit after last question */}
             {!isIntro && !isCompromissos && currentPerguntaIdx === ponto.perguntas.length - 1 && !ponto.compromissos_fe?.length && respostas[currentPergunta?.id] && (
               <div className="mt-6 space-y-3 animate-fade-in">
-                {captchaEnabled && turnstileSiteKey && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-600 mb-2">Confirme a verificação para enviar</p>
-                    <TurnstileWidget
-                      siteKey={turnstileSiteKey}
-                      action="eb_quiz"
-                      resetKey={captchaResetKey}
-                      onSuccess={handleCaptchaSuccess}
-                      onExpire={handleCaptchaExpire}
-                      onError={handleCaptchaError}
-                    />
-                  </div>
-                )}
                 <button onClick={submitQuiz}
-                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length || (captchaEnabled && !captchaToken)}
+                  disabled={submitting || Object.keys(respostas).length < ponto.perguntas.length}
                   className="w-full bg-gradient-to-r from-primary-600 to-emerald-600 text-white font-semibold py-4 rounded-xl transition-all shadow-lg shadow-primary-600/20 disabled:opacity-50">
                   {submitting ? 'Enviando...' : 'Enviar Respostas'}
                 </button>

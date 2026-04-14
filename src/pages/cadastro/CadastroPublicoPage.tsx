@@ -1,6 +1,5 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import TurnstileWidget from '@/components/public/TurnstileWidget'
 import { trackEvent, trackError } from '@/lib/observability'
 import {
   HiOutlineCursorClick,
@@ -100,29 +99,9 @@ export default function CadastroPublicoPage() {
   const [showResumePrompt, setShowResumePrompt] = useState(false)
   const [stepError, setStepError] = useState('')
   const savingRef = useRef(false)
-  const [captchaToken, setCaptchaToken] = useState('')
-  const [captchaResetKey, setCaptchaResetKey] = useState(0)
-  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
-  const captchaEnabled = Boolean(turnstileSiteKey)
-
   useEffect(() => {
     fetchIgrejas()
     checkSavedDraft()
-  }, [])
-
-  const handleCaptchaSuccess = useCallback((token: string) => {
-    setCaptchaToken(token)
-    setError('')
-  }, [])
-
-  const handleCaptchaExpire = useCallback(() => {
-    setCaptchaToken('')
-  }, [])
-
-  const handleCaptchaError = useCallback(() => {
-    setCaptchaToken('')
-    setCaptchaResetKey(current => current + 1)
-    setError('Não foi possível validar a proteção anti-bot. Tente novamente.')
   }, [])
 
   function checkSavedDraft() {
@@ -417,11 +396,6 @@ export default function CadastroPublicoPage() {
       return
     }
 
-    if (captchaEnabled && !captchaToken) {
-      setError('Confirme que você não é um robô para enviar o formulário.')
-      return
-    }
-
     setSubmitting(true)
     setError('')
     try {
@@ -432,7 +406,6 @@ export default function CadastroPublicoPage() {
           draftToken,
           payload,
           complete: true,
-          captchaToken,
         },
       })
 
@@ -1171,19 +1144,6 @@ export default function CadastroPublicoPage() {
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 mt-4 text-sm text-green-800">
                 <strong>Seus dados estão protegidos!</strong> Conforme os termos aceitos, suas informações serão tratadas com sigilo e segurança.
               </div>
-
-              {captchaEnabled && turnstileSiteKey && (
-                <div className="mt-4">
-                  <p className="text-xs font-semibold text-gray-600 mb-2">Confirme a validação para concluir o envio</p>
-                  <TurnstileWidget
-                    siteKey={turnstileSiteKey}
-                    resetKey={captchaResetKey}
-                    onSuccess={handleCaptchaSuccess}
-                    onExpire={handleCaptchaExpire}
-                    onError={handleCaptchaError}
-                  />
-                </div>
-              )}
 
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 mt-3 text-sm text-red-700">{error}</div>

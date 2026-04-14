@@ -17,21 +17,6 @@ function jsonResponse(body: Record<string, unknown>, status = 200, extra?: Heade
   })
 }
 
-async function verifyTurnstile(token: string, secret: string, ip: string) {
-  const body = new URLSearchParams()
-  body.append('secret', secret)
-  body.append('response', token)
-  if (ip && ip !== 'unknown') body.append('remoteip', ip)
-
-  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
-  })
-
-  return response.json()
-}
-
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -75,28 +60,10 @@ Deno.serve(async req => {
       draftToken,
       payload,
       complete = false,
-      captchaToken,
     } = body ?? {}
 
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       return jsonResponse({ success: false, message: 'Payload inválido para o cadastro público.' }, 400)
-    }
-
-    const turnstileSecret = Deno.env.get('TURNSTILE_SECRET_KEY')
-    if (complete && turnstileSecret) {
-      if (!captchaToken || typeof captchaToken !== 'string') {
-        return jsonResponse({ success: false, message: 'Captcha obrigatório para concluir o envio.' }, 400)
-      }
-
-      const verification = await verifyTurnstile(captchaToken, turnstileSecret, ip)
-      const actionMatches = !verification.action || verification.action === 'cadastro_publico'
-      if (!verification.success || !actionMatches) {
-        return jsonResponse({
-          success: false,
-          message: 'Não foi possível validar a proteção anti-bot.',
-          errors: verification['error-codes'] || [],
-        }, 400)
-      }
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
