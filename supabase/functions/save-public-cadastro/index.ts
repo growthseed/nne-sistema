@@ -1,34 +1,31 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { rateLimit } from '../_shared/rateLimit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function jsonResponse(body: Record<string, unknown>, status = 200) {
+function jsonResponse(body: Record<string, unknown>, status = 200, extra?: HeadersInit) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       ...corsHeaders,
       'Content-Type': 'application/json',
+      ...extra,
     },
   })
 }
 
-async function verifyTurnstile(token: string, secret: string, req: Request) {
-  const remoteIpHeader = req.headers.get('CF-Connecting-IP') || req.headers.get('x-forwarded-for') || ''
-  const remoteIp = remoteIpHeader.split(',')[0]?.trim()
-
+async function verifyTurnstile(token: string, secret: string, ip: string) {
   const body = new URLSearchParams()
   body.append('secret', secret)
   body.append('response', token)
-  if (remoteIp) body.append('remoteip', remoteIp)
+  if (ip && ip !== 'unknown') body.append('remoteip', ip)
 
   const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
   })
 
@@ -47,6 +44,30 @@ Deno.serve(async req => {
     if (!supabaseUrl || !serviceRoleKey) {
       return jsonResponse({ success: false, message: 'Ambiente do Supabase não configurado.' }, 500)
     }
+
+    // ── Rate limiting: 10 req/min por IP ────────────────────────────────────
+    const ip =
+      req.headers.get('cf-connecting-ip') ??
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      'unknown'
+
+    const rl = await rateLimit({
+      supabaseUrl,
+      serviceKey: serviceRoleKey,
+      ip,
+      endpoint: 'save-public-cadastro',
+      limit: 10,
+      windowSec: 60,
+    })
+
+    if (!rl.allowed) {
+      return jsonResponse(
+        { success: false, error: 'rate_limited', retryAfterSec: rl.retryAfterSec },
+        429,
+        { 'Retry-After': String(rl.retryAfterSec ?? 60) },
+      )
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     const body = await req.json()
     const {
@@ -67,7 +88,7 @@ Deno.serve(async req => {
         return jsonResponse({ success: false, message: 'Captcha obrigatório para concluir o envio.' }, 400)
       }
 
-      const verification = await verifyTurnstile(captchaToken, turnstileSecret, req)
+      const verification = await verifyTurnstile(captchaToken, turnstileSecret, ip)
       const actionMatches = !verification.action || verification.action === 'cadastro_publico'
       if (!verification.success || !actionMatches) {
         return jsonResponse({
@@ -79,10 +100,7 @@ Deno.serve(async req => {
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     })
 
     const normalizedPayload = {
