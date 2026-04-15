@@ -1,6 +1,47 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { trackEvent, trackError } from '@/lib/observability'
+
+// Invokes a Supabase Edge Function with retry + friendly error messages.
+// The default supabase-js error "Failed to send a request to the Edge Function"
+// (FunctionsFetchError) is opaque to the user — here we retry transient network
+// failures and translate the message.
+async function invokeWithRetry<T = any>(
+  fnName: string,
+  body: unknown,
+  retries = 2,
+): Promise<T> {
+  let lastError: any
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const { data, error } = await supabase.functions.invoke(fnName, { body: body as Record<string, unknown> })
+      if (error) {
+        // FunctionsHttpError carries a Response on .context — try to read JSON message
+        const ctx = (error as any).context
+        if (ctx && typeof ctx.json === 'function') {
+          try {
+            const parsed = await ctx.json()
+            if (parsed?.message) throw new Error(parsed.message)
+          } catch { /* ignore parse errors */ }
+        }
+        throw error
+      }
+      return data as T
+    } catch (err: any) {
+      lastError = err
+      const isNetworkError =
+        err?.name === 'FunctionsFetchError' ||
+        /Failed to send|network|fetch/i.test(err?.message || '')
+      if (!isNetworkError || attempt === retries) break
+      await new Promise(r => setTimeout(r, 600 * (attempt + 1)))
+    }
+  }
+  if (/Failed to send|FunctionsFetchError/i.test(lastError?.message || '') ||
+      lastError?.name === 'FunctionsFetchError') {
+    throw new Error('Sem conexão com o servidor. Verifique sua internet e tente novamente.')
+  }
+  throw lastError
+}
 import {
   HiOutlineCursorClick,
   HiOutlineClock,
@@ -266,16 +307,11 @@ export default function CadastroPublicoPage() {
 
     try {
       const payload = buildPayload(targetStep)
-      const { data, error: functionError } = await supabase.functions.invoke('save-public-cadastro', {
-        body: {
-          responseId,
-          draftToken,
-          payload,
-          complete: false,
-        },
-      })
+      const data = await invokeWithRetry<{ success: boolean; id?: string; draftToken?: string; message?: string }>(
+        'save-public-cadastro',
+        { responseId, draftToken, payload, complete: false },
+      )
 
-      if (functionError) throw functionError
       if (!data?.success || !data?.id || !data?.draftToken) {
         throw new Error(data?.message || 'Não foi possível salvar o rascunho.')
       }
@@ -400,16 +436,11 @@ export default function CadastroPublicoPage() {
     setError('')
     try {
       const payload = buildPayload(TOTAL_STEPS, true)
-      const { data, error: functionError } = await supabase.functions.invoke('save-public-cadastro', {
-        body: {
-          responseId,
-          draftToken,
-          payload,
-          complete: true,
-        },
-      })
+      const data = await invokeWithRetry<{ success: boolean; id?: string; message?: string }>(
+        'save-public-cadastro',
+        { responseId, draftToken, payload, complete: true },
+      )
 
-      if (functionError) throw functionError
       if (!data?.success) {
         throw new Error(data?.message || 'Não foi possível enviar o formulário.')
       }
@@ -420,8 +451,6 @@ export default function CadastroPublicoPage() {
       localStorage.removeItem(STORAGE_KEY)
       setResponseId(null)
       setDraftToken(null)
-      setCaptchaToken('')
-      setCaptchaResetKey(current => current + 1)
       setSuccess(true)
     } catch (err: any) {
       trackError(err, { context: 'cadastro_publico_submit', responseId: responseId ?? undefined })
@@ -478,7 +507,7 @@ export default function CadastroPublicoPage() {
           </div>
           <h2 className="text-2xl font-bold text-[#006D43] mb-3">Cadastro Enviado!</h2>
           <p className="text-gray-500 mb-6">Em breve entraremos em contato. Obrigado por participar!</p>
-          <button onClick={() => { setSuccess(false); setStep(0); setForm({}); setResponseId(null); setDraftToken(null); setLastSaved(null); setCaptchaToken(''); setCaptchaResetKey(current => current + 1); setError(''); setStepError('') }} className="bg-[#006D43] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#005535] transition-colors">
+          <button onClick={() => { setSuccess(false); setStep(0); setForm({}); setResponseId(null); setDraftToken(null); setLastSaved(null); setError(''); setStepError('') }} className="bg-[#006D43] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#005535] transition-colors">
             Fazer Novo Cadastro
           </button>
         </div>

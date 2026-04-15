@@ -60,7 +60,7 @@ const iconMap: Record<SidebarIconKey, IconType> = {
 export default function Sidebar({ onClose }: SidebarProps) {
   const { profile } = useAuth()
   const location = useLocation()
-  const visibleGroups = getVisibleSidebarGroups(profile?.papel)
+  const visibleGroups = getVisibleSidebarGroups(profile)
 
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     try {

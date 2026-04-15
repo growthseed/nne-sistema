@@ -83,6 +83,7 @@ export interface UserProfile {
   igreja_id: string | null
   classe_es_id: string | null
   ativo: boolean
+  permissoes: string[] | null
   created_at: string
   updated_at: string
 }

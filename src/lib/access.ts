@@ -56,6 +56,8 @@ export type AccessRuleKey =
   | 'configuracoes'
   | 'configuracoes_admin'
   | 'configuracoes_usuario'
+  | 'usuarios'
+  | 'usuarios_novo'
 
 export type SidebarGroupKey =
   | 'inicio'
@@ -154,6 +156,8 @@ export const ACCESS_RULES: Record<AccessRuleKey, AccessRule> = {
   configuracoes: { label: 'Configuracoes', module: 'global', roles: null },
   configuracoes_admin: { label: 'Configuracoes Admin', module: 'admin', roles: ['admin'] },
   configuracoes_usuario: { label: 'Editar Usuario', module: 'admin', roles: ADMIN_ROLES },
+  usuarios: { label: 'Usuarios', module: 'admin', roles: ADMIN_ROLES },
+  usuarios_novo: { label: 'Novo Usuario', module: 'admin', roles: ADMIN_ROLES },
 }
 
 export const SIDEBAR_GROUPS: SidebarGroup[] = [
@@ -240,6 +244,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
     key: 'admin',
     label: 'Administracao',
     items: [
+      { key: 'usuarios', to: '/usuarios', icon: 'users' },
       { key: 'configuracoes_admin', to: '/configuracoes', icon: 'cog' },
       { key: 'cadastro_dashboard', to: '/cadastro/dashboard', icon: 'clipboard-check' },
       { key: 'organizacao_unioes', to: '/organizacao/unioes', icon: 'office-building' },
@@ -264,12 +269,41 @@ export function canAccessRule(role: UserRole | null | undefined, key: AccessRule
   return canAccessRoles(role, ACCESS_RULES[key].roles)
 }
 
-export function getVisibleSidebarGroups(role: UserRole | null | undefined) {
+/**
+ * Avalia acesso combinando papel + overrides granulares.
+ * - admin sempre passa (TI total).
+ * - Se a regra libera pelo papel, passa.
+ * - Se não, consulta o array `permissoes` (override explícito do admin).
+ */
+export function canAccessWithPermissions(
+  profile: { papel?: UserRole | null; permissoes?: string[] | null } | null | undefined,
+  key: AccessRuleKey,
+): boolean {
+  if (!profile) return ACCESS_RULES[key].roles === null
+  if (profile.papel === 'admin') return true
+  if (canAccessRule(profile.papel, key)) return true
+  const extra = profile.permissoes
+  if (Array.isArray(extra) && extra.includes(key)) return true
+  return false
+}
+
+export function getVisibleSidebarGroups(
+  profileOrRole:
+    | UserRole
+    | null
+    | undefined
+    | { papel?: UserRole | null; permissoes?: string[] | null },
+) {
+  const profile =
+    typeof profileOrRole === 'string' || profileOrRole == null
+      ? { papel: profileOrRole as UserRole | null | undefined, permissoes: null }
+      : profileOrRole
+
   return SIDEBAR_GROUPS
     .map(group => ({
       ...group,
       items: group.items
-        .filter(item => canAccessRule(role, item.key))
+        .filter(item => canAccessWithPermissions(profile, item.key))
         .map(item => ({
           ...item,
           label: ACCESS_RULES[item.key].label,

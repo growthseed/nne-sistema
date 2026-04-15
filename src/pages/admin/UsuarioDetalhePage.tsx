@@ -9,7 +9,9 @@ import {
   FiArrowLeft, FiSave, FiUser, FiShield, FiLock, FiKey,
   FiMail, FiCamera, FiEye, FiEyeOff, FiRefreshCw, FiLogIn,
   FiMonitor, FiPhone, FiMapPin, FiCalendar, FiFileText,
+  FiCheckSquare,
 } from 'react-icons/fi'
+import { ACCESS_RULES, SIDEBAR_GROUPS, canAccessRule, type AccessRuleKey } from '@/lib/access'
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -33,6 +35,7 @@ interface UsuarioFull {
   endereco_estado: string | null
   endereco_cep: string | null
   observacoes: string | null
+  permissoes: string[] | null
   created_at: string
   updated_at: string
 }
@@ -70,7 +73,7 @@ const ESTADOS_BR = [
   'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
 ]
 
-type Tab = 'perfil' | 'acesso' | 'seguranca' | 'sessoes'
+type Tab = 'perfil' | 'acesso' | 'permissoes' | 'seguranca' | 'sessoes'
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -170,6 +173,11 @@ export default function UsuarioDetalhePage() {
   const [loadingSessao, setLoadingSessao] = useState(false)
   const [sessaoCarregada, setSessaoCarregada] = useState(false)
 
+  // ── PERMISSÕES state ───────────────────────────────────────────────────
+  const [permissoesExtra, setPermissoesExtra] = useState<Set<AccessRuleKey>>(new Set())
+  const [savingPermissoes, setSavingPermissoes] = useState(false)
+  const [msgPermissoes, setMsgPermissoes] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   const igrejasFiltradas = useMemo(
     () => associacaoId ? igrejas.filter(ig => ig.associacao_id === associacaoId) : igrejas,
     [igrejas, associacaoId]
@@ -191,7 +199,7 @@ export default function UsuarioDetalhePage() {
       .eq('id', id!)
       .single()
 
-    if (error || !data) { navigate('/configuracoes'); return }
+    if (error || !data) { navigate('/usuarios'); return }
 
     const u = data as UsuarioFull
     setUsuario(u)
@@ -217,7 +225,39 @@ export default function UsuarioDetalhePage() {
     setIgrejaId(u.igreja_id || '')
     setAtivo(u.ativo)
 
+    setPermissoesExtra(new Set((u.permissoes || []) as AccessRuleKey[]))
+
     setLoading(false)
+  }
+
+  // ── Save Permissões ────────────────────────────────────────────────────
+
+  async function handleSalvarPermissoes() {
+    setSavingPermissoes(true); setMsgPermissoes(null)
+    try {
+      const arr = Array.from(permissoesExtra)
+      const { error } = await supabase
+        .from('usuarios')
+        .update({ permissoes: arr.length > 0 ? arr : null })
+        .eq('id', usuario!.id)
+      if (error) throw error
+      if (actorUser) {
+        await logAudit('USER_PERMISSIONS_CHANGED', { target_id: usuario!.id, permissoes: arr }, actorUser.id)
+      }
+      setUsuario(u => u ? { ...u, permissoes: arr.length > 0 ? arr : null } : u)
+      setMsgPermissoes({ type: 'success', text: 'Permissões atualizadas!' })
+    } catch (err: any) {
+      trackError(err, { context: 'admin_salvar_permissoes', target_id: usuario?.id })
+      setMsgPermissoes({ type: 'error', text: 'Erro: ' + err.message })
+    } finally { setSavingPermissoes(false) }
+  }
+
+  function togglePermissao(key: AccessRuleKey) {
+    setPermissoesExtra(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key); else next.add(key)
+      return next
+    })
   }
 
   async function loadDropdowns() {
@@ -397,7 +437,8 @@ export default function UsuarioDetalhePage() {
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'perfil', label: 'Dados Pessoais', icon: <FiUser className="w-4 h-4" /> },
-    { key: 'acesso', label: 'Permissões', icon: <FiShield className="w-4 h-4" /> },
+    { key: 'acesso', label: 'Papel e Vínculo', icon: <FiShield className="w-4 h-4" /> },
+    { key: 'permissoes', label: 'Permissões', icon: <FiCheckSquare className="w-4 h-4" /> },
     { key: 'seguranca', label: 'Segurança', icon: <FiLock className="w-4 h-4" /> },
     { key: 'sessoes', label: 'Sessões', icon: <FiMonitor className="w-4 h-4" /> },
   ]
@@ -406,7 +447,7 @@ export default function UsuarioDetalhePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/configuracoes')}
+        <button onClick={() => navigate('/usuarios')}
           className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700">
           <FiArrowLeft className="w-5 h-5" />
         </button>
@@ -603,6 +644,78 @@ export default function UsuarioDetalhePage() {
               <FiSave className="w-4 h-4" />{savingAcesso ? 'Salvando...' : 'Salvar Permissões'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ═══ TAB PERMISSÕES GRANULARES ═══ */}
+      {tab === 'permissoes' && (
+        <div className="space-y-6">
+          <SectionCard title="Overrides de Acesso" icon={<FiCheckSquare className="w-5 h-5" />}>
+            <p className="text-sm text-gray-600 mb-4">
+              As permissões herdadas do papel <b>{roleLabels[papel] || papel}</b> aparecem marcadas e bloqueadas.
+              Marque abaixo qualquer seção extra à qual este usuário deve ter acesso, independente do papel.
+              Admins globais têm acesso total e ignoram este painel.
+            </p>
+            {papel === 'admin' ? (
+              <div className="rounded-lg bg-primary-50 border border-primary-200 p-4 text-sm text-primary-800">
+                Este usuário é <b>Administrador global</b> (TI total) — tem acesso irrestrito a tudo.
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {SIDEBAR_GROUPS.map(group => {
+                  const items = group.items.filter(it => ACCESS_RULES[it.key].roles !== null)
+                  if (items.length === 0) return null
+                  return (
+                    <div key={group.key}>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">{group.label}</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {items.map(item => {
+                          const key = item.key
+                          const rule = ACCESS_RULES[key]
+                          const herdado = canAccessRule(papel, key)
+                          const extra = permissoesExtra.has(key)
+                          const checked = herdado || extra
+                          return (
+                            <label
+                              key={key}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm cursor-pointer transition ${
+                                herdado
+                                  ? 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed'
+                                  : extra
+                                    ? 'bg-primary-50 border-primary-200 text-primary-800'
+                                    : 'border-gray-200 hover:border-primary-300'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                disabled={herdado}
+                                onChange={() => togglePermissao(key)}
+                              />
+                              <span className="flex-1">{rule.label}</span>
+                              {herdado && <span className="text-[10px] uppercase tracking-wider text-gray-400">papel</span>}
+                              {!herdado && extra && <span className="text-[10px] uppercase tracking-wider text-primary-600">extra</span>}
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </SectionCard>
+
+          <Msg msg={msgPermissoes} />
+
+          {papel !== 'admin' && (
+            <div className="flex justify-end">
+              <button onClick={handleSalvarPermissoes} disabled={savingPermissoes}
+                className="btn-primary inline-flex items-center gap-2">
+                <FiSave className="w-4 h-4" />{savingPermissoes ? 'Salvando...' : 'Salvar Permissões Extras'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

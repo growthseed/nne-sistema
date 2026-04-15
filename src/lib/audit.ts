@@ -8,6 +8,7 @@ export type AuditAction =
   | 'USER_RESET_PASSWORD'
   | 'USER_SET_PASSWORD'
   | 'USER_PERFIL_UPDATED'
+  | 'USER_PERMISSIONS_CHANGED'
 
 /**
  * Registra uma ação administrativa na tabela `auditoria`.

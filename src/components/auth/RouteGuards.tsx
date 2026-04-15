@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import PageLoader from '@/components/ui/PageLoader'
 import SessionExpired from '@/components/ui/SessionExpired'
 import type { UserRole } from '@/types'
-import { getAccessRule, type AccessRuleKey } from '@/lib/access'
+import { getAccessRule, canAccessWithPermissions, type AccessRuleKey } from '@/lib/access'
 import { canAccessDomain, type AppDomain } from '@/lib/permissions'
 
 interface GuardProps {
@@ -65,17 +65,16 @@ export function RequireRoles({ children, roles, redirectTo = '/' }: RoleGuardPro
 }
 
 export function RequireAccess({ children, accessKey, redirectTo }: AccessGuardProps) {
+  const { profile, session, loading } = useAuth()
   const rule = getAccessRule(accessKey)
 
-  if (!rule.roles) {
-    return <GuardOutlet>{children}</GuardOutlet>
+  if (!rule.roles) return <GuardOutlet>{children}</GuardOutlet>
+  if (loading) return <PageLoader />
+  if (!session) return <Navigate to="/login" replace />
+  if (!canAccessWithPermissions(profile, accessKey)) {
+    return <Navigate to={redirectTo ?? rule.redirectTo ?? '/'} replace />
   }
-
-  return (
-    <RequireRoles roles={rule.roles} redirectTo={redirectTo ?? rule.redirectTo ?? '/'}>
-      {children}
-    </RequireRoles>
-  )
+  return <GuardOutlet>{children}</GuardOutlet>
 }
 
 export function RequireDomain({ children, domain, redirectTo = '/' }: DomainGuardProps) {

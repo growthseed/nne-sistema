@@ -45,6 +45,8 @@ const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'))
 const RelatoriosPage = lazy(() => import('@/pages/RelatoriosPage'))
 const ConfiguracoesPage = lazy(() => import('@/pages/ConfiguracoesPage'))
 const UsuarioDetalhePage = lazy(() => import('@/pages/admin/UsuarioDetalhePage'))
+const UsuariosListPage = lazy(() => import('@/pages/admin/UsuariosListPage'))
+const UsuarioNovoPage = lazy(() => import('@/pages/admin/UsuarioNovoPage'))
 const EscolaBiblicaPage = lazy(() => import('@/pages/escola-sabatina/EscolaBiblicaPage'))
 const EBDashboardPage = lazy(() => import('@/pages/escola-biblica/EBDashboardPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
@@ -259,6 +261,18 @@ export const appRoutes: RouteObject[] = [
       },
       {
         path: 'configuracoes/usuario/:id',
+        element: withAccess('configuracoes_usuario', <UsuarioDetalhePage />),
+      },
+      {
+        path: 'usuarios',
+        element: withAccess('usuarios', <UsuariosListPage />),
+      },
+      {
+        path: 'usuarios/novo',
+        element: withAccess('usuarios_novo', <UsuarioNovoPage />),
+      },
+      {
+        path: 'usuarios/:id',
         element: withAccess('configuracoes_usuario', <UsuarioDetalhePage />),
       },
       {

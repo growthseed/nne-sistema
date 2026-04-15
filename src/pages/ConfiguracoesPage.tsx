@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserProfile, UserRole, TermoCompromissoContent } from '@/types'
-import { FiUser, FiUsers, FiSettings, FiSave, FiEdit, FiShield, FiInfo, FiSearch, FiX, FiFileText, FiTag, FiPlus, FiTrash2, FiEye, FiEyeOff, FiLock, FiMail, FiCamera, FiLogIn, FiMonitor, FiRefreshCw, FiKey } from 'react-icons/fi'
+import { FiUser, FiSettings, FiSave, FiShield, FiInfo, FiSearch, FiX, FiFileText, FiTag, FiPlus, FiTrash2, FiEdit } from 'react-icons/fi'
 import { DEFAULT_TERMO, invalidateTermoCache } from '@/components/missoes/TermoCompromissoDisplay'
 import { CARGO_LABELS, STATUS_LABELS } from '@/lib/missoes-constants'
 import { useCargoLabels, useStatusLabels } from '@/hooks/useCargoLabels'
@@ -64,6 +64,7 @@ interface UsuarioComIgreja extends UserProfile {
 // ========== COMPONENT ==========
 
 export default function ConfiguracoesPage() {
+  const navigate = useNavigate()
   const { hasRole } = useAuth()
   // Qualquer nível de admin (global, união, associação) pode gerenciar usuários.
   // A RPC admin_create_user no banco garante a hierarquia: admin_uniao não cria
@@ -76,7 +77,6 @@ export default function ConfiguracoesPage() {
 
   const tabs: { key: Tab; label: string; icon: typeof FiUser; visible: boolean }[] = [
     { key: 'perfil', label: 'Meu Perfil', icon: FiUser, visible: true },
-    { key: 'usuarios', label: 'Usuários', icon: FiUsers, visible: canManageUsers },
     { key: 'documentos', label: 'Documentos', icon: FiFileText, visible: isMasterAdmin },
     { key: 'categorias', label: 'Categorias', icon: FiTag, visible: isMasterAdmin },
     { key: 'sobre', label: 'Sobre', icon: FiInfo, visible: true },
@@ -84,11 +84,14 @@ export default function ConfiguracoesPage() {
 
   const visibleTabs = tabs.filter((t) => t.visible)
 
-  // Redireciona se usuário sem permissão tentar acessar aba restrita
+  // Redireciona admins para a nova página /usuarios se ainda clicarem na antiga aba
   useEffect(() => {
-    if (activeTab === 'usuarios' && !canManageUsers) setActiveTab('perfil')
+    if (activeTab === 'usuarios') {
+      if (canManageUsers) navigate('/usuarios', { replace: true })
+      else setActiveTab('perfil')
+    }
     if ((activeTab === 'documentos' || activeTab === 'categorias') && !isMasterAdmin) setActiveTab('perfil')
-  }, [canManageUsers, isMasterAdmin, activeTab])
+  }, [canManageUsers, isMasterAdmin, activeTab, navigate])
 
   return (
     <div className="space-y-6">
@@ -269,28 +272,7 @@ function MeuPerfilSection() {
   )
 }
 
-// ========== GERENCIAR USUARIOS ==========
-
-type EditTab = 'acesso' | 'perfil' | 'seguranca' | 'sessoes'
-
-interface SessaoInfo {
-  lastSignIn: string | null
-  emailConfirmed: string | null
-  createdAt: string | null
-  provider: string
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-primary-500' : 'bg-gray-300'}`}
-    >
-      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-    </button>
-  )
-}
+// ========== GERENCIAR USUARIOS (legado — a página /usuarios é o destino oficial) ==========
 
 function GerenciarUsuariosSection() {
   const navigate = useNavigate()
@@ -475,406 +457,6 @@ function GerenciarUsuariosSection() {
   )
 }
 
-// EditUserModal removido — agora é página completa em /configuracoes/usuario/:id
-
-/* LEGACY — keeping only CreateUserModal below */
-function _EditUserModal_REMOVED({
-  user, igrejas, associacoes, unioes, onClose, onSaved,
-}: {
-  user: UsuarioComIgreja
-  igrejas: IgrejaOption[]
-  associacoes: AssociacaoOption[]
-  unioes: UniaoOption[]
-  onClose: () => void
-  onSaved: () => void
-}) {
-  const [tab, setTab] = useState<EditTab>('acesso')
-
-  // Aba Acesso
-  const [editPapel, setEditPapel] = useState<UserRole>(user.papel)
-  const [editUniaoId, setEditUniaoId] = useState(user.uniao_id || '')
-  const [editAssociacaoId, setEditAssociacaoId] = useState(user.associacao_id || '')
-  const [editIgrejaId, setEditIgrejaId] = useState(user.igreja_id || '')
-  const [editAtivo, setEditAtivo] = useState(user.ativo)
-  const [savingAcesso, setSavingAcesso] = useState(false)
-  const [msgAcesso, setMsgAcesso] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-
-  // Aba Perfil
-  const [editNome, setEditNome] = useState(user.nome || '')
-  const [editTelefone, setEditTelefone] = useState(user.telefone || '')
-  const [avatarPreview, setAvatarPreview] = useState<string>((user as any).avatar_url || '')
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [savingPerfil, setSavingPerfil] = useState(false)
-  const [msgPerfil, setMsgPerfil] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const avatarRef = useRef<HTMLInputElement>(null)
-
-  // Aba Segurança
-  const [novaSenha, setNovaSenha] = useState('')
-  const [confirmarSenha, setConfirmarSenha] = useState('')
-  const [showSenha, setShowSenha] = useState(false)
-  const [enviandoReset, setEnviandoReset] = useState(false)
-  const [definindoSenha, setDefinindoSenha] = useState(false)
-  const [msgSeg, setMsgSeg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-
-  // Aba Sessões
-  const [sessao, setSessao] = useState<SessaoInfo | null>(null)
-  const [loadingSessao, setLoadingSessao] = useState(false)
-  const [sessaoCarregada, setSessaoCarregada] = useState(false)
-
-  const igrejasFiltradas = useMemo(
-    () => editAssociacaoId ? igrejas.filter(ig => ig.associacao_id === editAssociacaoId) : igrejas,
-    [igrejas, editAssociacaoId]
-  )
-
-  // ── Avatar ─────────────────────────────────────────────────────────────
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (file.size > 2 * 1024 * 1024) { alert('Foto deve ter no máximo 2MB'); return }
-    setAvatarFile(file)
-    setAvatarPreview(URL.createObjectURL(file))
-  }
-
-  async function uploadAvatar(): Promise<string | null> {
-    if (!avatarFile) return (user as any).avatar_url || null
-    const ext = avatarFile.name.split('.').pop() || 'jpg'
-    const path = `${user.id}.${ext}`
-    const { error } = await supabase.storage.from('avatars-nne').upload(path, avatarFile, { upsert: true })
-    if (error) { console.error('Avatar upload error:', error); return (user as any).avatar_url || null }
-    const { data } = supabase.storage.from('avatars-nne').getPublicUrl(path)
-    return data.publicUrl + `?t=${Date.now()}`
-  }
-
-  // ── Salvar Perfil ──────────────────────────────────────────────────────
-  async function handleSalvarPerfil() {
-    if (!editNome.trim()) { setMsgPerfil({ type: 'error', text: 'Nome é obrigatório' }); return }
-    setSavingPerfil(true); setMsgPerfil(null)
-    try {
-      const avatarUrl = await uploadAvatar()
-      const { error } = await supabase.from('usuarios').update({
-        nome: editNome.trim(),
-        telefone: editTelefone.trim() || null,
-        avatar_url: avatarUrl,
-      }).eq('id', user.id)
-      if (error) throw error
-      setMsgPerfil({ type: 'success', text: 'Perfil atualizado!' })
-      setTimeout(onSaved, 1200)
-    } catch (err: any) {
-      setMsgPerfil({ type: 'error', text: 'Erro ao salvar: ' + err.message })
-    } finally { setSavingPerfil(false) }
-  }
-
-  // ── Salvar Acesso ──────────────────────────────────────────────────────
-  async function handleSalvarAcesso() {
-    setSavingAcesso(true); setMsgAcesso(null)
-    try {
-      const { error } = await supabase.from('usuarios').update({
-        papel: editPapel,
-        uniao_id: editUniaoId || null,
-        associacao_id: editAssociacaoId || null,
-        igreja_id: editIgrejaId || null,
-        ativo: editAtivo,
-      }).eq('id', user.id)
-      if (error) throw error
-      setMsgAcesso({ type: 'success', text: 'Acesso atualizado!' })
-      setTimeout(onSaved, 1200)
-    } catch (err: any) {
-      setMsgAcesso({ type: 'error', text: 'Erro: ' + err.message })
-    } finally { setSavingAcesso(false) }
-  }
-
-  // ── Segurança ──────────────────────────────────────────────────────────
-  async function handleResetSenha() {
-    setEnviandoReset(true); setMsgSeg(null)
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email || '', {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
-      if (error) throw error
-      setMsgSeg({ type: 'success', text: `Link enviado para ${user.email}` })
-    } catch (err: any) {
-      setMsgSeg({ type: 'error', text: 'Erro ao enviar email' })
-    } finally { setEnviandoReset(false) }
-  }
-
-  async function handleDefinirSenha() {
-    if (novaSenha.length < 6) { setMsgSeg({ type: 'error', text: 'Senha mínima de 6 caracteres' }); return }
-    if (novaSenha !== confirmarSenha) { setMsgSeg({ type: 'error', text: 'Senhas não conferem' }); return }
-    setDefinindoSenha(true); setMsgSeg(null)
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-manage-user-nne', {
-        body: { action: 'set_password', userId: user.id, password: novaSenha },
-      })
-      if (error) throw error
-      if (data?.error) throw new Error(data.error)
-      setMsgSeg({ type: 'success', text: 'Senha definida com sucesso!' })
-      setNovaSenha(''); setConfirmarSenha('')
-    } catch (err: any) {
-      setMsgSeg({ type: 'error', text: 'Erro ao definir senha: ' + (err.message || 'Verifique a edge function') })
-    } finally { setDefinindoSenha(false) }
-  }
-
-  // ── Sessões ────────────────────────────────────────────────────────────
-  async function carregarSessao() {
-    if (sessaoCarregada) return
-    setLoadingSessao(true)
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-manage-user-nne', {
-        body: { action: 'get_sessions', userId: user.id },
-      })
-      if (error) throw error
-      setSessao(data)
-      setSessaoCarregada(true)
-    } catch {
-      setSessao(null)
-    } finally { setLoadingSessao(false) }
-  }
-
-  const tabs: { key: EditTab; label: string }[] = [
-    { key: 'acesso', label: 'Acesso' },
-    { key: 'perfil', label: 'Perfil' },
-    { key: 'seguranca', label: 'Segurança' },
-    { key: 'sessoes', label: 'Sessões' },
-  ]
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800">Editar Usuário</h3>
-            <p className="text-sm text-gray-500">{user.nome}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded hover:bg-gray-100 text-gray-400"><FiX className="w-5 h-5" /></button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 shrink-0">
-          {tabs.map(t => (
-            <button
-              key={t.key}
-              onClick={() => { setTab(t.key); if (t.key === 'sessoes') carregarSessao() }}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
-                tab === t.key ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >{t.label}</button>
-          ))}
-        </div>
-
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 px-6 py-4">
-
-          {/* ─── ABA ACESSO ─── */}
-          {tab === 'acesso' && (
-            <div className="space-y-4">
-              <div>
-                <label className="label-field">E-mail</label>
-                <input type="email" value={user.email || ''} disabled className="input-field bg-gray-50 text-gray-500 cursor-not-allowed" />
-              </div>
-              <div>
-                <label className="label-field">Papel</label>
-                <select value={editPapel} onChange={(e) => setEditPapel(e.target.value as UserRole)} className="input-field">
-                  {allRoles.map((r) => <option key={r} value={r}>{roleLabels[r]}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="label-field">União</label>
-                <select value={editUniaoId} onChange={(e) => { setEditUniaoId(e.target.value); setEditAssociacaoId(''); setEditIgrejaId('') }} className="input-field">
-                  <option value="">-- Nenhuma --</option>
-                  {unioes.map((un) => <option key={un.id} value={un.id}>{un.sigla} - {un.nome}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="label-field">Associação / Campo / Missão</label>
-                <select value={editAssociacaoId} onChange={(e) => {
-                  const id = e.target.value; setEditAssociacaoId(id); setEditIgrejaId('')
-                  if (id) { const a = associacoes.find(x => x.id === id); if (a?.uniao_id && !editUniaoId) setEditUniaoId(a.uniao_id) }
-                }} className="input-field">
-                  <option value="">-- Nenhuma --</option>
-                  {(editUniaoId ? associacoes.filter(a => a.uniao_id === editUniaoId) : associacoes).map((a) => (
-                    <option key={a.id} value={a.id}>{a.sigla} - {a.nome}</option>
-                  ))}
-                </select>
-                {editPapel === 'admin_associacao' && !editAssociacaoId && (
-                  <p className="text-xs text-amber-600 mt-1">⚠ Admin Associação precisa ter uma associação vinculada.</p>
-                )}
-              </div>
-              <div>
-                <label className="label-field">Igreja</label>
-                <select value={editIgrejaId} onChange={(e) => setEditIgrejaId(e.target.value)} className="input-field">
-                  <option value="">-- Nenhuma --</option>
-                  {igrejasFiltradas.map((ig) => <option key={ig.id} value={ig.id}>{ig.nome}</option>)}
-                </select>
-              </div>
-              <div className="flex items-center justify-between">
-                <label className="label-field mb-0">Ativo</label>
-                <Toggle checked={editAtivo} onChange={setEditAtivo} />
-              </div>
-              {msgAcesso && (
-                <div className={`text-sm px-4 py-2.5 rounded-lg ${msgAcesso.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                  {msgAcesso.text}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ─── ABA PERFIL ─── */}
-          {tab === 'perfil' && (
-            <div className="space-y-4">
-              {/* Avatar */}
-              <div className="flex flex-col items-center gap-2 py-2">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full bg-primary-100 overflow-hidden flex items-center justify-center">
-                    {avatarPreview
-                      ? <img src={avatarPreview} alt={editNome} className="w-full h-full object-cover" />
-                      : <span className="text-3xl font-bold text-primary-700">{editNome.charAt(0).toUpperCase()}</span>}
-                  </div>
-                  <button onClick={() => avatarRef.current?.click()}
-                    className="absolute -bottom-1 -right-1 rounded-full bg-primary-500 p-1.5 text-white hover:bg-primary-600 shadow">
-                    <FiCamera className="w-3.5 h-3.5" />
-                  </button>
-                  <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                </div>
-                <p className="text-xs text-gray-400">JPG, PNG — máx. 2MB</p>
-              </div>
-              <div>
-                <label className="label-field">Nome completo</label>
-                <input type="text" value={editNome} onChange={e => setEditNome(e.target.value)} className="input-field" />
-              </div>
-              <div>
-                <label className="label-field">Telefone</label>
-                <input type="tel" value={editTelefone} onChange={e => setEditTelefone(e.target.value)} placeholder="(00) 00000-0000" className="input-field" />
-              </div>
-              {msgPerfil && (
-                <div className={`text-sm px-4 py-2.5 rounded-lg ${msgPerfil.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                  {msgPerfil.text}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ─── ABA SEGURANÇA ─── */}
-          {tab === 'seguranca' && (
-            <div className="space-y-4">
-              {/* Reset via email */}
-              <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <FiRefreshCw className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">Enviar link de redefinição</p>
-                    <p className="text-xs text-blue-600 mt-0.5">O usuário receberá um email para criar nova senha</p>
-                  </div>
-                </div>
-                <button onClick={handleResetSenha} disabled={enviandoReset}
-                  className="btn-secondary inline-flex items-center gap-2 text-sm disabled:opacity-50">
-                  <FiMail className="w-4 h-4" />
-                  {enviandoReset ? 'Enviando...' : `Enviar email para ${user.email}`}
-                </button>
-              </div>
-
-              {/* Definir senha diretamente */}
-              <div className="rounded-lg border border-gray-200 p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <FiKey className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Definir senha diretamente</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Redefine sem enviar email ao usuário</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type={showSenha ? 'text' : 'password'}
-                      value={novaSenha}
-                      onChange={e => setNovaSenha(e.target.value)}
-                      placeholder="Nova senha (mín. 6 caracteres)"
-                      className="input-field pl-9 pr-10"
-                    />
-                    <button type="button" onClick={() => setShowSenha(!showSenha)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                      {showSenha ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  <input
-                    type={showSenha ? 'text' : 'password'}
-                    value={confirmarSenha}
-                    onChange={e => setConfirmarSenha(e.target.value)}
-                    placeholder="Confirmar nova senha"
-                    className="input-field"
-                  />
-                  {novaSenha && confirmarSenha && novaSenha !== confirmarSenha && (
-                    <p className="text-xs text-red-500">As senhas não conferem</p>
-                  )}
-                </div>
-                <button onClick={handleDefinirSenha}
-                  disabled={definindoSenha || novaSenha.length < 6 || novaSenha !== confirmarSenha}
-                  className="btn-primary inline-flex items-center gap-2 text-sm disabled:opacity-50">
-                  <FiKey className="w-4 h-4" />
-                  {definindoSenha ? 'Definindo...' : 'Definir Senha'}
-                </button>
-              </div>
-
-              {msgSeg && (
-                <div className={`text-sm px-4 py-2.5 rounded-lg ${msgSeg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                  {msgSeg.text}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ─── ABA SESSÕES ─── */}
-          {tab === 'sessoes' && (
-            <div>
-              {loadingSessao ? (
-                <div className="py-10 text-center text-gray-400">Carregando...</div>
-              ) : sessao ? (
-                <div className="divide-y divide-gray-100 rounded-lg border border-gray-200">
-                  {[
-                    { icon: <FiLogIn className="w-4 h-4 text-green-600" />, label: 'Último acesso', value: sessao.lastSignIn ? new Date(sessao.lastSignIn).toLocaleString('pt-BR') : 'Nunca acessou' },
-                    { icon: <FiMail className="w-4 h-4 text-blue-600" />, label: 'Email confirmado', value: sessao.emailConfirmed ? new Date(sessao.emailConfirmed).toLocaleString('pt-BR') : 'Não confirmado' },
-                    { icon: <FiMonitor className="w-4 h-4 text-gray-500" />, label: 'Conta criada', value: sessao.createdAt ? new Date(sessao.createdAt).toLocaleString('pt-BR') : '—' },
-                    { icon: <FiShield className="w-4 h-4 text-purple-500" />, label: 'Provedor', value: sessao.provider === 'email' ? 'Email e senha' : sessao.provider },
-                  ].map((row, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3">
-                      {row.icon}
-                      <div>
-                        <p className="text-xs text-gray-400">{row.label}</p>
-                        <p className="text-sm font-medium text-gray-800">{row.value}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3 py-10 text-gray-400">
-                  <FiMonitor className="w-10 h-10 opacity-30" />
-                  <p className="text-sm">Informações não disponíveis</p>
-                  <button onClick={carregarSessao} className="text-sm text-primary-600 hover:underline">Tentar novamente</button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
-          <button onClick={onClose} className="btn-secondary">Cancelar</button>
-          {tab === 'acesso' && (
-            <button onClick={handleSalvarAcesso} disabled={savingAcesso} className="btn-primary inline-flex items-center gap-2">
-              <FiSave className="w-4 h-4" />{savingAcesso ? 'Salvando...' : 'Salvar Acesso'}
-            </button>
-          )}
-          {tab === 'perfil' && (
-            <button onClick={handleSalvarPerfil} disabled={savingPerfil} className="btn-primary inline-flex items-center gap-2">
-              <FiSave className="w-4 h-4" />{savingPerfil ? 'Salvando...' : 'Salvar Perfil'}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ========== DOCUMENTOS (Termo de Compromisso) ==========
 
