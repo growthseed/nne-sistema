@@ -109,7 +109,7 @@ export default function CadastroDashboardPage() {
   const [pageTab, setPageTab] = useState<PageTab>('dashboard')
   const [filtroAssociacao, setFiltroAssociacao] = useState<string>('todas')
   const [gestaoExpanded, setGestaoExpanded] = useState<string | null>(null)
-  const [gestaoStatus, setGestaoStatus] = useState<'todos' | 'completos' | 'parciais'>('todos')
+  const [gestaoStatus, setGestaoStatus] = useState<'todos' | 'completos' | 'parciais' | 'parou_final'>('todos')
 
   const publicUrl = `${window.location.origin}/formulario`
 
@@ -483,6 +483,7 @@ export default function CadastroDashboardPage() {
             : respostas.filter(r => r.associacao_id === assocId)
           if (gestaoStatus === 'completos') return base.filter(r => r.completo)
           if (gestaoStatus === 'parciais') return base.filter(r => !r.completo)
+          if (gestaoStatus === 'parou_final') return base.filter(r => !r.completo && r.etapa_atual === 11)
           return base
         }
 
@@ -496,7 +497,7 @@ export default function CadastroDashboardPage() {
           {/* Export geral + filtro status */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-              {([['todos', 'Todos'], ['completos', 'Completos'], ['parciais', 'Parciais']] as const).map(([key, label]) => (
+              {([['todos', 'Todos'], ['completos', 'Completos'], ['parciais', 'Parciais'], ['parou_final', 'Parou na Final']] as const).map(([key, label]) => (
                 <button key={key} onClick={() => setGestaoStatus(key)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${gestaoStatus === key ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500'}`}>
                   {label}
@@ -659,7 +660,7 @@ export default function CadastroDashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5">
-        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => setTabFilter('todos')}>
+        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => { setGestaoStatus('todos'); setPageTab('gestao') }}>
           <div className="bg-blue-500 p-3 rounded-xl text-white">
             <HiOutlineDocumentText className="w-6 h-6" />
           </div>
@@ -668,7 +669,7 @@ export default function CadastroDashboardPage() {
             <p className="text-2xl font-bold text-gray-800">{total}</p>
           </div>
         </div>
-        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-green-200 transition-all" onClick={() => setTabFilter('completos')}>
+        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-green-200 transition-all" onClick={() => { setGestaoStatus('completos'); setPageTab('gestao') }}>
           <div className="bg-green-500 p-3 rounded-xl text-white">
             <HiOutlineCheckCircle className="w-6 h-6" />
           </div>
@@ -677,7 +678,7 @@ export default function CadastroDashboardPage() {
             <p className="text-2xl font-bold text-gray-800">{completos}</p>
           </div>
         </div>
-        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-amber-200 transition-all" onClick={() => setTabFilter('parciais')}>
+        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-amber-200 transition-all" onClick={() => { setGestaoStatus('parciais'); setPageTab('gestao') }}>
           <div className="bg-amber-500 p-3 rounded-xl text-white">
             <HiOutlineClock className="w-6 h-6" />
           </div>
@@ -688,7 +689,7 @@ export default function CadastroDashboardPage() {
         </div>
         <div
           className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all"
-          onClick={() => setTabFilter('parou_final')}
+          onClick={() => { setGestaoStatus('parou_final'); setPageTab('gestao') }}
           title="Chegaram até a última etapa mas não clicaram 'Enviar'. Candidatos a recuperação."
         >
           <div className="bg-orange-500 p-3 rounded-xl text-white">
