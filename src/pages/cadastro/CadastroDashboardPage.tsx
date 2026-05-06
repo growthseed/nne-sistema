@@ -28,6 +28,7 @@ import {
   HiOutlineFilter,
   HiOutlineSearch,
   HiOutlineDownload,
+  HiOutlineUsers,
 } from 'react-icons/hi'
 
 ChartJS.register(
@@ -101,6 +102,7 @@ export default function CadastroDashboardPage() {
   const { profile } = useAuth()
   const [respostas, setRespostas] = useState<CadastroRow[]>([])
   const [associacoes, setAssociacoes] = useState<AssociacaoInfo[]>([])
+  const [igrejasMembros, setIgrejasMembros] = useState<{ id: string; nome: string; endereco_cidade: string | null; associacao_id: string | null; membros_ativos: number | null }[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [tabFilter, setTabFilter] = useState<TabFilter>('todos')
@@ -110,6 +112,13 @@ export default function CadastroDashboardPage() {
   const [filtroAssociacao, setFiltroAssociacao] = useState<string>('todas')
   const [gestaoExpanded, setGestaoExpanded] = useState<string | null>(null)
   const [gestaoStatus, setGestaoStatus] = useState<'todos' | 'completos' | 'parciais' | 'parou_final'>('todos')
+  // Meta de cobertura: total de cadastros que se quer atingir. Default = total de membros (100% cobertura).
+  const [metaCustom, setMetaCustom] = useState<number | null>(() => {
+    const v = localStorage.getItem('cadastro_meta_custom')
+    return v ? Number(v) : null
+  })
+  const [editandoMeta, setEditandoMeta] = useState(false)
+  const [metaInput, setMetaInput] = useState('')
 
   const publicUrl = `${window.location.origin}/formulario`
 
@@ -117,6 +126,7 @@ export default function CadastroDashboardPage() {
     if (profile) {
       fetchRespostas()
       fetchAssociacoes()
+      fetchIgrejasMembros()
     }
   }, [profile])
 
@@ -126,6 +136,25 @@ export default function CadastroDashboardPage() {
       .select('id, nome, sigla')
       .order('sigla')
     setAssociacoes(data || [])
+  }
+
+  async function fetchIgrejasMembros() {
+    let query = supabase
+      .from('igrejas')
+      .select('id, nome, endereco_cidade, associacao_id, membros_ativos')
+      .eq('ativo', true)
+      .order('nome')
+
+    if (profile!.papel === 'admin_uniao') {
+      query = query.eq('uniao_id', profile!.uniao_id!)
+    } else if (profile!.papel === 'admin_associacao') {
+      query = query.eq('associacao_id', profile!.associacao_id!)
+    } else if (profile!.papel !== 'admin') {
+      query = query.eq('id', profile!.igreja_id!)
+    }
+
+    const { data } = await query
+    setIgrejasMembros(data || [])
   }
 
   async function fetchRespostas() {
@@ -244,6 +273,33 @@ export default function CadastroDashboardPage() {
   const total = respostasByAssoc.length
   const completos = respostasByAssoc.filter(r => r.completo).length
   const parciais = total - completos
+  // Total de membros vindos do inventário (igrejas.membros_ativos), respeitando filtro de associação
+  const igrejasNoEscopo = filtroAssociacao === 'todas'
+    ? igrejasMembros
+    : filtroAssociacao === 'sem_associacao'
+      ? igrejasMembros.filter(ig => !ig.associacao_id)
+      : igrejasMembros.filter(ig => ig.associacao_id === filtroAssociacao)
+  const totalMembrosInventario = igrejasNoEscopo.reduce((sum, ig) => sum + (ig.membros_ativos || 0), 0)
+
+  // Meta de cobertura: usa custom se definida, senão = total de membros do inventário
+  const meta = metaCustom && metaCustom > 0 ? metaCustom : totalMembrosInventario
+  const pctCobertura = meta > 0 ? Math.min(100, Math.round((completos / meta) * 100)) : 0
+  const pctCoberturaParcial = meta > 0 ? Math.min(100, Math.round(((completos + parciais) / meta) * 100)) : 0
+  const faltamMeta = Math.max(0, meta - completos)
+  const pctMembrosCompletos = totalMembrosInventario > 0 ? Math.round((completos / totalMembrosInventario) * 100) : 0
+
+  function salvarMeta() {
+    const n = Number(metaInput)
+    if (!Number.isFinite(n) || n <= 0) {
+      localStorage.removeItem('cadastro_meta_custom')
+      setMetaCustom(null)
+    } else {
+      localStorage.setItem('cadastro_meta_custom', String(n))
+      setMetaCustom(n)
+    }
+    setEditandoMeta(false)
+    setMetaInput('')
+  }
   // "Parou na final": chegou até a última etapa (11) mas não submeteu (não clicou "Enviar").
   // Candidatos a recuperação via WhatsApp/email — o formulário já está 99% preenchido.
   const parouFinal = respostasByAssoc.filter(r => !r.completo && r.etapa_atual === 11).length
@@ -462,12 +518,15 @@ export default function CadastroDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <label className="text-sm font-medium text-gray-600">Associação:</label>
         <select value={filtroAssociacao} onChange={e => setFiltroAssociacao(e.target.value)}
-          className="input-field max-w-xs text-sm">
+          className="input-field max-w-md text-sm">
           <option value="todas">Todas as Associações</option>
-          <option value="sem_associacao">Sem Associação ({respostas.filter(r => !r.associacao_id).length})</option>
+          <option value="sem_associacao">Sem Associação ({respostas.filter(r => !r.associacao_id).length} resp)</option>
           {associacoes.map(a => {
             const count = respostas.filter(r => r.associacao_id === a.id).length
-            return <option key={a.id} value={a.id}>{a.sigla} — {a.nome} ({count})</option>
+            const membros = igrejasMembros
+              .filter(ig => ig.associacao_id === a.id)
+              .reduce((sum, ig) => sum + (ig.membros_ativos || 0), 0)
+            return <option key={a.id} value={a.id}>{a.sigla} — {a.nome} ({count} resp / {membros} membros)</option>
           })}
         </select>
         {filtroAssociacao !== 'todas' && (
@@ -532,6 +591,12 @@ export default function CadastroDashboardPage() {
               const completos = allAssocRespostas.filter(r => r.completo).length
               const parciais = allAssocRespostas.length - completos
               const pct = allAssocRespostas.length > 0 ? Math.round((completos / allAssocRespostas.length) * 100) : 0
+              const igrejasAssoc = a.id === 'sem'
+                ? igrejasMembros.filter(ig => !ig.associacao_id)
+                : igrejasMembros.filter(ig => ig.associacao_id === a.id)
+              const totalIgrejas = igrejasAssoc.length
+              const membrosAssoc = igrejasAssoc.reduce((sum, ig) => sum + (ig.membros_ativos || 0), 0)
+              const cobertura = membrosAssoc > 0 ? Math.round((completos / membrosAssoc) * 100) : 0
               const isExpanded = gestaoExpanded === a.id
 
               return (
@@ -542,19 +607,36 @@ export default function CadastroDashboardPage() {
                     <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0">{a.sigla}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
-                      <div className="flex items-center gap-3 mt-0.5">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                        <span className="text-xs text-teal-600" title="Total de membros (Inventário)">
+                          {membrosAssoc.toLocaleString('pt-BR')} membros
+                        </span>
+                        <span className="text-xs text-gray-400">·</span>
+                        <span className="text-xs text-gray-500">{totalIgrejas} igrejas</span>
+                        <span className="text-xs text-gray-400">·</span>
                         <span className="text-xs text-gray-400">{allAssocRespostas.length} respostas</span>
                         <span className="text-xs text-green-600">{completos} completos</span>
                         <span className="text-xs text-amber-600">{parciais} parciais</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <div className="w-20">
+                      <div className="w-24" title="Taxa de conclusão dentro das respostas recebidas">
+                        <p className="text-[10px] text-gray-400 text-right">conclusão</p>
                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full bg-primary-500 rounded-full" style={{ width: `${pct}%` }} />
                         </div>
-                        <p className="text-[10px] text-gray-400 text-right mt-0.5">{pct}%</p>
+                        <p className="text-[10px] text-gray-500 text-right mt-0.5">{pct}%</p>
                       </div>
+                      {membrosAssoc > 0 && (
+                        <div className="w-24" title="Cobertura = completos / membros do Inventário">
+                          <p className="text-[10px] text-gray-400 text-right">cobertura</p>
+                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${cobertura >= 75 ? 'bg-green-500' : cobertura >= 40 ? 'bg-amber-500' : 'bg-red-500'}`}
+                              style={{ width: `${Math.min(100, cobertura)}%` }} />
+                          </div>
+                          <p className={`text-[10px] text-right mt-0.5 ${cobertura >= 75 ? 'text-green-600' : cobertura >= 40 ? 'text-amber-600' : 'text-red-600'}`}>{cobertura}%</p>
+                        </div>
+                      )}
                       <button onClick={(e) => { e.stopPropagation(); exportCSV(allAssocRespostas, `censo_${a.sigla}_${new Date().toISOString().slice(0,10)}.csv`) }}
                         className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg" title="Exportar CSV">
                         <HiOutlineDownload className="w-4 h-4" />
@@ -562,9 +644,71 @@ export default function CadastroDashboardPage() {
                     </div>
                   </button>
 
-                  {/* Expanded: lista de respostas */}
+                  {/* Expanded: lista de igrejas + lista de respostas */}
                   {isExpanded && (
                     <div className="border-t border-gray-100">
+                      {/* Breakdown por igreja (membros e respostas por igreja) */}
+                      {igrejasAssoc.length > 0 && (
+                        <div className="bg-gray-50/50 px-4 py-3 border-b border-gray-100">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                            Igrejas da associação
+                          </p>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="text-gray-400 text-[10px] uppercase">
+                                  <th className="text-left py-1 pr-3 font-medium">Igreja</th>
+                                  <th className="text-left py-1 pr-3 font-medium">Cidade</th>
+                                  <th className="text-right py-1 pr-3 font-medium">Membros</th>
+                                  <th className="text-right py-1 pr-3 font-medium">Respostas</th>
+                                  <th className="text-right py-1 pr-3 font-medium">Completos</th>
+                                  <th className="text-right py-1 font-medium">Cobertura</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100">
+                                {igrejasAssoc.map(ig => {
+                                  const respIg = allAssocRespostas.filter(r => r.igreja_frequenta && (r.igreja_frequenta === ig.nome))
+                                  const compIg = respIg.filter(r => r.completo).length
+                                  const membrosIg = ig.membros_ativos || 0
+                                  const cobIg = membrosIg > 0 ? Math.round((compIg / membrosIg) * 100) : 0
+                                  return (
+                                    <tr key={ig.id}>
+                                      <td className="py-1.5 pr-3 text-gray-700">{ig.nome}</td>
+                                      <td className="py-1.5 pr-3 text-gray-500">{ig.endereco_cidade || '-'}</td>
+                                      <td className="py-1.5 pr-3 text-right text-teal-700 font-medium tabular-nums">{membrosIg}</td>
+                                      <td className="py-1.5 pr-3 text-right text-gray-600 tabular-nums">{respIg.length}</td>
+                                      <td className="py-1.5 pr-3 text-right text-green-700 font-medium tabular-nums">{compIg}</td>
+                                      <td className={`py-1.5 text-right font-medium tabular-nums ${
+                                        membrosIg === 0 ? 'text-gray-400' : cobIg >= 75 ? 'text-green-600' : cobIg >= 40 ? 'text-amber-600' : 'text-red-600'
+                                      }`}>
+                                        {membrosIg === 0 ? '-' : `${cobIg}%`}
+                                      </td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                              <tfoot>
+                                <tr className="border-t border-gray-200 font-semibold text-gray-700">
+                                  <td className="py-1.5 pr-3" colSpan={2}>Total</td>
+                                  <td className="py-1.5 pr-3 text-right text-teal-700 tabular-nums">{membrosAssoc}</td>
+                                  <td className="py-1.5 pr-3 text-right tabular-nums">{allAssocRespostas.length}</td>
+                                  <td className="py-1.5 pr-3 text-right text-green-700 tabular-nums">{completos}</td>
+                                  <td className={`py-1.5 text-right tabular-nums ${
+                                    membrosAssoc === 0 ? 'text-gray-400' : cobertura >= 75 ? 'text-green-600' : cobertura >= 40 ? 'text-amber-600' : 'text-red-600'
+                                  }`}>
+                                    {membrosAssoc === 0 ? '-' : `${cobertura}%`}
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                          <p className="text-[10px] text-gray-400 mt-1.5">
+                            Membros vêm do Inventário Missionário (atualização ao vivo).
+                            Respostas casadas pelo nome da igreja informado no formulário.
+                          </p>
+                        </div>
+                      )}
+
                       {searched.length === 0 ? (
                         <p className="p-4 text-sm text-gray-400 text-center">Nenhuma resposta {gestaoStatus !== 'todos' ? `(${gestaoStatus})` : ''}</p>
                       ) : (
@@ -659,13 +803,26 @@ export default function CadastroDashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-5">
+        <div
+          className="card flex items-start gap-4"
+          title="Total de membros conforme atualizado em Missões > Inventário (igrejas.membros_ativos)"
+        >
+          <div className="bg-teal-500 p-3 rounded-xl text-white">
+            <HiOutlineUsers className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Membros</p>
+            <p className="text-2xl font-bold text-gray-800">{totalMembrosInventario.toLocaleString('pt-BR')}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">via Inventário</p>
+          </div>
+        </div>
         <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => { setGestaoStatus('todos'); setPageTab('gestao') }}>
           <div className="bg-blue-500 p-3 rounded-xl text-white">
             <HiOutlineDocumentText className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Total</p>
+            <p className="text-sm text-gray-500">Total Cadastros</p>
             <p className="text-2xl font-bold text-gray-800">{total}</p>
           </div>
         </div>
@@ -724,6 +881,122 @@ export default function CadastroDashboardPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Meta de Cobertura (cadastros vs membros) */}
+      <div className="card">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-gray-800">Meta de Cobertura</h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Quantos membros já preencheram o formulário em relação à meta
+              {metaCustom == null ? ' (100% dos membros do inventário)' : ' (meta personalizada)'}.
+            </p>
+          </div>
+          {!editandoMeta ? (
+            <button
+              onClick={() => { setEditandoMeta(true); setMetaInput(metaCustom ? String(metaCustom) : '') }}
+              className="text-xs font-medium text-primary-600 hover:text-primary-800 hover:underline whitespace-nowrap"
+            >
+              {metaCustom != null ? 'Editar meta' : 'Definir meta personalizada'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                value={metaInput}
+                onChange={e => setMetaInput(e.target.value)}
+                placeholder="Ex: 500"
+                className="input-field text-xs w-28"
+                autoFocus
+              />
+              <button onClick={salvarMeta}
+                className="text-xs font-medium px-2 py-1 rounded bg-primary-600 text-white hover:bg-primary-700">
+                Salvar
+              </button>
+              <button onClick={() => { setEditandoMeta(false); setMetaInput('') }}
+                className="text-xs font-medium px-2 py-1 rounded text-gray-500 hover:bg-gray-100">
+                Cancelar
+              </button>
+            </div>
+          )}
+        </div>
+
+        {meta === 0 ? (
+          <p className="text-sm text-gray-400 py-4 text-center">
+            Defina o número de membros no Inventário ou uma meta personalizada para acompanhar o progresso.
+          </p>
+        ) : (
+          <>
+            {/* Big numbers row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
+              <div>
+                <p className="text-xs text-gray-500">Cadastros completos</p>
+                <p className="text-2xl font-bold text-green-600">{completos.toLocaleString('pt-BR')}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Meta</p>
+                <p className="text-2xl font-bold text-gray-800">{meta.toLocaleString('pt-BR')}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">% atingido</p>
+                <p className={`text-2xl font-bold ${pctCobertura >= 75 ? 'text-green-600' : pctCobertura >= 40 ? 'text-amber-600' : 'text-red-600'}`}>
+                  {pctCobertura}%
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Faltam</p>
+                <p className="text-2xl font-bold text-orange-600">{faltamMeta.toLocaleString('pt-BR')}</p>
+              </div>
+            </div>
+
+            {/* Progress bar (stacked: completos + parciais) */}
+            <div className="space-y-2">
+              <div className="relative h-6 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-amber-300 transition-all"
+                  style={{ width: `${pctCoberturaParcial}%` }}
+                  title={`${pctCoberturaParcial}% incluindo parciais`}
+                />
+                <div
+                  className="absolute inset-y-0 left-0 bg-green-500 flex items-center justify-end pr-2 transition-all"
+                  style={{ width: `${pctCobertura}%` }}
+                >
+                  {pctCobertura >= 10 && (
+                    <span className="text-[11px] font-semibold text-white">{pctCobertura}%</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-green-500" />
+                    Completos ({completos})
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-amber-300" />
+                    + Parciais ({parciais})
+                  </span>
+                </div>
+                <span>
+                  {completos.toLocaleString('pt-BR')} / {meta.toLocaleString('pt-BR')}
+                </span>
+              </div>
+            </div>
+
+            {/* Insight */}
+            {totalMembrosInventario > 0 && (
+              <p className="text-xs text-gray-500 mt-4 pt-3 border-t border-gray-100">
+                <span className="font-medium text-gray-700">{pctMembrosCompletos}%</span> dos{' '}
+                <span className="font-medium">{totalMembrosInventario.toLocaleString('pt-BR')}</span> membros registrados no Inventário já preencheram o formulário completo.
+                {faltamMeta > 0 && (
+                  <> Faltam <span className="font-medium text-orange-600">{faltamMeta.toLocaleString('pt-BR')}</span> para atingir a meta.</>
+                )}
+              </p>
+            )}
+          </>
+        )}
       </div>
 
       {/* Partial Responses Breakdown */}

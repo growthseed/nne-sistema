@@ -74,6 +74,13 @@ interface Igreja {
   uniao_id: string | null
 }
 
+interface Associacao {
+  id: string
+  nome: string
+  sigla: string
+  uniao_id: string | null
+}
+
 // ========== CONSTANTS ==========
 const TOTAL_STEPS = 12
 const STORAGE_KEY = 'nne_pesquisa_rascunho'
@@ -127,6 +134,7 @@ export default function CadastroPublicoPage() {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<FormData>({})
   const [igrejas, setIgrejas] = useState<Igreja[]>([])
+  const [associacoes, setAssociacoes] = useState<Associacao[]>([])
   const [igrejaSearch, setIgrejaSearch] = useState('')
   const [showIgrejaDropdown, setShowIgrejaDropdown] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -142,8 +150,20 @@ export default function CadastroPublicoPage() {
   const savingRef = useRef(false)
   useEffect(() => {
     fetchIgrejas()
+    fetchAssociacoes()
     checkSavedDraft()
   }, [])
+
+  // Backfill: rascunhos antigos não tinham associacaoId no form. Quando as
+  // igrejas carregam, derivamos a associação a partir da igreja já escolhida
+  // pra que a validação do step 1 não trave em sessões retomadas.
+  useEffect(() => {
+    if (form.associacaoId || !form.igrejaId || igrejas.length === 0) return
+    const ig = igrejas.find(i => i.id === form.igrejaId)
+    if (ig?.associacao_id) {
+      set('associacaoId', ig.associacao_id)
+    }
+  }, [igrejas, form.igrejaId, form.associacaoId])
 
   function checkSavedDraft() {
     try {
@@ -186,6 +206,14 @@ export default function CadastroPublicoPage() {
       .eq('ativo', true)
       .order('nome')
     if (data) setIgrejas(data as Igreja[])
+  }
+
+  async function fetchAssociacoes() {
+    const { data } = await supabase
+      .from('associacoes')
+      .select('id, nome, sigla, uniao_id')
+      .order('sigla')
+    if (data) setAssociacoes(data as Associacao[])
   }
 
   function set(field: string, value: any) {
@@ -245,8 +273,13 @@ export default function CadastroPublicoPage() {
       if (form[key] !== undefined) participacao[item] = Number(form[key])
     })
 
-    // Lookup church hierarchy
+    // Lookup church hierarchy. Associação é capturada já no step 1, então
+    // todo rascunho persistido tem associacao_id mesmo se a pessoa abandonar
+    // antes de selecionar a igreja específica (step 6).
     const selectedIgreja = igrejas.find(ig => ig.id === form.igrejaId)
+    const selectedAssoc = associacoes.find(a => a.id === form.associacaoId)
+    const associacaoId = form.associacaoId || selectedIgreja?.associacao_id || null
+    const uniaoId = selectedAssoc?.uniao_id || selectedIgreja?.uniao_id || null
 
     return {
       lgpd_aceite: true,
@@ -275,8 +308,8 @@ export default function CadastroPublicoPage() {
       distancia_igreja: form.distanciaIgreja || null,
       meio_transporte: form.transporte || null,
       igreja_id: form.igrejaId || null,
-      associacao_id: selectedIgreja?.associacao_id || null,
-      uniao_id: selectedIgreja?.uniao_id || null,
+      associacao_id: associacaoId,
+      uniao_id: uniaoId,
       pontos_fortes: [form.pontoForte1, form.pontoForte2, form.pontoForte3].filter(Boolean),
       pontos_fracos: [form.pontoFraco1, form.pontoFraco2, form.pontoFraco3].filter(Boolean),
       cargos_ocupa: form.cargos || [],
@@ -297,7 +330,7 @@ export default function CadastroPublicoPage() {
       etapa_atual: targetStep,
       completo: complete,
     }
-  }, [form, igrejas])
+  }, [form, igrejas, associacoes])
 
   // Auto-save to DB
   async function autoSave(targetStep: number) {
@@ -358,6 +391,7 @@ export default function CadastroPublicoPage() {
   function validateStep(s: number): string {
     switch (s) {
       case 1:
+        if (!form.associacaoId) return 'Selecione sua associação'
         if (!form.nome?.trim()) return 'Preencha seu nome completo'
         if (!form.telefone?.trim()) return 'Preencha seu WhatsApp'
         if (!form.email?.trim()) return 'Preencha seu e-mail'
@@ -465,10 +499,12 @@ export default function CadastroPublicoPage() {
     await autoSave(step)
   }
 
-  const filteredIgrejas = igrejas.filter(ig =>
-    ig.nome.toLowerCase().includes(igrejaSearch.toLowerCase()) ||
-    (ig.endereco_cidade || '').toLowerCase().includes(igrejaSearch.toLowerCase())
-  )
+  const filteredIgrejas = igrejas
+    .filter(ig => !form.associacaoId || ig.associacao_id === form.associacaoId)
+    .filter(ig =>
+      ig.nome.toLowerCase().includes(igrejaSearch.toLowerCase()) ||
+      (ig.endereco_cidade || '').toLowerCase().includes(igrejaSearch.toLowerCase())
+    )
 
   // ========== RESUME PROMPT ==========
   if (showResumePrompt) {
@@ -725,9 +761,35 @@ export default function CadastroPublicoPage() {
             <div>
               <StepHeader Icon={HiOutlineUser} title="Identificação e Contato" subtitle="Informe seus dados pessoais e de contato" />
 
-              <Field label="Nome Completo *">
-                <input type="text" value={form.nome || ''} onChange={e => set('nome', e.target.value)} placeholder="Seu nome completo" className="inp" />
+              <Field label="Associação a que pertence *">
+                <select
+                  value={form.associacaoId || ''}
+                  onChange={e => {
+                    const novaAssoc = e.target.value
+                    set('associacaoId', novaAssoc)
+                    // Se trocar de associação, limpa a igreja escolhida (do step 6)
+                    if (form.igrejaId) {
+                      const igAtual = igrejas.find(ig => ig.id === form.igrejaId)
+                      if (igAtual && igAtual.associacao_id !== novaAssoc) {
+                        set('igrejaId', '')
+                        setIgrejaSearch('')
+                      }
+                    }
+                  }}
+                  className="inp"
+                >
+                  <option value="">Selecione sua associação</option>
+                  {associacoes.map(a => (
+                    <option key={a.id} value={a.id}>{a.sigla} — {a.nome}</option>
+                  ))}
+                </select>
               </Field>
+
+              <div className="mt-3">
+                <Field label="Nome Completo *">
+                  <input type="text" value={form.nome || ''} onChange={e => set('nome', e.target.value)} placeholder="Seu nome completo" className="inp" />
+                </Field>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                 <Field label="WhatsApp *">
