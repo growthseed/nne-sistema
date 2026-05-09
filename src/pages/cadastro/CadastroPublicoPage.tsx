@@ -244,15 +244,27 @@ export default function CadastroPublicoPage() {
   const [stepError, setStepError] = useState('')
   const [resumeError, setResumeError] = useState('')
   const [resumeLoading, setResumeLoading] = useState(false)
+  const [adminMode, setAdminMode] = useState(false)
+  const [adminEmail, setAdminEmail] = useState<string | null>(null)
   const savingRef = useRef(false)
   useEffect(() => {
     fetchIgrejas()
     fetchAssociacoes()
-    // Tenta retomar via URL: ?resume=<id>&token=<draft_token>
-    // Se houver, ignora o rascunho do localStorage e carrega do banco.
+    // Detecta modo admin: ?adminMode=1 + sessão autenticada → admin/missionário
+    // está preenchendo em nome do membro. Ações ficam registradas em audit log.
     const params = new URLSearchParams(window.location.search)
     const resumeId = params.get('resume')
     const resumeToken = params.get('token')
+    const isAdminMode = params.get('adminMode') === '1'
+    if (isAdminMode) {
+      ;(async () => {
+        const { data } = await supabase.auth.getSession()
+        if (data.session?.user) {
+          setAdminMode(true)
+          setAdminEmail(data.session.user.email ?? null)
+        }
+      })()
+    }
     if (resumeId && resumeToken) {
       tryResumeFromUrl(resumeId, resumeToken)
     } else {
@@ -705,6 +717,22 @@ export default function CadastroPublicoPage() {
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
       {/* Header */}
+      {adminMode && (
+        <div className="sticky top-0 z-40 bg-amber-100 border-b-2 border-amber-400 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
+          <div className="text-xs sm:text-sm text-amber-900 flex items-center gap-2">
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>
+              <span className="font-bold">Modo administrativo:</span>{' '}
+              você está preenchendo em nome do(a) membro
+              {form.nome ? <strong className="ml-1">({form.nome})</strong> : null}.
+              {' '}Cada salvamento é registrado em auditoria{adminEmail ? ` (login: ${adminEmail})` : ''}.
+            </span>
+          </div>
+        </div>
+      )}
+
       <header className="bg-white text-center py-6 border-b-[3px] border-[#006D43]">
         <img src="/img/logo-nne.png" alt="União Norte Nordeste" className="mx-auto h-14 mb-3" />
         <h1 className="text-2xl font-bold text-[#006D43]">Planejando o Crescimento</h1>

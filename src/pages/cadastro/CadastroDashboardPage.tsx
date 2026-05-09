@@ -117,6 +117,29 @@ function getAgeGroup(age: number): string {
   return '65+'
 }
 
+function fmtDateBR(d: string | null | undefined): string {
+  if (!d) return '—'
+  try {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+      const [y, m, day] = d.split('-')
+      return `${day}/${m}/${y}`
+    }
+    return new Date(d).toLocaleDateString('pt-BR')
+  } catch { return d }
+}
+
+function calcAgeFromBirth(birth: string | null): number | null {
+  if (!birth) return null
+  try {
+    const dt = new Date(birth + 'T00:00:00')
+    const now = new Date()
+    let age = now.getFullYear() - dt.getFullYear()
+    const m = now.getMonth() - dt.getMonth()
+    if (m < 0 || (m === 0 && now.getDate() < dt.getDate())) age--
+    return age
+  } catch { return null }
+}
+
 type TabFilter = 'todos' | 'completos' | 'parciais' | 'parou_final'
 type PageTab = 'dashboard' | 'gestao'
 
@@ -1867,6 +1890,126 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
   )
 }
 
+// Geração de PDF da ficha individual usando jsPDF + autoTable.
+// Não usa html2canvas para garantir texto pesquisável e arquivo leve.
+async function generateFichaPDF(r: CadastroRow, igrejaNome: string | null, assocSigla: string | null) {
+  const { default: jsPDF } = await import('jspdf')
+  const autoTableMod = await import('jspdf-autotable')
+  const autoTable = (autoTableMod as any).default || (autoTableMod as any)
+
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const margin = 36
+  let y = margin
+
+  // Header
+  doc.setFillColor(0, 109, 67) // primary green NNE
+  doc.rect(0, 0, pageWidth, 70, 'F')
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(16); doc.setFont('helvetica', 'bold')
+  doc.text('Ficha de Cadastro — Censo NNE', margin, 28)
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal')
+  doc.text('União Norte Nordeste Brasileira (IASD-MR)', margin, 46)
+  doc.text(`Emitido em ${new Date().toLocaleString('pt-BR')}`, margin, 60)
+  doc.setTextColor(0, 0, 0)
+  y = 90
+
+  // Status pill
+  const status = r.completo ? 'Completo' : (r.etapa_atual === 11 ? `Parou na final (E${r.etapa_atual}/11)` : `Parcial (E${r.etapa_atual}/11)`)
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold')
+  doc.text(`${r.nome || 'Sem nome'}`, margin, y); y += 16
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal')
+  doc.setTextColor(80, 80, 80)
+  doc.text(`Status: ${status}  ·  ${assocSigla || 'sem associação'}${igrejaNome ? '  ·  ' + igrejaNome : ''}  ·  Respondido em ${fmtDateBR(r.created_at?.slice(0, 10))}`, margin, y)
+  doc.setTextColor(0, 0, 0); y += 18
+
+  function section(title: string, rows: [string, string | null | undefined][]) {
+    const filtered = rows.filter(([_, v]) => v && String(v).trim() !== '')
+    if (filtered.length === 0) return
+    autoTable(doc, {
+      startY: y,
+      head: [[title]],
+      body: filtered.map(([k, v]) => [`${k}`, String(v)]),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [0, 109, 67], textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0: { cellWidth: 140, fontStyle: 'bold', fillColor: [245, 245, 245] } },
+      margin: { left: margin, right: margin },
+      didDrawPage: (data: any) => { y = data.cursor.y + 10 }
+    })
+    y = (doc as any).lastAutoTable.finalY + 12
+  }
+
+  const idade = calcAgeFromBirth(r.data_nascimento)
+  section('Dados Pessoais', [
+    ['Nome', r.nome],
+    ['E-mail', r.email],
+    ['Telefone', r.telefone],
+    ['Sexo', r.sexo === 'masculino' ? 'Masculino' : r.sexo === 'feminino' ? 'Feminino' : null],
+    ['Nascimento', r.data_nascimento ? `${fmtDateBR(r.data_nascimento)}${idade ? ` (${idade} anos)` : ''}` : null],
+    ['Estado Civil', r.estado_civil ? r.estado_civil.replace(/_/g, ' ') : null],
+    ['Escolaridade', r.escolaridade],
+    ['Profissão', r.profissao],
+  ])
+
+  section('Endereço', [
+    ['Cidade / UF', [r.cidade, r.estado].filter(Boolean).join(' / ') || null],
+  ])
+
+  section('Jornada na Igreja', [
+    ['Tempo de Membro', r.tempo_membro],
+    ['Como Conheceu', r.como_conheceu],
+    ['Distância da Igreja', r.distancia_igreja],
+    ['Meio de Transporte', r.meio_transporte],
+  ])
+
+  if (r.cargos_ocupa && r.cargos_ocupa.length > 0) {
+    section('Cargos/Departamentos', [['Atuação no último ano', r.cargos_ocupa.join(', ')]])
+  }
+
+  if ((r.pontos_fortes && r.pontos_fortes.length > 0) || (r.pontos_fracos && r.pontos_fracos.length > 0)) {
+    section('Avaliação da Igreja', [
+      ['Pontos Fortes', (r.pontos_fortes || []).join(' · ')],
+      ['Pontos Fracos', (r.pontos_fracos || []).join(' · ')],
+    ])
+  }
+
+  if (r.satisfacao && Object.keys(r.satisfacao).length > 0) {
+    const satRows: [string, string][] = Object.entries(r.satisfacao).map(([k, v]) => {
+      const labels = ['', 'Muito insatisfeito', 'Insatisfeito', 'Satisfeito', 'Muito satisfeito']
+      return [k, labels[v] || String(v)]
+    })
+    section('Satisfação (1=mín · 4=máx)', satRows)
+  }
+
+  if (r.prioridades && r.prioridades.length > 0) {
+    section('Prioridades / Ênfases', [['Selecionadas', r.prioridades.join(' · ')]])
+  }
+
+  if (r.participacao && Object.keys(r.participacao).length > 0) {
+    const parRows: [string, string][] = Object.entries(r.participacao).map(([k, v]) => [k, `${v}x/mês`])
+    section('Frequência Mensal', parRows)
+  }
+
+  if (r.opiniao_departamentos) {
+    section('Observações', [['Comentário', r.opiniao_departamentos]])
+  }
+
+  // Rodapé com aviso de privacidade
+  const pageCount = (doc as any).internal.getNumberOfPages?.() || 1
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p)
+    doc.setFontSize(7); doc.setTextColor(150, 150, 150)
+    doc.text(
+      `LGPD: dados confidenciais. Uso restrito à hierarquia eclesiástica conforme escopo do solicitante. Página ${p}/${pageCount}`,
+      pageWidth / 2, doc.internal.pageSize.getHeight() - 18, { align: 'center' },
+    )
+  }
+
+  const safeName = (r.nome || 'sem-nome').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  doc.save(`ficha-${safeName}-${r.id.slice(0, 8)}.pdf`)
+}
+
 // ========== DETAIL MODAL ==========
 function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: () => void }) {
   const COMO_CONHECEU_LABELS: Record<string, string> = {
@@ -1900,7 +2043,59 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
 
   const r = resposta
   const [copiedLink, setCopiedLink] = useState(false)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
+  const [shareLink, setShareLink] = useState<string | null>(null)
+  const [shareLoading, setShareLoading] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
+  const [shareError, setShareError] = useState('')
   const resumeUrl = !r.completo ? buildResumeUrl(r) : null
+
+  async function handlePdf() {
+    setGeneratingPdf(true)
+    try {
+      // Lookup igreja/assoc para o cabeçalho do PDF (read direto via RLS)
+      let igrejaNome: string | null = null
+      let assocSigla: string | null = null
+      if (r.igreja_id) {
+        const { data } = await supabase.from('igrejas').select('nome').eq('id', r.igreja_id).maybeSingle()
+        igrejaNome = data?.nome ?? null
+      }
+      if (r.associacao_id) {
+        const { data } = await supabase.from('associacoes').select('sigla').eq('id', r.associacao_id).maybeSingle()
+        assocSigla = data?.sigla ?? null
+      }
+      await generateFichaPDF(r, igrejaNome, assocSigla)
+    } catch (err) {
+      console.error('PDF erro', err)
+      alert('Falha ao gerar PDF.')
+    } finally {
+      setGeneratingPdf(false)
+    }
+  }
+
+  async function handleShare(rotate = false) {
+    setShareLoading(true)
+    setShareError('')
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-share-token', {
+        body: { responseId: r.id, rotate },
+      })
+      if (error || !data?.success) throw new Error(data?.message || 'Falha.')
+      const url = `${window.location.origin}/ficha/${r.id}?token=${data.shareToken}`
+      setShareLink(url)
+    } catch (err: any) {
+      setShareError(err?.message || 'Erro ao gerar link.')
+    } finally {
+      setShareLoading(false)
+    }
+  }
+
+  function handleCopyShare() {
+    if (!shareLink) return
+    navigator.clipboard.writeText(shareLink)
+    setShareCopied(true)
+    setTimeout(() => setShareCopied(false), 1800)
+  }
   const phoneE164 = (() => {
     const phone = digitsOnly(r.telefone) || digitsOnly(r.whatsapp_parente)
     if (!phone) return null
@@ -1957,17 +2152,26 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
           </button>
         </div>
 
-        {/* Reenviar link de retomada — só para parciais com draft_token */}
+        {/* Reenviar link de retomada + Continuar pelo admin (só p/ parciais) */}
         {resumeUrl && (
           <div className="px-6 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between gap-3 flex-wrap">
             <div className="text-xs text-amber-800">
-              <span className="font-semibold">Reenviar link de retomada</span> · O membro continua de onde parou (etapa {r.etapa_atual} de 11)
+              <span className="font-semibold">Continuar preenchimento</span> · Etapa {r.etapa_atual} de 11
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
+              <a
+                href={resumeUrl + '&adminMode=1'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-semibold px-2.5 py-1 rounded bg-primary-600 text-white hover:bg-primary-700"
+                title="Eu mesmo (admin/missionário) vou continuar preenchendo. Suas ações ficam registradas na auditoria."
+              >
+                Eu continuo (admin)
+              </a>
               {wppLink && (
                 <a href={wppLink} target="_blank" rel="noopener noreferrer"
                   className="text-[11px] font-medium px-2.5 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">
-                  WhatsApp
+                  WhatsApp p/ membro
                 </a>
               )}
               {mailLink && (
@@ -1982,6 +2186,58 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
               </button>
             </div>
           </div>
+        )}
+
+        {/* Ações: PDF, Compartilhar, Editar (todas as fichas) */}
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-xs text-gray-600">
+            <span className="font-semibold">Ficha:</span> imprimir, compartilhar com terceiros ou {r.completo ? 'corrigir' : 'continuar'} pelo admin
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={handlePdf}
+              disabled={generatingPdf}
+              className="text-[11px] font-medium px-2.5 py-1 rounded bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+            >
+              {generatingPdf ? 'Gerando...' : 'Imprimir / PDF'}
+            </button>
+            {r.completo && (
+              <a
+                href={buildResumeUrl(r) ? buildResumeUrl(r) + '&adminMode=1' : '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-medium px-2.5 py-1 rounded bg-white border border-primary-200 text-primary-700 hover:bg-primary-50"
+                title="Editar/corrigir esta ficha (sua ação fica registrada)"
+              >
+                Corrigir (admin)
+              </a>
+            )}
+            {!shareLink && (
+              <button
+                onClick={() => handleShare(false)}
+                disabled={shareLoading}
+                className="text-[11px] font-medium px-2.5 py-1 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+              >
+                {shareLoading ? 'Gerando...' : 'Compartilhar (link público)'}
+              </button>
+            )}
+            {shareLink && (
+              <>
+                <button onClick={handleCopyShare}
+                  className={`text-[11px] font-medium px-2.5 py-1 rounded ${shareCopied ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'}`}>
+                  {shareCopied ? 'Copiado!' : 'Copiar link público'}
+                </button>
+                <button onClick={() => handleShare(true)}
+                  title="Gerar novo token (invalida o link anterior)"
+                  className="text-[11px] font-medium px-2.5 py-1 rounded bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                  Rotacionar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        {shareError && (
+          <div className="px-6 py-2 bg-red-50 border-b border-red-100 text-xs text-red-700">{shareError}</div>
         )}
 
         {/* Content */}

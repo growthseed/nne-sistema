@@ -6,6 +6,7 @@ const CadastroPublicoPage = lazy(() => import('@/pages/cadastro/CadastroPublicoP
 const ValidarCartaoPage = lazy(() => import('@/pages/ValidarCartaoPage'))
 const DiretorioIgrejasPage = lazy(() => import('@/pages/DiretorioIgrejasPage'))
 const EBPublicPage = lazy(() => import('@/pages/public/EBPublicPage'))
+const FichaPublicaPage = lazy(() => import('@/pages/public/FichaPublicaPage'))
 const PortalLoginPage = lazy(() => import('@/pages/portal/PortalLoginPage'))
 const PortalLandingPage = lazy(() => import('@/pages/portal/PortalLandingPage'))
 const PortalDashboardPage = lazy(() => import('@/pages/portal/PortalDashboardPage'))
@@ -15,6 +16,7 @@ const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
 
 export const publicRoutes: RouteObject[] = [
   { path: '/formulario', element: <CadastroPublicoPage /> },
+  { path: '/ficha/:id', element: <FichaPublicaPage /> },
   { path: '/validar-cartao', element: <ValidarCartaoPage /> },
   { path: '/diretorio', element: <DiretorioIgrejasPage /> },
   { path: '/eb/:classeId', element: <EBPublicPage /> },
