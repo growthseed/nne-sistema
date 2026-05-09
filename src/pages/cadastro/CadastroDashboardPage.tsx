@@ -758,7 +758,18 @@ export default function CadastroDashboardPage() {
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setGestaoExpanded(isExpanded ? null : a.id) } }}
                     className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left cursor-pointer"
                   >
-                    <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0">{a.sigla}</span>
+                    {a.id === 'sem' ? (
+                      <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0">{a.sigla}</span>
+                    ) : (
+                      <Link
+                        to={`/cadastro/associacao/${a.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 px-2.5 py-1 rounded-lg shrink-0 transition-colors"
+                        title="Abrir painel da associação (tático)"
+                      >
+                        {a.sigla} ↗
+                      </Link>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
@@ -870,8 +881,12 @@ export default function CadastroDashboardPage() {
                                   const membrosIg = ig.membros_ativos || 0
                                   const cobIg = membrosIg > 0 ? Math.round((compIg / membrosIg) * 100) : 0
                                   return (
-                                    <tr key={ig.id}>
-                                      <td className="py-1.5 pr-3 text-gray-700">{ig.nome}</td>
+                                    <tr key={ig.id} className="hover:bg-gray-50">
+                                      <td className="py-1.5 pr-3">
+                                        <Link to={`/cadastro/igreja/${ig.id}`} className="text-primary-700 hover:underline" title="Abrir perfil da igreja (operacional)">
+                                          {ig.nome} ↗
+                                        </Link>
+                                      </td>
                                       <td className="py-1.5 pr-3 text-gray-500">{ig.endereco_cidade || '-'}</td>
                                       <td className="py-1.5 pr-3 text-right text-teal-700 font-medium tabular-nums">{membrosIg}</td>
                                       <td className="py-1.5 pr-3 text-right text-gray-600 tabular-nums">{respIg.length}</td>

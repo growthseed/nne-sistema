@@ -7,6 +7,8 @@ import type { AccessRuleKey } from '@/lib/access'
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const CadastroPage = lazy(() => import('@/pages/cadastro/CadastroPage'))
 const CadastroDashboardPage = lazy(() => import('@/pages/cadastro/CadastroDashboardPage'))
+const IgrejaPerfilPage = lazy(() => import('@/pages/cadastro/IgrejaPerfilPage'))
+const AssociacaoPerfilPage = lazy(() => import('@/pages/cadastro/AssociacaoPerfilPage'))
 const MembrosPage = lazy(() => import('@/pages/membros/MembrosPage'))
 const MembroDetalhePage = lazy(() => import('@/pages/membros/MembroDetalhePage'))
 const CartaoMembroPage = lazy(() => import('@/pages/membros/CartaoMembroPage'))
@@ -68,6 +70,14 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'cadastro/dashboard',
         element: withAccess('cadastro_dashboard', <CadastroDashboardPage />),
+      },
+      {
+        path: 'cadastro/associacao/:id',
+        element: withAccess('cadastro_dashboard', <AssociacaoPerfilPage />),
+      },
+      {
+        path: 'cadastro/igreja/:id',
+        element: withAccess('cadastro_dashboard', <IgrejaPerfilPage />),
       },
       {
         path: 'missoes',
