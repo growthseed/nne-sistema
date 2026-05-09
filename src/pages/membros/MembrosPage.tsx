@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { calcularIdade } from '@/lib/secretaria-constants'
@@ -43,12 +43,16 @@ const tipoColors: Record<string, string> = {
 export default function MembrosPage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [membros, setMembros] = useState<MembroResumo[]>([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
+  const [autoRedirectMsg, setAutoRedirectMsg] = useState<string | null>(null)
+  const queryParamHandledRef = useRef(false)
 
-  // Filters
-  const [busca, setBusca] = useState('')
+  // Filters — busca pode vir pré-preenchida via ?q= na URL
+  const initialQuery = searchParams.get('q') || ''
+  const [busca, setBusca] = useState(initialQuery)
   const [filtroSituacao, setFiltroSituacao] = useState('todos')
   const [filtroTipo, setFiltroTipo] = useState('todos')
   const [filtroSexo, setFiltroSexo] = useState('todos')
@@ -72,6 +76,57 @@ export default function MembrosPage() {
   useEffect(() => {
     if (profile) fetchCounts()
   }, [profile]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handler do query param ?q=Nome — clicar em "Ver ficha" no Censo deve abrir
+  // a ficha direto se houver match único; senão pré-preenche a busca e mostra
+  // a lista filtrada. Sem match: oferece criar a ficha a partir do cadastro.
+  useEffect(() => {
+    if (!profile || queryParamHandledRef.current) return
+    const q = searchParams.get('q')
+    if (!q) return
+    queryParamHandledRef.current = true
+
+    ;(async () => {
+      try {
+        let query = supabase
+          .from('pessoas')
+          .select('id, nome', { count: 'exact' })
+          .ilike('nome', `%${q.trim()}%`)
+          .order('nome')
+          .limit(20)
+
+        query = buildScopeFilter(query)
+
+        const { data, count } = await query
+        if (!data) return
+
+        // Match exato (case/acento insensível) tem prioridade
+        const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+        const target = norm(q)
+        const exact = data.filter(p => norm(p.nome) === target)
+
+        if (exact.length === 1) {
+          navigate(`/membros/${exact[0].id}`, { replace: true })
+          return
+        }
+        if (data.length === 1) {
+          navigate(`/membros/${data[0].id}`, { replace: true })
+          return
+        }
+        if (data.length === 0) {
+          setAutoRedirectMsg(
+            `Nenhuma pessoa encontrada com "${q}". Pode ser um cadastro do Censo que ainda não virou ficha. Verifique a busca ou crie uma ficha manualmente.`,
+          )
+        } else {
+          setAutoRedirectMsg(
+            `${count} resultados para "${q}" — escolha o correto na lista abaixo.`,
+          )
+        }
+      } catch (err) {
+        console.error('Erro no auto-redirect de busca:', err)
+      }
+    })()
+  }, [profile, searchParams]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function buildScopeFilter(query: any) {
     if (!profile) return query
@@ -194,6 +249,22 @@ export default function MembrosPage() {
 
   return (
     <div className="space-y-6">
+      {/* Banner de auto-redirect (?q= sem match único) */}
+      {autoRedirectMsg && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start justify-between gap-3">
+          <div className="text-sm text-amber-800">
+            <p className="font-semibold mb-0.5">Busca a partir do Censo</p>
+            <p className="text-xs">{autoRedirectMsg}</p>
+          </div>
+          <button
+            onClick={() => { setAutoRedirectMsg(null); setSearchParams({}, { replace: true }); setBusca('') }}
+            className="text-xs text-amber-700 hover:underline whitespace-nowrap"
+          >
+            Limpar busca
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

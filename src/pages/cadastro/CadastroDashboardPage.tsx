@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -68,6 +68,34 @@ interface CadastroRow {
   associacao_id: string | null
   uniao_id: string | null
   igreja_frequenta: string | null
+  draft_token: string | null
+  whatsapp_parente: string | null
+  whatsapp_parente_nome: string | null
+}
+
+// Etapas do formulário público (CadastroPublicoPage). Mantém em sincronia com
+// os <StepHeader> de cada step (1..11). E1 = welcome/LGPD; E2 = identificação; etc.
+const ETAPAS_LABELS: Record<number, string> = {
+  1: 'LGPD / Boas-vindas',
+  2: 'Identificação e Contato',
+  3: 'Nascimento e Sexo',
+  4: 'Estado Civil / Escolaridade',
+  5: 'Tempo de Membro',
+  6: 'Igreja e Localização',
+  7: 'Pontos Fortes/Fracos + Cargos',
+  8: 'Satisfação',
+  9: 'Prioridades / Ênfases',
+  10: 'Frequência / Contribuição',
+  11: 'Sugestões e Envio Final',
+}
+
+function buildResumeUrl(r: { id: string; draft_token: string | null }): string | null {
+  if (!r.draft_token) return null
+  return `${window.location.origin}/formulario?resume=${r.id}&token=${r.draft_token}`
+}
+
+function digitsOnly(s: string | null): string {
+  return (s || '').replace(/\D/g, '')
 }
 
 function calcAge(birth: string): number {
@@ -108,6 +136,13 @@ export default function CadastroDashboardPage() {
   const [tabFilter, setTabFilter] = useState<TabFilter>('todos')
   const [searchTerm, setSearchTerm] = useState('')
   const [showDetail, setShowDetail] = useState<CadastroRow | null>(null)
+  const [showEtapaModal, setShowEtapaModal] = useState<number | null>(null)
+  const [showAssocList, setShowAssocList] = useState<{
+    sigla: string
+    nome: string
+    status: 'todos' | 'completos' | 'parciais' | 'parou_final' | 'sem_igreja' | 'com_igreja'
+    respostas: CadastroRow[]
+  } | null>(null)
   const [pageTab, setPageTab] = useState<PageTab>('dashboard')
   const [filtroAssociacao, setFiltroAssociacao] = useState<string>('todas')
   const [gestaoExpanded, setGestaoExpanded] = useState<string | null>(null)
@@ -127,6 +162,19 @@ export default function CadastroDashboardPage() {
       fetchRespostas()
       fetchAssociacoes()
       fetchIgrejasMembros()
+    }
+  }, [profile])
+
+  // Pré-seleciona o filtro de associação para admin_associacao — a tela
+  // funciona como o "dashboard da minha associação" automaticamente. Admin de
+  // União e admin master começam em "Todas". Só roda uma vez ao montar.
+  const filtroPreSelecionadoRef = useRef(false)
+  useEffect(() => {
+    if (filtroPreSelecionadoRef.current) return
+    if (!profile) return
+    if (profile.papel === 'admin_associacao' && profile.associacao_id) {
+      setFiltroAssociacao(profile.associacao_id)
+      filtroPreSelecionadoRef.current = true
     }
   }, [profile])
 
@@ -199,6 +247,27 @@ export default function CadastroDashboardPage() {
   function getAssocNome(assocId: string | null) {
     if (!assocId) return 'Sem associação'
     return associacoes.find(a => a.id === assocId)?.nome || 'Desconhecida'
+  }
+
+  // Lookup: id da igreja → { nome, cidade } e contagem de membros do inventário
+  // Substitui o uso de cadastro_respostas.igreja_frequenta (texto), que nunca
+  // foi populado pelo formulário. O form grava cadastro_respostas.igreja_id (uuid).
+  const igrejaInfoById = new Map<string, { nome: string; cidade: string | null; membros: number }>()
+  igrejasMembros.forEach(ig => {
+    igrejaInfoById.set(ig.id, {
+      nome: ig.nome,
+      cidade: ig.endereco_cidade,
+      membros: ig.membros_ativos || 0,
+    })
+  })
+
+  function igrejaLabelFromResposta(r: CadastroRow): string {
+    if (r.igreja_id) {
+      const info = igrejaInfoById.get(r.igreja_id)
+      if (info) return info.nome
+    }
+    if (r.completo) return '—'
+    return `Não selecionou (parou em E${r.etapa_atual})`
   }
 
   function copyLink() {
@@ -357,27 +426,68 @@ export default function CadastroDashboardPage() {
   })
   const sortedPrioridades = Object.entries(prioridadeCount).sort((a, b) => b[1] - a[1]).slice(0, 10)
 
-  // Departamentos (participacao)
-  const depCount: Record<string, number> = {}
+  // Participação por departamento/atividade. O legado contava quem respondeu a chave,
+  // mas como o formulário pede resposta para TODOS os 6 itens, isso deixava todos
+  // empatados. Aqui contamos: (a) quantos marcaram frequência >= 1 ("ativos") e
+  // (b) a média de frequência entre quem respondeu (0..4).
+  const depStats: Record<string, { ativos: number; respondentes: number; somaFreq: number }> = {}
   respostasByAssoc.forEach(r => {
     if (r.participacao) {
-      for (const key of Object.keys(r.participacao)) {
-        depCount[key] = (depCount[key] || 0) + 1
+      for (const [key, val] of Object.entries(r.participacao)) {
+        const v = Number(val)
+        if (!Number.isFinite(v)) continue
+        if (!depStats[key]) depStats[key] = { ativos: 0, respondentes: 0, somaFreq: 0 }
+        depStats[key].respondentes += 1
+        depStats[key].somaFreq += v
+        if (v >= 1) depStats[key].ativos += 1
       }
     }
   })
-  const sortedDeps = Object.entries(depCount).sort((a, b) => b[1] - a[1])
+  const sortedDeps = Object.entries(depStats)
+    .map(([k, s]) => ({
+      label: k,
+      ativos: s.ativos,
+      mediaFreq: s.respondentes > 0 ? +(s.somaFreq / s.respondentes).toFixed(2) : 0,
+      taxaAdesao: s.respondentes > 0 ? Math.round((s.ativos / s.respondentes) * 100) : 0,
+    }))
+    .sort((a, b) => b.ativos - a.ativos)
 
-  // Dons/Talentos (pontos_fortes)
-  const donsCount: Record<string, number> = {}
+  // Dons/Talentos (pontos_fortes) — texto livre, normalizar antes de agregar
+  // para não duplicar "Doutrina", "doutrina ", "DOUTRINA".
+  function normalizePontoForte(raw: string): string {
+    return raw
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ')
+  }
+  function titleCase(raw: string): string {
+    return raw.trim().replace(/\s+/g, ' ').toLowerCase()
+      .replace(/(^|\s)\S/g, c => c.toUpperCase())
+  }
+  // Mantém a forma de exibição mais frequente do grupo normalizado
+  const donsBuckets: Record<string, { count: number; displayCount: Record<string, number> }> = {}
   respostasByAssoc.forEach(r => {
     if (r.pontos_fortes) {
-      r.pontos_fortes.forEach(d => {
-        donsCount[d] = (donsCount[d] || 0) + 1
+      r.pontos_fortes.forEach(raw => {
+        if (!raw || typeof raw !== 'string') return
+        const norm = normalizePontoForte(raw)
+        if (!norm) return
+        if (!donsBuckets[norm]) donsBuckets[norm] = { count: 0, displayCount: {} }
+        donsBuckets[norm].count += 1
+        const display = titleCase(raw)
+        donsBuckets[norm].displayCount[display] = (donsBuckets[norm].displayCount[display] || 0) + 1
       })
     }
   })
-  const sortedDons = Object.entries(donsCount).sort((a, b) => b[1] - a[1]).slice(0, 10)
+  const sortedDons = Object.entries(donsBuckets)
+    .map(([norm, b]) => {
+      const bestDisplay = Object.entries(b.displayCount).sort((a, c) => c[1] - a[1])[0]?.[0] || norm
+      return [bestDisplay, b.count] as [string, number]
+    })
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
 
   // Cidades
   const cidadeCount: Record<string, number> = {}
@@ -448,10 +558,10 @@ export default function CadastroDashboardPage() {
   }
 
   const depData = {
-    labels: sortedDeps.map(([k]) => k),
+    labels: sortedDeps.map(d => d.label),
     datasets: [{
-      label: 'Interessados',
-      data: sortedDeps.map(([, v]) => v),
+      label: 'Ativos (freq ≥ 1)',
+      data: sortedDeps.map(d => d.ativos),
       backgroundColor: 'rgba(139, 92, 246, 0.7)',
       borderRadius: 6,
     }],
@@ -590,7 +700,23 @@ export default function CadastroDashboardPage() {
               }) : filtered
               const completos = allAssocRespostas.filter(r => r.completo).length
               const parciais = allAssocRespostas.length - completos
+              const parciaisComIgreja = allAssocRespostas.filter(r => !r.completo && r.igreja_id).length
+              const parciaisSemIgreja = parciais - parciaisComIgreja
+              const parouNaFinal = allAssocRespostas.filter(r => !r.completo && r.etapa_atual === 11).length
               const pct = allAssocRespostas.length > 0 ? Math.round((completos / allAssocRespostas.length) * 100) : 0
+              function openStatusList(status: 'completos' | 'parciais' | 'parou_final' | 'sem_igreja' | 'com_igreja' | 'todos', e: React.MouseEvent) {
+                e.stopPropagation()
+                let rows: CadastroRow[]
+                switch (status) {
+                  case 'completos':   rows = allAssocRespostas.filter(r => r.completo); break
+                  case 'parciais':    rows = allAssocRespostas.filter(r => !r.completo); break
+                  case 'parou_final': rows = allAssocRespostas.filter(r => !r.completo && r.etapa_atual === 11); break
+                  case 'sem_igreja':  rows = allAssocRespostas.filter(r => !r.completo && !r.igreja_id); break
+                  case 'com_igreja':  rows = allAssocRespostas.filter(r => !r.completo && !!r.igreja_id); break
+                  default:            rows = allAssocRespostas
+                }
+                setShowAssocList({ sigla: a.sigla, nome: a.nome, status, respostas: rows })
+              }
               const igrejasAssoc = a.id === 'sem'
                 ? igrejasMembros.filter(ig => !ig.associacao_id)
                 : igrejasMembros.filter(ig => ig.associacao_id === a.id)
@@ -601,9 +727,14 @@ export default function CadastroDashboardPage() {
 
               return (
                 <div key={a.id} className="card overflow-hidden">
-                  {/* Header */}
-                  <button onClick={() => setGestaoExpanded(isExpanded ? null : a.id)}
-                    className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left">
+                  {/* Header — div clicável (não <button>) para permitir botões filhos */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setGestaoExpanded(isExpanded ? null : a.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setGestaoExpanded(isExpanded ? null : a.id) } }}
+                    className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                  >
                     <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg shrink-0">{a.sigla}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-700 truncate">{a.nome}</p>
@@ -614,9 +745,53 @@ export default function CadastroDashboardPage() {
                         <span className="text-xs text-gray-400">·</span>
                         <span className="text-xs text-gray-500">{totalIgrejas} igrejas</span>
                         <span className="text-xs text-gray-400">·</span>
-                        <span className="text-xs text-gray-400">{allAssocRespostas.length} respostas</span>
-                        <span className="text-xs text-green-600">{completos} completos</span>
-                        <span className="text-xs text-amber-600">{parciais} parciais</span>
+                        <button
+                          type="button"
+                          onClick={(e) => openStatusList('todos', e)}
+                          disabled={allAssocRespostas.length === 0}
+                          className="text-xs text-gray-500 hover:text-primary-700 hover:underline disabled:hover:no-underline disabled:hover:text-gray-400 disabled:cursor-default"
+                          title="Ver todas as respostas desta associação"
+                        >
+                          {allAssocRespostas.length} respostas
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => openStatusList('completos', e)}
+                          disabled={completos === 0}
+                          className="text-xs text-green-600 hover:text-green-800 hover:underline disabled:hover:no-underline disabled:cursor-default"
+                          title="Ver os respondentes que concluíram"
+                        >
+                          {completos} completos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => openStatusList('parciais', e)}
+                          disabled={parciais === 0}
+                          className="text-xs text-amber-600 hover:text-amber-800 hover:underline disabled:hover:no-underline disabled:cursor-default"
+                          title={parciaisSemIgreja > 0 ? `${parciaisComIgreja} com igreja, ${parciaisSemIgreja} sem igreja (parou antes da etapa 6) — clique para ver` : 'Ver os parciais desta associação'}
+                        >
+                          {parciais} parciais
+                        </button>
+                        {parciaisSemIgreja > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => openStatusList('sem_igreja', e)}
+                            className="text-xs text-amber-500 hover:text-amber-700 hover:underline italic"
+                            title="Parciais que abandonaram antes de selecionar a igreja"
+                          >
+                            ({parciaisSemIgreja} s/ igreja)
+                          </button>
+                        )}
+                        {parouNaFinal > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => openStatusList('parou_final', e)}
+                            className="text-xs text-orange-600 hover:text-orange-800 hover:underline"
+                            title="Chegaram até a etapa 11 mas não clicaram em Enviar"
+                          >
+                            {parouNaFinal} parou na final
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
@@ -642,7 +817,7 @@ export default function CadastroDashboardPage() {
                         <HiOutlineDownload className="w-4 h-4" />
                       </button>
                     </div>
-                  </button>
+                  </div>
 
                   {/* Expanded: lista de igrejas + lista de respostas */}
                   {isExpanded && (
@@ -667,7 +842,7 @@ export default function CadastroDashboardPage() {
                               </thead>
                               <tbody className="divide-y divide-gray-100">
                                 {igrejasAssoc.map(ig => {
-                                  const respIg = allAssocRespostas.filter(r => r.igreja_frequenta && (r.igreja_frequenta === ig.nome))
+                                  const respIg = allAssocRespostas.filter(r => r.igreja_id === ig.id)
                                   const compIg = respIg.filter(r => r.completo).length
                                   const membrosIg = ig.membros_ativos || 0
                                   const cobIg = membrosIg > 0 ? Math.round((compIg / membrosIg) * 100) : 0
@@ -728,7 +903,17 @@ export default function CadastroDashboardPage() {
                               {searched.map(r => (
                                 <tr key={r.id} className="hover:bg-gray-50">
                                   <td className="px-4 py-2.5 font-medium text-gray-800 text-xs">{r.nome || '-'}</td>
-                                  <td className="px-4 py-2.5 text-gray-500 text-xs">{r.igreja_frequenta || '-'}</td>
+                                  <td className="px-4 py-2.5 text-gray-500 text-xs">
+                                    {r.igreja_id && igrejaInfoById.get(r.igreja_id)?.nome ? (
+                                      <span className="text-gray-700">{igrejaInfoById.get(r.igreja_id)!.nome}</span>
+                                    ) : r.completo ? (
+                                      <span className="text-gray-400">—</span>
+                                    ) : (
+                                      <span className="text-amber-600 italic" title={`Abandonou antes de selecionar a igreja (etapa ${r.etapa_atual} de 11)`}>
+                                        Não selecionou (E{r.etapa_atual})
+                                      </span>
+                                    )}
+                                  </td>
                                   <td className="px-4 py-2.5 text-xs">
                                     {r.telefone && <span className="block text-gray-600">{r.telefone}</span>}
                                     {r.email && <span className="block text-gray-400">{r.email}</span>}
@@ -1004,18 +1189,29 @@ export default function CadastroDashboardPage() {
         <div className="card">
           <h3 className="text-base font-semibold text-gray-800 mb-3">Respostas Parciais - Etapa de Abandono</h3>
           <div className="grid grid-cols-6 sm:grid-cols-11 gap-2">
-            {Array.from({ length: 11 }, (_, i) => i + 1).map(etapa => (
-              <div key={etapa} className="text-center">
-                <div className={`w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold ${
-                  (etapaCount[etapa] || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-gray-50 text-gray-300'
-                }`}>
-                  {etapaCount[etapa] || 0}
-                </div>
-                <p className="text-xs text-gray-400 mt-1">E{etapa}</p>
-              </div>
-            ))}
+            {Array.from({ length: 11 }, (_, i) => i + 1).map(etapa => {
+              const qtd = etapaCount[etapa] || 0
+              const disabled = qtd === 0
+              return (
+                <button
+                  key={etapa}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => setShowEtapaModal(etapa)}
+                  title={disabled ? `Nenhum abandono na etapa ${etapa}` : `Ver os ${qtd} parciais que pararam em E${etapa} — ${ETAPAS_LABELS[etapa]}`}
+                  className={`text-center group transition-transform ${disabled ? 'cursor-default' : 'cursor-pointer hover:-translate-y-0.5'}`}
+                >
+                  <div className={`w-full aspect-square rounded-lg flex items-center justify-center text-sm font-bold ${
+                    disabled ? 'bg-gray-50 text-gray-300' : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200 group-hover:ring-2 group-hover:ring-amber-300'
+                  }`}>
+                    {qtd}
+                  </div>
+                  <p className={`text-xs mt-1 ${disabled ? 'text-gray-400' : 'text-amber-700 group-hover:text-amber-900 font-medium'}`}>E{etapa}</p>
+                </button>
+              )
+            })}
           </div>
-          <p className="text-xs text-gray-400 mt-2">Distribuição das respostas incompletas por etapa do formulário</p>
+          <p className="text-xs text-gray-400 mt-2">Clique em uma etapa para ver os parciais e reenviar o link de retomada</p>
         </div>
       )}
 
@@ -1125,13 +1321,48 @@ export default function CadastroDashboardPage() {
         <div className="card">
           <h3 className="text-base font-semibold text-gray-800 mb-4">Estado Civil</h3>
           {Object.keys(estadoCivilCount).length > 0 ? (
-            <div className="space-y-2">
-              {Object.entries(estadoCivilCount).sort((a, b) => b[1] - a[1]).map(([ec, count]) => (
-                <div key={ec} className="flex items-center justify-between py-1.5 border-b border-gray-50">
-                  <span className="text-sm text-gray-700 capitalize">{ec.replace(/_/g, ' ')}</span>
-                  <span className="text-sm font-medium text-gray-800">{count}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-4 items-center">
+              <div className="h-52 flex items-center justify-center">
+                <Doughnut
+                  data={{
+                    labels: Object.entries(estadoCivilCount).sort((a, b) => b[1] - a[1]).map(([k]) =>
+                      k.replace(/_/g, ' ').replace(/(^|\s)\S/g, c => c.toUpperCase()),
+                    ),
+                    datasets: [{
+                      data: Object.entries(estadoCivilCount).sort((a, b) => b[1] - a[1]).map(([, v]) => v),
+                      backgroundColor: [
+                        'rgba(99, 102, 241, 0.85)',
+                        'rgba(244, 114, 182, 0.85)',
+                        'rgba(139, 92, 246, 0.85)',
+                        'rgba(245, 158, 11, 0.85)',
+                        'rgba(16, 185, 129, 0.85)',
+                        'rgba(239, 68, 68, 0.85)',
+                      ],
+                      borderWidth: 0,
+                    }],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                  }}
+                />
+              </div>
+              <div className="space-y-1.5">
+                {Object.entries(estadoCivilCount).sort((a, b) => b[1] - a[1]).map(([ec, count], idx) => {
+                  const colors = ['bg-indigo-500', 'bg-pink-400', 'bg-purple-500', 'bg-amber-500', 'bg-emerald-500', 'bg-red-500']
+                  const totalEC = Object.values(estadoCivilCount).reduce((a, b) => a + b, 0)
+                  const pct = totalEC > 0 ? Math.round((count / totalEC) * 100) : 0
+                  return (
+                    <div key={ec} className="flex items-center gap-2 text-xs">
+                      <span className={`w-2.5 h-2.5 rounded-sm shrink-0 ${colors[idx % colors.length]}`} />
+                      <span className="text-gray-700 capitalize flex-1">{ec.replace(/_/g, ' ')}</span>
+                      <span className="text-gray-500 tabular-nums">{count}</span>
+                      <span className="text-gray-400 tabular-nums w-9 text-right">{pct}%</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           ) : (
             <p className="text-gray-400 text-sm text-center mt-12">Sem dados</p>
@@ -1139,14 +1370,44 @@ export default function CadastroDashboardPage() {
         </div>
         <div className="card">
           <h3 className="text-base font-semibold text-gray-800 mb-4">Cidades (Top 8)</h3>
+          <p className="text-[10px] text-gray-400 -mt-3 mb-3">Respostas / membros do inventário naquela cidade</p>
           {sortedCidades.length > 0 ? (
-            <div className="space-y-2">
-              {sortedCidades.map(([cidade, count]) => (
-                <div key={cidade} className="flex items-center justify-between py-1.5 border-b border-gray-50">
-                  <span className="text-sm text-gray-700">{cidade}</span>
-                  <span className="text-sm font-medium text-gray-800">{count}</span>
-                </div>
-              ))}
+            <div className="space-y-2.5">
+              {(() => {
+                // membros por cidade (cross com igrejas.endereco_cidade), normalizando
+                const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+                const membrosPorCidade: Record<string, number> = {}
+                igrejasNoEscopo.forEach(ig => {
+                  if (!ig.endereco_cidade) return
+                  const k = norm(ig.endereco_cidade)
+                  membrosPorCidade[k] = (membrosPorCidade[k] || 0) + (ig.membros_ativos || 0)
+                })
+                const maxResp = sortedCidades[0]?.[1] || 1
+                return sortedCidades.map(([cidade, count]) => {
+                  const membros = membrosPorCidade[norm(cidade)] || 0
+                  const cobertura = membros > 0 ? Math.min(100, Math.round((count / membros) * 100)) : null
+                  const widthPct = Math.max(8, (count / maxResp) * 100)
+                  return (
+                    <div key={cidade}>
+                      <div className="flex items-center justify-between text-xs mb-0.5">
+                        <span className="text-gray-700 truncate">{cidade}</span>
+                        <span className="text-gray-500 tabular-nums shrink-0 ml-2">
+                          {count}
+                          {membros > 0 && <span className="text-gray-400"> / {membros.toLocaleString('pt-BR')}</span>}
+                          {cobertura !== null && (
+                            <span className={`ml-1.5 ${cobertura >= 75 ? 'text-green-600' : cobertura >= 40 ? 'text-amber-600' : 'text-red-600'}`}>
+                              ({cobertura}%)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${widthPct}%` }} />
+                      </div>
+                    </div>
+                  )
+                })
+              })()}
             </div>
           ) : (
             <p className="text-gray-400 text-sm text-center mt-12">Sem dados</p>
@@ -1172,6 +1433,436 @@ export default function CadastroDashboardPage() {
       {showDetail && (
         <DetailModal resposta={showDetail} onClose={() => setShowDetail(null)} />
       )}
+
+      {/* Etapa de Abandono Modal */}
+      {showEtapaModal !== null && (
+        <EtapaAbandonoModal
+          etapa={showEtapaModal}
+          respostas={respostasByAssoc.filter(r => !r.completo && r.etapa_atual === showEtapaModal)}
+          igrejaInfoById={igrejaInfoById}
+          getAssocSigla={getAssocSigla}
+          onClose={() => setShowEtapaModal(null)}
+          onShowDetail={(r) => { setShowEtapaModal(null); setShowDetail(r) }}
+          exportCSV={exportCSV}
+        />
+      )}
+
+      {/* Status filtrado por associação Modal */}
+      {showAssocList && (
+        <AssocStatusListModal
+          assocSigla={showAssocList.sigla}
+          assocNome={showAssocList.nome}
+          status={showAssocList.status}
+          respostas={showAssocList.respostas}
+          igrejaInfoById={igrejaInfoById}
+          onClose={() => setShowAssocList(null)}
+          onShowDetail={(r) => { setShowAssocList(null); setShowDetail(r) }}
+          exportCSV={exportCSV}
+        />
+      )}
+    </div>
+  )
+}
+
+// ========== ETAPA DE ABANDONO MODAL ==========
+// Modal acionado ao clicar em uma das caixas E1..E11 do dashboard.
+// Lista todos os parciais que pararam exatamente naquela etapa, com ações:
+// reenviar link de retomada (WhatsApp, email, copiar), ver ficha, exportar CSV.
+interface EtapaAbandonoModalProps {
+  etapa: number
+  respostas: CadastroRow[]
+  igrejaInfoById: Map<string, { nome: string; cidade: string | null; membros: number }>
+  getAssocSigla: (id: string | null) => string
+  onClose: () => void
+  onShowDetail: (r: CadastroRow) => void
+  exportCSV: (rows: CadastroRow[], filename: string) => void
+}
+
+function EtapaAbandonoModal({ etapa, respostas, igrejaInfoById, getAssocSigla, onClose, onShowDetail, exportCSV }: EtapaAbandonoModalProps) {
+  const label = ETAPAS_LABELS[etapa] || `Etapa ${etapa}`
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  function copyResume(r: CadastroRow) {
+    const url = buildResumeUrl(r)
+    if (!url) return
+    navigator.clipboard.writeText(url)
+    setCopiedId(r.id)
+    setTimeout(() => setCopiedId(null), 1800)
+  }
+
+  function whatsappLink(r: CadastroRow): string | null {
+    const url = buildResumeUrl(r)
+    if (!url) return null
+    // prioriza telefone do próprio; se faltar, usa whatsapp_parente
+    const phone = digitsOnly(r.telefone) || digitsOnly(r.whatsapp_parente)
+    if (!phone) return null
+    const phoneE164 = phone.startsWith('55') ? phone : `55${phone}`
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const msg = `Olá ${nome}! 🙏 Aqui é da União Norte Nordeste. Você começou o cadastro do nosso Censo mas não concluiu. Pode finalizar de onde parou neste link (suas respostas estão salvas):\n\n${url}\n\nLeva poucos minutos. Obrigado por participar!`
+    return `https://wa.me/${phoneE164}?text=${encodeURIComponent(msg)}`
+  }
+
+  function mailtoLink(r: CadastroRow): string | null {
+    const url = buildResumeUrl(r)
+    if (!url || !r.email) return null
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const subject = `Finalize seu cadastro do Censo NNE — etapa ${r.etapa_atual} de 11`
+    const body = `Olá ${nome},\n\nVocê começou o cadastro do Censo da União Norte Nordeste mas não concluiu. Suas respostas até a etapa ${r.etapa_atual} estão salvas — basta abrir o link abaixo para continuar de onde parou:\n\n${url}\n\nLeva poucos minutos. Obrigado por participar!\n\n— Secretaria da União Norte Nordeste`
+    return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  function igrejaLabel(r: CadastroRow): string {
+    if (r.igreja_id) {
+      const info = igrejaInfoById.get(r.igreja_id)
+      if (info) return info.nome
+    }
+    return '— ainda não selecionou'
+  }
+
+  function handleExport() {
+    exportCSV(respostas, `parciais_etapa_${etapa}_${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">
+              Etapa {etapa} — {label}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {respostas.length} parciais pararam exatamente nesta etapa do formulário
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {respostas.length > 0 && (
+              <button onClick={handleExport} className="btn-secondary text-xs flex items-center gap-1.5">
+                <HiOutlineDownload className="w-4 h-4" />
+                Exportar CSV
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="max-h-[70vh] overflow-y-auto">
+          {respostas.length === 0 ? (
+            <p className="p-8 text-sm text-gray-400 text-center">Nenhum abandono nesta etapa.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr className="text-left text-gray-500 text-[10px] uppercase tracking-wider">
+                  <th className="px-4 py-2">Nome</th>
+                  <th className="px-4 py-2">Associação / Igreja</th>
+                  <th className="px-4 py-2">Contato</th>
+                  <th className="px-4 py-2">Último save</th>
+                  <th className="px-4 py-2 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {respostas.map(r => {
+                  const wpp = whatsappLink(r)
+                  const mail = mailtoLink(r)
+                  const url = buildResumeUrl(r)
+                  return (
+                    <tr key={r.id} className="hover:bg-gray-50 align-top">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-gray-800 text-sm">{r.nome || <span className="text-gray-400 italic">Sem nome</span>}</p>
+                        {(r.cidade || r.estado) && (
+                          <p className="text-xs text-gray-500 mt-0.5">{[r.cidade, r.estado].filter(Boolean).join(' / ')}</p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        <p className="font-medium text-primary-700">{getAssocSigla(r.associacao_id)}</p>
+                        <p className={`mt-0.5 ${r.igreja_id ? 'text-gray-600' : 'text-amber-600 italic'}`}>{igrejaLabel(r)}</p>
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {r.telefone && <p className="text-gray-700">{r.telefone}</p>}
+                        {r.email && <p className="text-gray-500">{r.email}</p>}
+                        {r.whatsapp_parente && (
+                          <p className="text-gray-400 text-[10px]" title={`Responsável: ${r.whatsapp_parente_nome || ''}`}>
+                            via parente: {r.whatsapp_parente}
+                          </p>
+                        )}
+                        {!r.telefone && !r.email && !r.whatsapp_parente && (
+                          <span className="text-gray-400 italic">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {new Date(r.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="inline-flex items-center gap-1 flex-wrap justify-end">
+                          {wpp && (
+                            <a href={wpp} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">
+                              WhatsApp
+                            </a>
+                          )}
+                          {mail && (
+                            <a href={mail}
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+                              E-mail
+                            </a>
+                          )}
+                          {url && (
+                            <button onClick={() => copyResume(r)}
+                              className={`text-[10px] font-medium px-2 py-1 rounded ${copiedId === r.id ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                              {copiedId === r.id ? 'Copiado!' : 'Copiar link'}
+                            </button>
+                          )}
+                          {!url && (
+                            <span className="text-[10px] text-gray-400 italic" title="Rascunho sem token de retomada — não foi salvo via auto-save.">
+                              sem token
+                            </span>
+                          )}
+                          <button onClick={() => onShowDetail(r)}
+                            className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
+                            Ficha
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+          <p className="text-[11px] text-gray-400">
+            Mensagens são abertas no app do usuário (WhatsApp Web/Email). Nada é enviado automaticamente.
+          </p>
+          <button onClick={onClose} className="btn-secondary text-xs">Fechar</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ========== ASSOC STATUS LIST MODAL ==========
+// Aberto ao clicar em "X completos" / "Y parciais" / "Z parou na final" /
+// "(N s/ igreja)" dentro do card de uma associação. Mostra a tabela completa
+// daqueles registros com ações de retomada (WhatsApp/email/copiar) e ficha.
+const STATUS_LABELS: Record<string, string> = {
+  todos: 'Todas as respostas',
+  completos: 'Completos',
+  parciais: 'Parciais',
+  parou_final: 'Parou na final (etapa 11)',
+  sem_igreja: 'Parciais sem igreja selecionada',
+  com_igreja: 'Parciais com igreja',
+}
+
+interface AssocStatusListModalProps {
+  assocSigla: string
+  assocNome: string
+  status: 'todos' | 'completos' | 'parciais' | 'parou_final' | 'sem_igreja' | 'com_igreja'
+  respostas: CadastroRow[]
+  igrejaInfoById: Map<string, { nome: string; cidade: string | null; membros: number }>
+  onClose: () => void
+  onShowDetail: (r: CadastroRow) => void
+  exportCSV: (rows: CadastroRow[], filename: string) => void
+}
+
+function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igrejaInfoById, onClose, onShowDetail, exportCSV }: AssocStatusListModalProps) {
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [busca, setBusca] = useState('')
+
+  const filtradas = busca.trim()
+    ? respostas.filter(r => {
+        const t = busca.toLowerCase()
+        return (
+          (r.nome || '').toLowerCase().includes(t) ||
+          (r.email || '').toLowerCase().includes(t) ||
+          (r.telefone || '').includes(t) ||
+          (r.cidade || '').toLowerCase().includes(t)
+        )
+      })
+    : respostas
+
+  function copyResume(r: CadastroRow) {
+    const url = buildResumeUrl(r)
+    if (!url) return
+    navigator.clipboard.writeText(url)
+    setCopiedId(r.id)
+    setTimeout(() => setCopiedId(null), 1800)
+  }
+
+  function whatsappLink(r: CadastroRow): string | null {
+    const url = buildResumeUrl(r)
+    if (!url) return null
+    const phone = digitsOnly(r.telefone) || digitsOnly(r.whatsapp_parente)
+    if (!phone) return null
+    const phoneE164 = phone.startsWith('55') ? phone : `55${phone}`
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const msg = `Olá ${nome}! 🙏 Aqui é da União Norte Nordeste. Você começou o cadastro do nosso Censo mas não concluiu. Pode finalizar de onde parou neste link (suas respostas estão salvas):\n\n${url}\n\nLeva poucos minutos. Obrigado por participar!`
+    return `https://wa.me/${phoneE164}?text=${encodeURIComponent(msg)}`
+  }
+
+  function mailtoLink(r: CadastroRow): string | null {
+    const url = buildResumeUrl(r)
+    if (!url || !r.email) return null
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const subject = `Finalize seu cadastro do Censo NNE — etapa ${r.etapa_atual} de 11`
+    const body = `Olá ${nome},\n\nVocê começou o cadastro do Censo da União Norte Nordeste mas não concluiu. Suas respostas até a etapa ${r.etapa_atual} estão salvas — basta abrir o link abaixo para continuar de onde parou:\n\n${url}\n\nLeva poucos minutos. Obrigado por participar!\n\n— Secretaria da União Norte Nordeste`
+    return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  function igrejaLabel(r: CadastroRow): string {
+    if (r.igreja_id) {
+      const info = igrejaInfoById.get(r.igreja_id)
+      if (info) return info.nome
+    }
+    return r.completo ? '—' : 'Não selecionou'
+  }
+
+  function handleExport() {
+    exportCSV(filtradas, `${assocSigla}_${status}_${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
+  const isResumable = status !== 'completos' && status !== 'todos'
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg">{assocSigla}</span>
+              <h2 className="text-lg font-bold text-gray-800">{STATUS_LABELS[status]}</h2>
+            </div>
+            <p className="text-sm text-gray-500 mt-0.5 truncate">
+              {assocNome} · {filtradas.length} de {respostas.length} {respostas.length === 1 ? 'resposta' : 'respostas'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {filtradas.length > 0 && (
+              <button onClick={handleExport} className="btn-secondary text-xs flex items-center gap-1.5">
+                <HiOutlineDownload className="w-4 h-4" />
+                Exportar CSV
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Busca */}
+        <div className="px-6 py-3 border-b border-gray-100">
+          <div className="relative">
+            <HiOutlineSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              className="input-field pl-10 text-sm"
+              placeholder="Filtrar por nome, email, telefone, cidade..."
+            />
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="max-h-[65vh] overflow-y-auto">
+          {filtradas.length === 0 ? (
+            <p className="p-8 text-sm text-gray-400 text-center">Nenhuma resposta {busca ? 'casa com a busca' : 'nesta categoria'}.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr className="text-left text-gray-500 text-[10px] uppercase tracking-wider">
+                  <th className="px-4 py-2">Nome</th>
+                  <th className="px-4 py-2">Igreja</th>
+                  <th className="px-4 py-2">Cidade / UF</th>
+                  <th className="px-4 py-2">Contato</th>
+                  <th className="px-4 py-2 text-center">Status</th>
+                  <th className="px-4 py-2 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtradas.map(r => {
+                  const wpp = isResumable ? whatsappLink(r) : null
+                  const mail = isResumable ? mailtoLink(r) : null
+                  const url = isResumable ? buildResumeUrl(r) : null
+                  return (
+                    <tr key={r.id} className="hover:bg-gray-50 align-top">
+                      <td className="px-4 py-2.5">
+                        <p className="font-medium text-gray-800 text-xs">{r.nome || <span className="text-gray-400 italic">Sem nome</span>}</p>
+                      </td>
+                      <td className={`px-4 py-2.5 text-xs ${r.igreja_id ? 'text-gray-600' : 'text-amber-600 italic'}`}>
+                        {igrejaLabel(r)}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-gray-500">
+                        {[r.cidade, r.estado].filter(Boolean).join(' / ') || '—'}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs">
+                        {r.telefone && <p className="text-gray-700">{r.telefone}</p>}
+                        {r.email && <p className="text-gray-500">{r.email}</p>}
+                        {!r.telefone && !r.email && <span className="text-gray-400 italic">—</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        {r.completo ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Completo</span>
+                        ) : r.etapa_atual === 11 ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Parou final</span>
+                        ) : (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">E{r.etapa_atual}/11</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <div className="inline-flex items-center gap-1 flex-wrap justify-end">
+                          {wpp && (
+                            <a href={wpp} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">
+                              WhatsApp
+                            </a>
+                          )}
+                          {mail && (
+                            <a href={mail}
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+                              E-mail
+                            </a>
+                          )}
+                          {url && (
+                            <button onClick={() => copyResume(r)}
+                              className={`text-[10px] font-medium px-2 py-1 rounded ${copiedId === r.id ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                              {copiedId === r.id ? 'Copiado!' : 'Link'}
+                            </button>
+                          )}
+                          <button onClick={() => onShowDetail(r)}
+                            className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
+                            Ficha
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+          <p className="text-[11px] text-gray-400">
+            {isResumable
+              ? 'Mensagens são abertas no app do usuário (WhatsApp Web/Email). Nada é enviado automaticamente.'
+              : 'Clique em "Ficha" para ver os dados completos da resposta.'}
+          </p>
+          <button onClick={onClose} className="btn-secondary text-xs">Fechar</button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -1208,6 +1899,33 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
   }
 
   const r = resposta
+  const [copiedLink, setCopiedLink] = useState(false)
+  const resumeUrl = !r.completo ? buildResumeUrl(r) : null
+  const phoneE164 = (() => {
+    const phone = digitsOnly(r.telefone) || digitsOnly(r.whatsapp_parente)
+    if (!phone) return null
+    return phone.startsWith('55') ? phone : `55${phone}`
+  })()
+  const wppMsg = (() => {
+    if (!resumeUrl) return null
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    return `Olá ${nome}! 🙏 Aqui é da União Norte Nordeste. Você começou o cadastro do nosso Censo mas não concluiu. Pode finalizar de onde parou neste link (suas respostas estão salvas):\n\n${resumeUrl}\n\nLeva poucos minutos. Obrigado por participar!`
+  })()
+  const wppLink = phoneE164 && wppMsg ? `https://wa.me/${phoneE164}?text=${encodeURIComponent(wppMsg)}` : null
+  const mailLink = (() => {
+    if (!resumeUrl || !r.email) return null
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const subject = `Finalize seu cadastro do Censo NNE — etapa ${r.etapa_atual} de 11`
+    const body = `Olá ${nome},\n\nVocê começou o cadastro do Censo da União Norte Nordeste mas não concluiu. Suas respostas até a etapa ${r.etapa_atual} estão salvas — basta abrir o link abaixo para continuar de onde parou:\n\n${resumeUrl}\n\nLeva poucos minutos. Obrigado por participar!\n\n— Secretaria da União Norte Nordeste`
+    return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  })()
+
+  function copyResume() {
+    if (!resumeUrl) return
+    navigator.clipboard.writeText(resumeUrl)
+    setCopiedLink(true)
+    setTimeout(() => setCopiedLink(false), 1800)
+  }
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto">
@@ -1238,6 +1956,33 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
             <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
+
+        {/* Reenviar link de retomada — só para parciais com draft_token */}
+        {resumeUrl && (
+          <div className="px-6 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between gap-3 flex-wrap">
+            <div className="text-xs text-amber-800">
+              <span className="font-semibold">Reenviar link de retomada</span> · O membro continua de onde parou (etapa {r.etapa_atual} de 11)
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {wppLink && (
+                <a href={wppLink} target="_blank" rel="noopener noreferrer"
+                  className="text-[11px] font-medium px-2.5 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">
+                  WhatsApp
+                </a>
+              )}
+              {mailLink && (
+                <a href={mailLink}
+                  className="text-[11px] font-medium px-2.5 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+                  E-mail
+                </a>
+              )}
+              <button onClick={copyResume}
+                className={`text-[11px] font-medium px-2.5 py-1 rounded ${copiedLink ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100'}`}>
+                {copiedLink ? 'Copiado!' : 'Copiar link'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-6">

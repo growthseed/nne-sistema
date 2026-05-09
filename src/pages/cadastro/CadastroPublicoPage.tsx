@@ -85,6 +85,101 @@ interface Associacao {
 const TOTAL_STEPS = 12
 const STORAGE_KEY = 'nne_pesquisa_rascunho'
 
+// Converte um payload do banco (snake_case + arrays + Records) de volta para
+// o shape do form (camelCase + campos individuais). Usado quando o membro abre
+// um link de retomada enviado pelo admin (?resume=<id>&token=<draft_token>).
+function payloadToForm(payload: Record<string, any>): FormData {
+  const form: FormData = {}
+
+  form.nome = payload.nome ?? ''
+  form.email = payload.email ?? ''
+  form.telefone = payload.telefone ?? ''
+  form.whatsappParente = payload.whatsapp_parente ?? ''
+  form.whatsappParenteNome = payload.whatsapp_parente_nome ?? ''
+  form.whatsappParenteParentesco = payload.whatsapp_parente_parentesco ?? ''
+  form.usarWhatsappParente = !!payload.whatsapp_parente
+  form.cep = payload.cep ?? ''
+  form.endereco = payload.rua ?? ''
+  form.numero = payload.numero ?? ''
+  form.bairro = payload.bairro ?? ''
+  form.cidade = payload.cidade ?? ''
+  form.estado = payload.estado ?? ''
+
+  if (payload.data_nascimento) {
+    const [ano, mes, dia] = String(payload.data_nascimento).split('-')
+    form.dataNascimento = payload.data_nascimento
+    form._nascDia = dia
+    form._nascMes = mes
+    form._nascAno = ano
+  }
+  form.sexo = payload.sexo === 'masculino' ? 'M' : payload.sexo === 'feminino' ? 'F' : ''
+  form.faixaIdade = payload.faixa_etaria ?? ''
+  form.estadoCivil = payload.estado_civil ?? ''
+  form.escolaridade = payload.escolaridade ?? ''
+  form.profissao = payload.profissao ?? ''
+  form.tempoMembro = payload.tempo_membro ?? ''
+  form.primeiroContato = payload.como_conheceu ?? ''
+  form.primeiroContatoOutro = payload.como_conheceu_outro ?? ''
+  form.distanciaIgreja = payload.distancia_igreja ?? ''
+  form.transporte = payload.meio_transporte ?? ''
+  form.igrejaId = payload.igreja_id ?? ''
+  form.associacaoId = payload.associacao_id ?? ''
+
+  const pf = Array.isArray(payload.pontos_fortes) ? payload.pontos_fortes : []
+  form.pontoForte1 = pf[0] ?? ''
+  form.pontoForte2 = pf[1] ?? ''
+  form.pontoForte3 = pf[2] ?? ''
+
+  const pfr = Array.isArray(payload.pontos_fracos) ? payload.pontos_fracos : []
+  form.pontoFraco1 = pfr[0] ?? ''
+  form.pontoFraco2 = pfr[1] ?? ''
+  form.pontoFraco3 = pfr[2] ?? ''
+
+  form.cargos = Array.isArray(payload.cargos_ocupa) ? payload.cargos_ocupa : []
+
+  if (payload.satisfacao && typeof payload.satisfacao === 'object') {
+    for (const [item, val] of Object.entries(payload.satisfacao)) {
+      const key = `sat_${String(item).replace(/\s/g, '_').toLowerCase()}`
+      form[key] = String(val)
+    }
+  }
+
+  form.enfases = Array.isArray(payload.prioridades) ? payload.prioridades : []
+  form.enfaseJustificativa = payload.enfase_justificativa ?? ''
+
+  if (payload.participacao && typeof payload.participacao === 'object') {
+    for (const [item, val] of Object.entries(payload.participacao)) {
+      const key = `freq_${String(item).replace(/\s/g, '_').toLowerCase()}`
+      form[key] = String(val)
+    }
+  }
+
+  form.influencias = Array.isArray(payload.influencias) ? payload.influencias : []
+  form.influenciasOutro = payload.influencias_outro ?? ''
+  form.tempoDeslocamento = payload.tempo_deslocamento ?? ''
+  form.opiniaoEstrutura = payload.opiniao_estrutura ?? ''
+  form.motivadoContribuir = payload.motivacao_contribuir ?? ''
+  form.tipoContribuinte = payload.tipo_contribuinte ?? ''
+  form.observacoes = payload.opiniao_departamentos ?? ''
+
+  const sg = Array.isArray(payload.sugestoes) ? payload.sugestoes : []
+  form.sugestao1 = sg[0] ?? ''
+  form.sugestao2 = sg[1] ?? ''
+  form.sugestao3 = sg[2] ?? ''
+
+  const cr = Array.isArray(payload.coisas_criar) ? payload.coisas_criar : []
+  form.criar1 = cr[0] ?? ''
+  form.criar2 = cr[1] ?? ''
+  form.criar3 = cr[2] ?? ''
+
+  const al = Array.isArray(payload.coisas_alterar) ? payload.coisas_alterar : []
+  form.alterar1 = al[0] ?? ''
+  form.alterar2 = al[1] ?? ''
+  form.alterar3 = al[2] ?? ''
+
+  return form
+}
+
 const PROFISSOES = [
   'Administrador(a)','Advogado(a)','Agricultor(a)','Analista de Sistemas','Arquiteto(a)',
   'Assistente Administrativo','Assistente Social','Autônomo(a)','Auxiliar de Escritório',
@@ -147,12 +242,67 @@ export default function CadastroPublicoPage() {
   const [lastSaved, setLastSaved] = useState<string | null>(null)
   const [showResumePrompt, setShowResumePrompt] = useState(false)
   const [stepError, setStepError] = useState('')
+  const [resumeError, setResumeError] = useState('')
+  const [resumeLoading, setResumeLoading] = useState(false)
   const savingRef = useRef(false)
   useEffect(() => {
     fetchIgrejas()
     fetchAssociacoes()
-    checkSavedDraft()
+    // Tenta retomar via URL: ?resume=<id>&token=<draft_token>
+    // Se houver, ignora o rascunho do localStorage e carrega do banco.
+    const params = new URLSearchParams(window.location.search)
+    const resumeId = params.get('resume')
+    const resumeToken = params.get('token')
+    if (resumeId && resumeToken) {
+      tryResumeFromUrl(resumeId, resumeToken)
+    } else {
+      checkSavedDraft()
+    }
   }, [])
+
+  async function tryResumeFromUrl(resumeId: string, resumeToken: string) {
+    setResumeLoading(true)
+    setResumeError('')
+    try {
+      const data = await invokeWithRetry<{
+        success: boolean
+        id?: string
+        draftToken?: string
+        etapaAtual?: number
+        payload?: Record<string, any>
+        message?: string
+        alreadyComplete?: boolean
+      }>('load-public-cadastro', { responseId: resumeId, draftToken: resumeToken })
+
+      if (!data?.success || !data.id || !data.draftToken || !data.payload) {
+        setResumeError(data?.message || 'Não conseguimos carregar este rascunho. Solicite um novo link.')
+        return
+      }
+
+      const restoredForm = payloadToForm(data.payload)
+      setForm(restoredForm)
+      setResponseId(data.id)
+      setDraftToken(data.draftToken)
+      // Vai direto para a etapa onde parou (mínimo step 1 para sair do welcome).
+      const targetStep = Math.max(1, Math.min(11, data.etapaAtual ?? 1))
+      setStep(targetStep)
+      // Limpa rascunho local (que pode ser de outro device/sessão).
+      localStorage.removeItem(STORAGE_KEY)
+      // Persiste o novo
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          responseId: data.id,
+          draftToken: data.draftToken,
+          form: restoredForm,
+          step: targetStep,
+        }))
+      } catch { /* ignore */ }
+    } catch (err: any) {
+      setResumeError(err?.message || 'Falha ao recuperar o cadastro. Tente abrir o link novamente.')
+    } finally {
+      setResumeLoading(false)
+    }
+  }
 
   // Backfill: rascunhos antigos não tinham associacaoId no form. Quando as
   // igrejas carregam, derivamos a associação a partir da igreja já escolhida
@@ -596,6 +746,18 @@ export default function CadastroPublicoPage() {
           {/* ===== STEP 0: WELCOME / BOAS-VINDAS ===== */}
           {step === 0 && (
             <div>
+              {/* Feedback de retomada via URL */}
+              {resumeLoading && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 text-sm text-blue-700 flex items-center gap-2">
+                  <span className="inline-block w-3 h-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                  Recuperando seu cadastro...
+                </div>
+              )}
+              {resumeError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-700">
+                  {resumeError}
+                </div>
+              )}
               {/* Hero */}
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-gradient-to-br from-[#006D43] to-[#00a368] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-200">
