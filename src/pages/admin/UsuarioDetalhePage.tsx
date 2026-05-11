@@ -60,12 +60,17 @@ const roleLabels: Record<string, string> = {
   secretario_es: 'Secretário ES',
   tesoureiro: 'Tesoureiro',
   secretario_igreja: 'Secretário Igreja',
+  missionario: 'Missionário',
   membro: 'Membro',
 }
 
+// Missionário no topo dos papéis operacionais — é o vínculo mais comum
+// criado pela administração da União/Associação no dia-a-dia.
 const allRoles: UserRole[] = [
-  'admin', 'admin_uniao', 'admin_associacao', 'diretor_es',
-  'professor_es', 'secretario_es', 'tesoureiro', 'secretario_igreja', 'membro',
+  'admin', 'admin_uniao', 'admin_associacao',
+  'missionario',
+  'secretario_igreja', 'diretor_es', 'professor_es', 'secretario_es', 'tesoureiro',
+  'membro',
 ]
 
 const ESTADOS_BR = [

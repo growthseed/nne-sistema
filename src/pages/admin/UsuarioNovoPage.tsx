@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,11 +7,24 @@ import { trackError } from '@/lib/observability'
 import {
   FiArrowLeft, FiSave, FiUser, FiShield, FiLock,
   FiMail, FiEye, FiEyeOff, FiKey, FiRefreshCw,
+  FiDatabase, FiSearch, FiX,
 } from 'react-icons/fi'
 
 interface AssociacaoOpt { id: string; nome: string; sigla: string; uniao_id: string }
 interface IgrejaOpt { id: string; nome: string; associacao_id?: string }
 interface UniaoOpt { id: string; nome: string; sigla: string }
+
+interface PessoaLookup {
+  id: string
+  nome: string
+  email: string | null
+  telefone: string | null
+  tipo: string | null
+  uniao_id: string | null
+  associacao_id: string | null
+  igreja_id: string | null
+  igreja_nome?: string | null
+}
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrador',
@@ -22,12 +35,17 @@ const roleLabels: Record<string, string> = {
   secretario_es: 'Secretário ES',
   tesoureiro: 'Tesoureiro',
   secretario_igreja: 'Secretário Igreja',
+  missionario: 'Missionário',
   membro: 'Membro',
 }
 
+// Missionário no topo dos papéis operacionais — é o vínculo mais comum
+// criado pela administração da União/Associação no dia-a-dia.
 const allRoles: UserRole[] = [
-  'admin', 'admin_uniao', 'admin_associacao', 'diretor_es',
-  'professor_es', 'secretario_es', 'tesoureiro', 'secretario_igreja', 'membro',
+  'admin', 'admin_uniao', 'admin_associacao',
+  'missionario',
+  'secretario_igreja', 'diretor_es', 'professor_es', 'secretario_es', 'tesoureiro',
+  'membro',
 ]
 
 function SectionCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
@@ -83,6 +101,14 @@ export default function UsuarioNovoPage() {
   const [associacoes, setAssociacoes] = useState<AssociacaoOpt[]>([])
   const [igrejas, setIgrejas] = useState<IgrejaOpt[]>([])
 
+  // "Puxar do banco" — busca em pessoas cadastradas
+  const [pessoaBusca, setPessoaBusca] = useState('')
+  const [pessoaResultados, setPessoaResultados] = useState<PessoaLookup[]>([])
+  const [pessoaLoading, setPessoaLoading] = useState(false)
+  const [pessoaSelecionada, setPessoaSelecionada] = useState<PessoaLookup | null>(null)
+  const [showLookup, setShowLookup] = useState(false)
+  const buscaTimer = useRef<number | null>(null)
+
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
@@ -116,6 +142,62 @@ export default function UsuarioNovoPage() {
     setSenha(gerada)
     setConfirmarSenha(gerada)
     setShowSenha(true)
+  }
+
+  function handleBuscaPessoa(term: string) {
+    setPessoaBusca(term)
+    if (buscaTimer.current) window.clearTimeout(buscaTimer.current)
+    if (term.trim().length < 2) { setPessoaResultados([]); return }
+    buscaTimer.current = window.setTimeout(async () => {
+      setPessoaLoading(true)
+      try {
+        let query = supabase
+          .from('pessoas')
+          .select('id, nome, email, telefone, tipo, uniao_id, associacao_id, igreja_id, igreja:igrejas(nome)')
+          .ilike('nome', `%${term.trim()}%`)
+          .eq('ativo', true)
+          .limit(20)
+
+        // Respeita escopo do admin
+        if (profile?.papel === 'admin_uniao') query = query.eq('uniao_id', profile.uniao_id!)
+        else if (profile?.papel === 'admin_associacao') query = query.eq('associacao_id', profile.associacao_id!)
+
+        const { data } = await query
+        const mapped: PessoaLookup[] = (data || []).map((p: any) => ({
+          id: p.id,
+          nome: p.nome,
+          email: p.email,
+          telefone: p.telefone,
+          tipo: p.tipo,
+          uniao_id: p.uniao_id,
+          associacao_id: p.associacao_id,
+          igreja_id: p.igreja_id,
+          igreja_nome: p.igreja?.nome || null,
+        }))
+        setPessoaResultados(mapped)
+      } finally {
+        setPessoaLoading(false)
+      }
+    }, 300)
+  }
+
+  function selecionarPessoa(p: PessoaLookup) {
+    setPessoaSelecionada(p)
+    setShowLookup(false)
+    setPessoaBusca('')
+    setPessoaResultados([])
+    // Auto-preenche dados pessoais
+    setNome(p.nome)
+    if (p.email) setEmail(p.email)
+    if (p.telefone) setTelefone(p.telefone)
+    // Auto-preenche vínculo
+    if (p.uniao_id) setUniaoId(p.uniao_id)
+    if (p.associacao_id) setAssociacaoId(p.associacao_id)
+    if (p.igreja_id) setIgrejaId(p.igreja_id)
+  }
+
+  function limparPessoa() {
+    setPessoaSelecionada(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -234,6 +316,84 @@ export default function UsuarioNovoPage() {
 
         {/* Permissões */}
         <SectionCard title="Permissões e Vínculo" icon={<FiShield className="w-5 h-5" />}>
+          {/* Puxar do banco — busca uma pessoa cadastrada e auto-preenche */}
+          <div className="mb-5 rounded-lg border border-primary-100 bg-primary-50/40 p-4">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center gap-2">
+                <FiDatabase className="w-4 h-4 text-primary-600" />
+                <p className="text-sm font-medium text-primary-800">Puxar dados do banco</p>
+              </div>
+              {!showLookup && !pessoaSelecionada && (
+                <button type="button" onClick={() => setShowLookup(true)}
+                  className="text-xs font-medium text-primary-700 hover:text-primary-900 hover:underline">
+                  Buscar pessoa cadastrada
+                </button>
+              )}
+            </div>
+
+            {pessoaSelecionada ? (
+              <div className="flex items-center justify-between gap-3 bg-white rounded-lg border border-primary-200 px-3 py-2">
+                <div className="text-sm">
+                  <p className="font-medium text-gray-800">{pessoaSelecionada.nome}</p>
+                  <p className="text-xs text-gray-500">
+                    {pessoaSelecionada.tipo === 'membro' ? 'Membro' : 'Interessado'}
+                    {pessoaSelecionada.igreja_nome ? ` · ${pessoaSelecionada.igreja_nome}` : ''}
+                    {pessoaSelecionada.email ? ` · ${pessoaSelecionada.email}` : ''}
+                  </p>
+                </div>
+                <button type="button" onClick={limparPessoa}
+                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded" title="Remover vínculo">
+                  <FiX className="w-4 h-4" />
+                </button>
+              </div>
+            ) : showLookup ? (
+              <div className="space-y-2">
+                <div className="relative">
+                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    autoFocus
+                    value={pessoaBusca}
+                    onChange={e => handleBuscaPessoa(e.target.value)}
+                    placeholder="Digite o nome (mín. 2 caracteres)..."
+                    className="input-field pl-9"
+                  />
+                  <button type="button" onClick={() => { setShowLookup(false); setPessoaBusca(''); setPessoaResultados([]) }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700">
+                    <FiX className="w-4 h-4" />
+                  </button>
+                </div>
+                {pessoaLoading && <p className="text-xs text-gray-500 px-1">Buscando...</p>}
+                {!pessoaLoading && pessoaBusca.trim().length >= 2 && pessoaResultados.length === 0 && (
+                  <p className="text-xs text-gray-500 px-1">Nenhuma pessoa encontrada.</p>
+                )}
+                {pessoaResultados.length > 0 && (
+                  <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+                    {pessoaResultados.map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => selecionarPessoa(p)}
+                        className="w-full text-left px-3 py-2 hover:bg-primary-50 transition-colors"
+                      >
+                        <p className="text-sm font-medium text-gray-800">{p.nome}</p>
+                        <p className="text-xs text-gray-500">
+                          {p.tipo === 'membro' ? 'Membro' : 'Interessado'}
+                          {p.igreja_nome ? ` · ${p.igreja_nome}` : ''}
+                          {p.email ? ` · ${p.email}` : ''}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500">
+                Selecione uma pessoa já cadastrada no sistema para preencher automaticamente nome, e-mail, telefone e vínculo (união/associação/igreja).
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Papel / Nível de Acesso" span2>
               <select value={papel} onChange={e => setPapel(e.target.value as UserRole)} className="input-field">
