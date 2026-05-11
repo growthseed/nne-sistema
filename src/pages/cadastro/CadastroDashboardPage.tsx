@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  type CensoRow as MetricsCensoRow,
+  computeIndices, computeAreaScores, importanciaXDesempenho,
+  aggregateByScope, classColors, classifyScore,
+  SATISFACAO_ITENS,
+} from '@/lib/censo-metrics'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import {
@@ -537,6 +543,40 @@ export default function CadastroDashboardPage() {
     etapaCount[r.etapa_atual] = (etapaCount[r.etapa_atual] || 0) + 1
   })
 
+  // ========== VISÃO EXECUTIVA (estratégica) ==========
+  // Reutiliza o engine de censo-metrics: KPIs compostos, ranking por
+  // associação, heatmap associações × áreas, matriz importância × desempenho.
+  const metricsRows = respostasByAssoc as unknown as MetricsCensoRow[]
+  const indicesUniao = computeIndices(metricsRows)
+  const areaScoresUniao = computeAreaScores(metricsRows)
+  const matrizIxD = importanciaXDesempenho(metricsRows)
+
+  const assocMeta = new Map(
+    associacoes.map(a => {
+      const membros = igrejasMembros
+        .filter(ig => ig.associacao_id === a.id)
+        .reduce((s, ig) => s + (ig.membros_ativos || 0), 0)
+      return [a.id, { nome: a.nome, sigla: a.sigla, membros }] as const
+    }),
+  )
+  const rankingAssoc = aggregateByScope(metricsRows, 'associacao_id', assocMeta)
+
+  // Heatmap: linhas = associações com respostas, colunas = SATISFACAO_ITENS
+  const heatmapData = useMemo(() => {
+    const byAssoc = new Map<string, MetricsCensoRow[]>()
+    metricsRows.forEach(r => {
+      if (!r.associacao_id) return
+      if (!byAssoc.has(r.associacao_id)) byAssoc.set(r.associacao_id, [])
+      byAssoc.get(r.associacao_id)!.push(r)
+    })
+    return associacoes
+      .map(a => {
+        const list = byAssoc.get(a.id) || []
+        return { assoc: a, n: list.length, scores: computeAreaScores(list) }
+      })
+      .filter(h => h.n > 0)
+  }, [metricsRows, associacoes])
+
   // ========== CHART DATA ==========
 
   const genderData = {
@@ -1005,6 +1045,161 @@ export default function CadastroDashboardPage() {
 
       {/* ========== TAB: DASHBOARD ========== */}
       {pageTab === 'dashboard' && <>
+      {/* Visão Executiva — KPIs compostos + Ranking + Heatmap + Matriz IxD */}
+      {total > 0 && (
+        <section className="space-y-5">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white p-6 shadow-lg">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-slate-300">Visão Executiva · Estratégico</p>
+                <h2 className="text-xl font-bold mt-1">Saúde geral da União Norte Nordeste</h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  {completos} cadastros completos de {total} respostas · cobertura média {meta > 0 ? Math.round((completos / meta) * 100) : 0}%
+                </p>
+              </div>
+              <div className="grid grid-cols-4 gap-4">
+                <ExecKpi label="Vida Espiritual" value={indicesUniao.vidaEspiritual} />
+                <ExecKpi label="Mobilização" value={indicesUniao.mobilizacao} />
+                <ExecKpi label="Saúde Relacional" value={indicesUniao.saudeRelacional} />
+                <ExecKpi label="Geral" value={indicesUniao.geral} />
+              </div>
+            </div>
+          </div>
+
+          {/* Ranking de associações */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold text-gray-800">Ranking de associações por índice geral</h3>
+              <span className="text-xs text-gray-400">Clique na sigla para abrir o painel tático</span>
+            </div>
+            {rankingAssoc.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">Sem dados suficientes.</p>
+            ) : (
+              <div className="space-y-2">
+                {rankingAssoc.map(r => {
+                  const c = classifyScore(r.indiceGeral / 25)
+                  const cor = classColors(c)
+                  return (
+                    <div key={r.id} className="flex items-center gap-3">
+                      <Link
+                        to={`/cadastro/associacao/${r.id}`}
+                        className="text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 px-2.5 py-1 rounded-lg shrink-0 w-16 text-center"
+                      >
+                        {r.sigla}
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between text-xs mb-0.5">
+                          <span className="text-gray-700 truncate" title={r.nome}>{r.nome}</span>
+                          <span className="text-gray-500 tabular-nums shrink-0 ml-2">
+                            {r.completos} compl · {r.cobertura}% cob.
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${r.indiceGeral}%`, backgroundColor: cor.solid }} />
+                        </div>
+                      </div>
+                      <span className={`text-sm font-bold tabular-nums w-10 text-right ${cor.text}`}>{r.indiceGeral}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Heatmap associações × áreas */}
+          {heatmapData.length > 0 && (
+            <div className="card overflow-x-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold text-gray-800">Heatmap associações × áreas avaliadas</h3>
+                <p className="text-xs text-gray-400">Verde ≥3,2 · Amarelo ≥2,4 · Vermelho &lt;2,4 · Cinza sem dados</p>
+              </div>
+              <div className="min-w-[800px]">
+                <div className="grid" style={{ gridTemplateColumns: `100px repeat(${SATISFACAO_ITENS.length}, minmax(46px, 1fr)) 50px` }}>
+                  <div className="text-[10px] uppercase tracking-wider text-gray-400 px-2 py-1.5">Assoc.</div>
+                  {SATISFACAO_ITENS.map(a => (
+                    <div key={a} className="text-[9px] text-gray-500 px-1 py-1.5 text-center" title={a}>
+                      {a.length > 11 ? a.slice(0, 11) + '…' : a}
+                    </div>
+                  ))}
+                  <div className="text-[10px] uppercase tracking-wider text-gray-400 px-1 py-1.5 text-right">N</div>
+
+                  {heatmapData.map(({ assoc, scores, n }) => {
+                    const byArea = new Map(scores.map(s => [s.area, s]))
+                    return (
+                      <Link key={assoc.id} to={`/cadastro/associacao/${assoc.id}`} className="contents group">
+                        <span className="px-2 py-1.5 text-xs font-semibold text-primary-700 group-hover:underline truncate" title={assoc.nome}>
+                          {assoc.sigla}
+                        </span>
+                        {SATISFACAO_ITENS.map(a => {
+                          const s = byArea.get(a)
+                          if (!s || s.respondentes === 0) {
+                            return <div key={a} className="m-0.5 rounded-sm bg-gray-50 h-7" />
+                          }
+                          const cor = classColors(s.classificacao)
+                          return (
+                            <div
+                              key={a}
+                              className={`m-0.5 rounded-sm h-7 flex items-center justify-center text-[10px] font-bold tabular-nums ${cor.text} group-hover:ring-1 group-hover:ring-primary-300`}
+                              style={{ backgroundColor: cor.soft }}
+                              title={`${assoc.sigla} · ${a}: ${s.media.toFixed(2)}/4 (${s.respondentes} resp.)`}
+                            >
+                              {s.media.toFixed(1)}
+                            </div>
+                          )
+                        })}
+                        <span className="px-1 py-1.5 text-xs text-gray-500 tabular-nums text-right">{n}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Matriz Importância × Desempenho */}
+          {matrizIxD.length > 0 && (
+            <div className="card">
+              <h3 className="text-base font-semibold text-gray-800 mb-1">Matriz Importância × Desempenho (União)</h3>
+              <p className="text-xs text-gray-500 mb-4">
+                Cruzamento entre as prioridades demandadas pelos membros e a satisfação atual da área correspondente.
+              </p>
+              <ExecMatriz items={matrizIxD} />
+            </div>
+          )}
+
+          {/* Áreas mais críticas vs mais saudáveis */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="card border border-red-200">
+              <h3 className="text-base font-semibold text-red-700 mb-3">Áreas mais críticas</h3>
+              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').sort((a, b) => a.media - b.media).slice(0, 5).map(s => {
+                const cor = classColors(s.classificacao)
+                return (
+                  <div key={s.area} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                    <span className="text-sm text-gray-700">{s.area}</span>
+                    <span className={`text-xs font-medium tabular-nums ${cor.text}`}>{s.media.toFixed(2)}/4 · {s.respondentes} resp.</span>
+                  </div>
+                )
+              })}
+              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length === 0 && (
+                <p className="text-sm text-gray-400">Nenhuma área crítica — parabéns!</p>
+              )}
+            </div>
+            <div className="card border border-emerald-200">
+              <h3 className="text-base font-semibold text-emerald-700 mb-3">Áreas mais saudáveis</h3>
+              {areaScoresUniao.filter(a => a.respondentes > 0).sort((a, b) => b.media - a.media).slice(0, 5).map(s => {
+                const cor = classColors(s.classificacao)
+                return (
+                  <div key={s.area} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                    <span className="text-sm text-gray-700">{s.area}</span>
+                    <span className={`text-xs font-medium tabular-nums ${cor.text}`}>{s.media.toFixed(2)}/4 · {s.respondentes} resp.</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Public Link Banner */}
       <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1">
@@ -1901,6 +2096,65 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
           <button onClick={onClose} className="btn-secondary text-xs">Fechar</button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ====== Componentes da Visão Executiva (estratégico) ======
+function ExecKpi({ label, value }: { label: string; value: number }) {
+  const c = classifyScore(value / 25)
+  const cor = c === 'saudavel' ? 'text-emerald-300'
+    : c === 'atencao' ? 'text-amber-300'
+    : c === 'critico' ? 'text-red-300'
+    : 'text-slate-400'
+  return (
+    <div className="text-center">
+      <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+      <p className={`text-2xl font-bold tabular-nums ${cor}`}>{value}<span className="text-xs font-normal text-slate-500">/100</span></p>
+    </div>
+  )
+}
+
+function ExecMatriz({ items }: { items: ReturnType<typeof importanciaXDesempenho> }) {
+  const buckets = {
+    agir_agora: items.filter(i => i.quadrante === 'agir_agora').slice(0, 5),
+    manter:     items.filter(i => i.quadrante === 'manter').slice(0, 5),
+    over_invest: items.filter(i => i.quadrante === 'over_invest').slice(0, 5),
+    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia').slice(0, 5),
+  }
+  const Q = ({ titulo, subtitulo, cor, items: it }: { titulo: string; subtitulo: string; cor: 'red'|'green'|'gray'|'blue'; items: any[] }) => {
+    const pal = {
+      red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', dot: 'bg-red-500' },
+      green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', dot: 'bg-green-500' },
+      gray: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600', dot: 'bg-gray-400' },
+      blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', dot: 'bg-blue-500' },
+    }[cor]
+    return (
+      <div className={`rounded-xl border ${pal.border} ${pal.bg} p-4`}>
+        <p className={`text-xs font-bold uppercase tracking-wider ${pal.text}`}>{titulo}</p>
+        <p className="text-[10px] text-gray-500 mb-3">{subtitulo}</p>
+        {it.length === 0 ? (
+          <p className="text-xs text-gray-400 italic">Nenhum tema.</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {it.map((x: any) => (
+              <li key={x.prioridade} className="flex items-start gap-2 text-xs">
+                <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${pal.dot}`} />
+                <span className="flex-1 text-gray-700">{x.prioridade}</span>
+                <span className="text-gray-400 tabular-nums shrink-0">{x.importancia}% · {x.desempenho ?? '—'}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )
+  }
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-4xl">
+      <Q titulo="Agir agora" subtitulo="Alta demanda · Baixo desempenho" cor="red" items={buckets.agir_agora} />
+      <Q titulo="Manter" subtitulo="Alta demanda · Bom desempenho" cor="green" items={buckets.manter} />
+      <Q titulo="Baixa relevância" subtitulo="Baixa demanda · Baixo desempenho" cor="gray" items={buckets.baixa_relevancia} />
+      <Q titulo="Já investido" subtitulo="Baixa demanda · Bom desempenho" cor="blue" items={buckets.over_invest} />
     </div>
   )
 }

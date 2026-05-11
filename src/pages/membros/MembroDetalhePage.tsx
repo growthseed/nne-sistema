@@ -9,7 +9,13 @@ import {
   HiOutlineAcademicCap, HiOutlineBriefcase, HiOutlineClipboardList,
   HiOutlineHeart, HiOutlinePencil, HiOutlineIdentification,
   HiOutlineEye, HiOutlineTrendingUp, HiOutlineTrendingDown,
+  HiOutlineSparkles, HiOutlineExclamationCircle, HiOutlineChartBar,
 } from 'react-icons/hi'
+import { Radar, RadarChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts'
+import {
+  computeEngajamentoIndividual, engajamentoLabel, classifyScore, classColors,
+  type CensoRow as MetricsCensoRow,
+} from '@/lib/censo-metrics'
 
 interface PessoaDetalhe {
   id: string
@@ -438,6 +444,8 @@ export default function MembroDetalhePage() {
               </div>
             ) : (
               <div className="space-y-6">
+                {/* Resumo enriquecido do censo (LAB-IR style) */}
+                <CensoResumoRico resposta={censoRespostas[censoRespostas.length - 1] as unknown as MetricsCensoRow} pessoaNome={pessoa.nome} />
                 {/* Timeline de respostas */}
                 <div>
                   <h3 className="text-sm font-semibold text-gray-700 mb-3">
@@ -666,6 +674,205 @@ export default function MembroDetalhePage() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+// ============== CENSO RESUMO RICO (LAB-IR style) ==============
+// Painel visual da última resposta do censo do membro. Mostra:
+//   • Hero header gradient com nome + status
+//   • 4 score cards (engajamento, satisfação média, frequência média, cargos)
+//   • Radar de satisfação por área
+//   • SWOT (pontos fortes / pontos fracos / prioridades)
+//   • Frequência mensal
+function CensoResumoRico({ resposta, pessoaNome }: { resposta: MetricsCensoRow; pessoaNome: string }) {
+  const r = resposta
+  const engajamento = computeEngajamentoIndividual(r)
+  const engLabel = engajamentoLabel(engajamento)
+
+  const satValues = r.satisfacao ? Object.values(r.satisfacao).filter(v => typeof v === 'number') as number[] : []
+  const satMedia = satValues.length > 0 ? +(satValues.reduce((a, b) => a + b, 0) / satValues.length).toFixed(2) : 0
+  const satPct = satMedia > 0 ? Math.round(((satMedia - 1) / 3) * 100) : 0
+
+  const freqValues = r.participacao ? Object.values(r.participacao).filter(v => typeof v === 'number') as number[] : []
+  const freqMedia = freqValues.length > 0 ? +(freqValues.reduce((a, b) => a + b, 0) / freqValues.length).toFixed(2) : 0
+  const freqPct = Math.round((freqMedia / 4) * 100)
+
+  const cargos = r.cargos_ocupa?.length || 0
+
+  // Radar data
+  const radarData = r.satisfacao
+    ? Object.entries(r.satisfacao).map(([area, val]) => ({
+        area: area.length > 12 ? area.slice(0, 12) + '…' : area,
+        valor: ((val - 1) / 3) * 100,
+        fullArea: area,
+      }))
+    : []
+
+  return (
+    <div className="space-y-4">
+      {/* Hero compact */}
+      <div className="bg-gradient-to-br from-primary-700 to-primary-900 rounded-2xl text-white p-5 shadow-md">
+        <div className="flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-primary-200">Censo · {r.completo ? 'Resposta completa' : `Parcial (etapa ${r.etapa_atual}/11)`}</p>
+            <h3 className="text-lg sm:text-xl font-bold mt-0.5">{pessoaNome}</h3>
+            <p className="text-xs text-primary-200 mt-1">
+              Respondido em {new Date(r.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-xs font-bold px-3 py-1 rounded-full ${engLabel.color}`}>
+              Engajamento {engLabel.label}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 score cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <ScoreCardRich icon={HiOutlineSparkles} label="Engajamento" value={engajamento} suffix="/100" />
+        <ScoreCardRich icon={HiOutlineHeart} label="Satisfação média" value={satPct} suffix="/100" sub={`${satMedia.toFixed(1)} de 4`} />
+        <ScoreCardRich icon={HiOutlineChartBar} label="Frequência média" value={freqPct} suffix="/100" sub={`${freqMedia.toFixed(1)}× / mês`} />
+        <ScoreCardRich icon={HiOutlineBriefcase} label="Cargos" value={cargos} suffix={cargos === 1 ? ' cargo' : ' cargos'} />
+      </div>
+
+      {/* Radar + SWOT */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {radarData.length > 0 && (
+          <div className="card">
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">Radar de satisfação</h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="#e5e7eb" />
+                  <PolarAngleAxis dataKey="area" tick={{ fontSize: 10, fill: '#6b7280' }} />
+                  <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#9ca3af' }} />
+                  <Radar name="Satisfação" dataKey="valor" stroke="#006D43" fill="#006D43" fillOpacity={0.35} />
+                  <Tooltip formatter={(v: any) => `${v}/100`} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-3">
+          <SwotMini
+            icon={HiOutlineSparkles}
+            title="Pontos fortes da igreja"
+            items={r.pontos_fortes || []}
+            color="green"
+          />
+          <SwotMini
+            icon={HiOutlineExclamationCircle}
+            title="Pontos fracos da igreja"
+            items={r.pontos_fracos || []}
+            color="red"
+          />
+        </div>
+      </div>
+
+      {/* Frequência mensal detalhada */}
+      {r.participacao && Object.keys(r.participacao).length > 0 && (
+        <div className="card">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Participação mensal</h4>
+          <div className="space-y-2">
+            {Object.entries(r.participacao).map(([item, freq]) => {
+              const pct = (freq / 4) * 100
+              const c = classifyScore(freq, 'frequencia')
+              const cor = classColors(c)
+              return (
+                <div key={item}>
+                  <div className="flex items-center justify-between text-xs mb-0.5">
+                    <span className="text-gray-700">{item}</span>
+                    <span className={`tabular-nums ${cor.text}`}>{freq}× / mês</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cor.solid }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Prioridades */}
+      {r.prioridades && r.prioridades.length > 0 && (
+        <div className="card border border-amber-200">
+          <h4 className="text-sm font-semibold text-amber-700 mb-3">Prioridades que o membro destacou</h4>
+          <div className="flex flex-wrap gap-2">
+            {r.prioridades.map(p => (
+              <span key={p} className="bg-amber-50 text-amber-700 text-xs font-medium px-2.5 py-1 rounded-full">{p}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cargos */}
+      {r.cargos_ocupa && r.cargos_ocupa.length > 0 && (
+        <div className="card border border-blue-200">
+          <h4 className="text-sm font-semibold text-blue-700 mb-3">Cargos / Departamentos do último ano</h4>
+          <div className="flex flex-wrap gap-2">
+            {r.cargos_ocupa.map(c => (
+              <span key={c} className="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">{c}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Observações */}
+      {r.opiniao_departamentos && (
+        <div className="card">
+          <h4 className="text-sm font-semibold text-gray-700 mb-2">Observações do membro</h4>
+          <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 leading-relaxed whitespace-pre-line">
+            {r.opiniao_departamentos}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ScoreCardRich({ icon: Icon, label, value, suffix = '', sub }: { icon: any; label: string; value: number; suffix?: string; sub?: string }) {
+  const c = typeof value === 'number' && value <= 100 ? classifyScore(value / 25) : 'sem_dados'
+  const cor = classColors(c)
+  return (
+    <div className="card flex items-start gap-3">
+      <div className={`p-2 rounded-lg ${cor.bg}`}>
+        <Icon className={`w-5 h-5 ${cor.text}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-gray-500">{label}</p>
+        <p className={`text-2xl font-bold tabular-nums ${cor.text}`}>{value}<span className="text-sm font-normal text-gray-400">{suffix}</span></p>
+        {sub && <p className="text-[10px] text-gray-400">{sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+function SwotMini({ icon: Icon, title, items, color }: { icon: any; title: string; items: string[]; color: 'green' | 'red' }) {
+  const palette = color === 'green'
+    ? { border: 'border-emerald-200', dot: 'bg-emerald-500', text: 'text-emerald-700' }
+    : { border: 'border-red-200', dot: 'bg-red-500', text: 'text-red-700' }
+  return (
+    <div className={`card border ${palette.border}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className={`w-4 h-4 ${palette.text}`} />
+        <h4 className={`text-sm font-semibold ${palette.text}`}>{title}</h4>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-xs text-gray-400 italic">Não respondido</p>
+      ) : (
+        <ul className="space-y-1">
+          {items.map((it, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm">
+              <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${palette.dot}`} />
+              <span className="text-gray-700">{it}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
