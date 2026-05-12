@@ -36,6 +36,7 @@ import {
   HiOutlineSearch,
   HiOutlineDownload,
   HiOutlineUsers,
+  HiOutlineIdentification,
   HiOutlineSparkles,
   HiOutlineLightningBolt,
   HiOutlineHeart,
@@ -688,10 +689,24 @@ export default function CadastroDashboardPage() {
           <h1 className="text-2xl font-bold text-gray-800">Censo / Pesquisa</h1>
           <p className="text-gray-500 mt-1">{respostas.length} resposta{respostas.length !== 1 ? 's' : ''} total • {total} filtrada{total !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link to="/cadastro" className="btn-primary inline-flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to="/formulario"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary inline-flex items-center gap-2"
+            title="Abre o formulário público do Censo (mesmo que vai no WhatsApp/email para o membro responder)"
+          >
             <HiOutlineDocumentText className="w-4 h-4" />
-            Novo Cadastro
+            Preencher Censo
+          </Link>
+          <Link
+            to="/cadastro"
+            className="btn-secondary inline-flex items-center gap-2"
+            title="Nova ficha de membro em pessoas (uso administrativo da secretaria)"
+          >
+            <HiOutlineIdentification className="w-4 h-4" />
+            Nova Ficha de Membro
           </Link>
         </div>
       </div>
