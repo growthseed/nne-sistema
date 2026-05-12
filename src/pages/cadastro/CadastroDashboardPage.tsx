@@ -1054,167 +1054,6 @@ export default function CadastroDashboardPage() {
 
       {/* ========== TAB: DASHBOARD ========== */}
       {pageTab === 'dashboard' && <>
-      {/* Análises estratégicas: Ranking + Heatmap + Matriz IxD + Termômetro */}
-      {total > 0 && (
-        <section className="space-y-5">
-          {/* Ranking de associações */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold text-gray-800">Ranking de associações por índice geral</h3>
-              <span className="text-xs text-gray-400">Clique na sigla para abrir o painel tático</span>
-            </div>
-            {rankingAssoc.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">Sem dados suficientes.</p>
-            ) : (
-              <div className="space-y-2">
-                {rankingAssoc.map(r => {
-                  const c = classifyScore(r.indiceGeral / 25)
-                  const cor = classColors(c)
-                  return (
-                    <div key={r.id} className="flex items-center gap-3">
-                      <Link
-                        to={`/cadastro/associacao/${r.id}`}
-                        className="text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 px-2.5 py-1 rounded-lg shrink-0 w-16 text-center"
-                      >
-                        {r.sigla}
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between text-xs mb-0.5">
-                          <span className="text-gray-700 truncate" title={r.nome}>{r.nome}</span>
-                          <span className="text-gray-500 tabular-nums shrink-0 ml-2">
-                            {r.completos} compl · {r.cobertura}% cob.
-                          </span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full transition-all" style={{ width: `${r.indiceGeral}%`, backgroundColor: cor.solid }} />
-                        </div>
-                      </div>
-                      <span className={`text-sm font-bold tabular-nums w-10 text-right ${cor.text}`}>{r.indiceGeral}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Heatmap associações × áreas */}
-          {heatmapData.length > 0 && (
-            <div className="card overflow-x-auto">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold text-gray-800">Heatmap associações × áreas avaliadas</h3>
-                <p className="text-xs text-gray-400">Verde ≥3,2 · Amarelo ≥2,4 · Vermelho &lt;2,4 · Cinza sem dados</p>
-              </div>
-              <div className="min-w-[800px]">
-                <div className="grid" style={{ gridTemplateColumns: `100px repeat(${SATISFACAO_ITENS.length}, minmax(46px, 1fr)) 50px` }}>
-                  <div className="text-[10px] uppercase tracking-wider text-gray-400 px-2 py-1.5">Assoc.</div>
-                  {SATISFACAO_ITENS.map(a => (
-                    <div key={a} className="text-[9px] text-gray-500 px-1 py-1.5 text-center" title={a}>
-                      {a.length > 11 ? a.slice(0, 11) + '…' : a}
-                    </div>
-                  ))}
-                  <div className="text-[10px] uppercase tracking-wider text-gray-400 px-1 py-1.5 text-right">N</div>
-
-                  {heatmapData.map(({ assoc, scores, n }) => {
-                    const byArea = new Map(scores.map(s => [s.area, s]))
-                    return (
-                      <Link key={assoc.id} to={`/cadastro/associacao/${assoc.id}`} className="contents group">
-                        <span className="px-2 py-1.5 text-xs font-semibold text-primary-700 group-hover:underline truncate" title={assoc.nome}>
-                          {assoc.sigla}
-                        </span>
-                        {SATISFACAO_ITENS.map(a => {
-                          const s = byArea.get(a)
-                          if (!s || s.respondentes === 0) {
-                            return <div key={a} className="m-0.5 rounded-sm bg-gray-50 h-7" />
-                          }
-                          const cor = classColors(s.classificacao)
-                          return (
-                            <div
-                              key={a}
-                              className={`m-0.5 rounded-sm h-7 flex items-center justify-center text-[10px] font-bold tabular-nums ${cor.text} group-hover:ring-1 group-hover:ring-primary-300`}
-                              style={{ backgroundColor: cor.soft }}
-                              title={`${assoc.sigla} · ${a}: ${s.media.toFixed(2)}/4 (${s.respondentes} resp.)`}
-                            >
-                              {s.media.toFixed(1)}
-                            </div>
-                          )
-                        })}
-                        <span className="px-1 py-1.5 text-xs text-gray-500 tabular-nums text-right">{n}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Matriz Importância × Desempenho */}
-          {matrizIxD.length > 0 && (
-            <div className="card">
-              <div className="flex items-start justify-between mb-3 gap-3 flex-wrap">
-                <div>
-                  <h3 className="text-base font-semibold text-gray-800">Matriz Importância × Desempenho</h3>
-                  <p className="text-xs text-gray-500 mt-1 max-w-2xl">
-                    Cruza <strong>prioridades demandadas</strong> (etapa 9 do formulário) com a <strong>satisfação atual</strong>
-                    da área avaliada correspondente (etapa 8). Uma área pode ter nota baixa <em>e</em> não estar em "Agir Agora"
-                    se os membros ainda não a destacaram como prioridade — nesse caso vale comunicação proativa.
-                  </p>
-                </div>
-              </div>
-              <ExecMatriz items={matrizIxD} />
-              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-500">
-                <p>• <strong>Importância</strong>: % de membros que marcaram a prioridade.</p>
-                <p>• <strong>Desempenho</strong>: 0–100 (nota média 1–4 normalizada).</p>
-              </div>
-            </div>
-          )}
-
-          {/* Termômetro de áreas: críticas + saudáveis em cards grandes coloridos */}
-          {areaScoresUniao.filter(a => a.respondentes > 0).length > 0 && (
-            <div>
-              <h3 className="text-base font-semibold text-gray-800 mb-1">Termômetro de áreas</h3>
-              <p className="text-xs text-gray-500 mb-4">
-                Cada card mostra a nota média (1–4), o equivalente em índice 0–100 e a classificação automática.
-              </p>
-
-              {/* Áreas em atenção / críticas */}
-              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length > 0 && (
-                <div className="mb-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-red-500" />
-                    <p className="text-xs font-semibold uppercase tracking-wider text-red-700">
-                      Pedem ação ({areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length})
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                    {areaScoresUniao
-                      .filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel')
-                      .sort((a, b) => a.media - b.media)
-                      .map(s => <AreaScoreCard key={s.area} score={s} />)}
-                  </div>
-                </div>
-              )}
-
-              {/* Áreas saudáveis */}
-              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao === 'saudavel').length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
-                      Saudáveis ({areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao === 'saudavel').length})
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                    {areaScoresUniao
-                      .filter(a => a.respondentes > 0 && a.classificacao === 'saudavel')
-                      .sort((a, b) => b.media - a.media)
-                      .map(s => <AreaScoreCard key={s.area} score={s} />)}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-      )}
 
       {/* Public Link Banner */}
       <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -1461,6 +1300,167 @@ export default function CadastroDashboardPage() {
           </>
         )}
       </div>
+      {/* Análises estratégicas: Ranking + Heatmap + Matriz IxD + Termômetro */}
+      {total > 0 && (
+        <section className="space-y-5">
+          {/* Ranking de associações */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold text-gray-800">Ranking de associações por índice geral</h3>
+              <span className="text-xs text-gray-400">Clique na sigla para abrir o painel tático</span>
+            </div>
+            {rankingAssoc.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">Sem dados suficientes.</p>
+            ) : (
+              <div className="space-y-2">
+                {rankingAssoc.map(r => {
+                  const c = classifyScore(r.indiceGeral / 25)
+                  const cor = classColors(c)
+                  return (
+                    <div key={r.id} className="flex items-center gap-3">
+                      <Link
+                        to={`/cadastro/associacao/${r.id}`}
+                        className="text-xs font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 px-2.5 py-1 rounded-lg shrink-0 w-16 text-center"
+                      >
+                        {r.sigla}
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between text-xs mb-0.5">
+                          <span className="text-gray-700 truncate" title={r.nome}>{r.nome}</span>
+                          <span className="text-gray-500 tabular-nums shrink-0 ml-2">
+                            {r.completos} compl · {r.cobertura}% cob.
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${r.indiceGeral}%`, backgroundColor: cor.solid }} />
+                        </div>
+                      </div>
+                      <span className={`text-sm font-bold tabular-nums w-10 text-right ${cor.text}`}>{r.indiceGeral}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Heatmap associações × áreas */}
+          {heatmapData.length > 0 && (
+            <div className="card overflow-x-auto">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold text-gray-800">Heatmap associações × áreas avaliadas</h3>
+                <p className="text-xs text-gray-400">Verde ≥3,2 · Amarelo ≥2,4 · Vermelho &lt;2,4 · Cinza sem dados</p>
+              </div>
+              <div className="min-w-[800px]">
+                <div className="grid" style={{ gridTemplateColumns: `100px repeat(${SATISFACAO_ITENS.length}, minmax(46px, 1fr)) 50px` }}>
+                  <div className="text-[10px] uppercase tracking-wider text-gray-400 px-2 py-1.5">Assoc.</div>
+                  {SATISFACAO_ITENS.map(a => (
+                    <div key={a} className="text-[9px] text-gray-500 px-1 py-1.5 text-center" title={a}>
+                      {a.length > 11 ? a.slice(0, 11) + '…' : a}
+                    </div>
+                  ))}
+                  <div className="text-[10px] uppercase tracking-wider text-gray-400 px-1 py-1.5 text-right">N</div>
+
+                  {heatmapData.map(({ assoc, scores, n }) => {
+                    const byArea = new Map(scores.map(s => [s.area, s]))
+                    return (
+                      <Link key={assoc.id} to={`/cadastro/associacao/${assoc.id}`} className="contents group">
+                        <span className="px-2 py-1.5 text-xs font-semibold text-primary-700 group-hover:underline truncate" title={assoc.nome}>
+                          {assoc.sigla}
+                        </span>
+                        {SATISFACAO_ITENS.map(a => {
+                          const s = byArea.get(a)
+                          if (!s || s.respondentes === 0) {
+                            return <div key={a} className="m-0.5 rounded-sm bg-gray-50 h-7" />
+                          }
+                          const cor = classColors(s.classificacao)
+                          return (
+                            <div
+                              key={a}
+                              className={`m-0.5 rounded-sm h-7 flex items-center justify-center text-[10px] font-bold tabular-nums ${cor.text} group-hover:ring-1 group-hover:ring-primary-300`}
+                              style={{ backgroundColor: cor.soft }}
+                              title={`${assoc.sigla} · ${a}: ${s.media.toFixed(2)}/4 (${s.respondentes} resp.)`}
+                            >
+                              {s.media.toFixed(1)}
+                            </div>
+                          )
+                        })}
+                        <span className="px-1 py-1.5 text-xs text-gray-500 tabular-nums text-right">{n}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Matriz Importância × Desempenho */}
+          {matrizIxD.length > 0 && (
+            <div className="card">
+              <div className="flex items-start justify-between mb-3 gap-3 flex-wrap">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-800">Matriz Importância × Desempenho</h3>
+                  <p className="text-xs text-gray-500 mt-1 max-w-2xl">
+                    Cruza <strong>prioridades demandadas</strong> (etapa 9 do formulário) com a <strong>satisfação atual</strong>
+                    da área avaliada correspondente (etapa 8). Uma área pode ter nota baixa <em>e</em> não estar em "Agir Agora"
+                    se os membros ainda não a destacaram como prioridade — nesse caso vale comunicação proativa.
+                  </p>
+                </div>
+              </div>
+              <ExecMatriz items={matrizIxD} />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-500">
+                <p>• <strong>Importância</strong>: % de membros que marcaram a prioridade.</p>
+                <p>• <strong>Desempenho</strong>: 0–100 (nota média 1–4 normalizada).</p>
+              </div>
+            </div>
+          )}
+
+          {/* Termômetro de áreas: críticas + saudáveis em cards grandes coloridos */}
+          {areaScoresUniao.filter(a => a.respondentes > 0).length > 0 && (
+            <div>
+              <h3 className="text-base font-semibold text-gray-800 mb-1">Termômetro de áreas</h3>
+              <p className="text-xs text-gray-500 mb-4">
+                Cada card mostra a nota média (1–4), o equivalente em índice 0–100 e a classificação automática.
+              </p>
+
+              {/* Áreas em atenção / críticas */}
+              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                    <p className="text-xs font-semibold uppercase tracking-wider text-red-700">
+                      Pedem ação ({areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length})
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {areaScoresUniao
+                      .filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel')
+                      .sort((a, b) => a.media - b.media)
+                      .map(s => <AreaScoreCard key={s.area} score={s} />)}
+                  </div>
+                </div>
+              )}
+
+              {/* Áreas saudáveis */}
+              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao === 'saudavel').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                      Saudáveis ({areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao === 'saudavel').length})
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {areaScoresUniao
+                      .filter(a => a.respondentes > 0 && a.classificacao === 'saudavel')
+                      .sort((a, b) => b.media - a.media)
+                      .map(s => <AreaScoreCard key={s.area} score={s} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Partial Responses Breakdown */}
       {parciais > 0 && (
