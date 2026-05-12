@@ -6,6 +6,7 @@ import {
   aggregateByScope, classColors, classifyScore,
   SATISFACAO_ITENS,
 } from '@/lib/censo-metrics'
+import TerritorioTab from '@/components/cadastro/TerritorioTab'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import {
@@ -147,7 +148,7 @@ function calcAgeFromBirth(birth: string | null): number | null {
 }
 
 type TabFilter = 'todos' | 'completos' | 'parciais' | 'parou_final'
-type PageTab = 'dashboard' | 'gestao'
+type PageTab = 'dashboard' | 'gestao' | 'territorio'
 
 interface AssociacaoInfo {
   id: string
@@ -159,7 +160,7 @@ export default function CadastroDashboardPage() {
   const { profile } = useAuth()
   const [respostas, setRespostas] = useState<CadastroRow[]>([])
   const [associacoes, setAssociacoes] = useState<AssociacaoInfo[]>([])
-  const [igrejasMembros, setIgrejasMembros] = useState<{ id: string; nome: string; endereco_cidade: string | null; associacao_id: string | null; membros_ativos: number | null }[]>([])
+  const [igrejasMembros, setIgrejasMembros] = useState<{ id: string; nome: string; endereco_cidade: string | null; endereco_estado: string | null; associacao_id: string | null; membros_ativos: number | null }[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [tabFilter, setTabFilter] = useState<TabFilter>('todos')
@@ -218,7 +219,7 @@ export default function CadastroDashboardPage() {
   async function fetchIgrejasMembros() {
     let query = supabase
       .from('igrejas')
-      .select('id, nome, endereco_cidade, associacao_id, membros_ativos')
+      .select('id, nome, endereco_cidade, endereco_estado, associacao_id, membros_ativos')
       .eq('ativo', true)
       .order('nome')
 
@@ -675,9 +676,13 @@ export default function CadastroDashboardPage() {
         </div>
       </div>
 
-      {/* Page Tabs: Dashboard / Gestão */}
+      {/* Page Tabs: Dashboard / Gestão / Território */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-        {([['dashboard', 'Dashboard'], ['gestao', 'Gestão por Associação']] as const).map(([key, label]) => (
+        {([
+          ['dashboard', 'Dashboard'],
+          ['gestao', 'Gestão por Associação'],
+          ['territorio', 'Território (IBGE)'],
+        ] as const).map(([key, label]) => (
           <button key={key} onClick={() => setPageTab(key)}
             className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg transition-all ${
               pageTab === key ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
@@ -1708,6 +1713,14 @@ export default function CadastroDashboardPage() {
       </div>
 
       </>}
+
+      {/* ========== TAB: TERRITÓRIO (IBGE) ========== */}
+      {pageTab === 'territorio' && (
+        <TerritorioTab
+          rows={respostasByAssoc as unknown as MetricsCensoRow[]}
+          igrejas={igrejasNoEscopo}
+        />
+      )}
 
       {/* Detail Modal */}
       {showDetail && (
