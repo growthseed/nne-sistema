@@ -1045,19 +1045,41 @@ export default function CadastroDashboardPage() {
 
       {/* ========== TAB: DASHBOARD ========== */}
       {pageTab === 'dashboard' && <>
-      {/* Visão Executiva — KPIs compostos + Ranking + Heatmap + Matriz IxD */}
+      {/* Visão Executiva — números principais + KPIs compostos + Ranking + Heatmap + Matriz IxD */}
       {total > 0 && (
         <section className="space-y-5">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white p-6 shadow-lg">
-            <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl text-white p-6 shadow-lg">
+            <div className="flex items-start justify-between flex-wrap gap-3 mb-5">
               <div>
                 <p className="text-xs uppercase tracking-wider text-slate-300">Visão Executiva · Estratégico</p>
-                <h2 className="text-xl font-bold mt-1">Saúde geral da União Norte Nordeste</h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  {completos} cadastros completos de {total} respostas · cobertura média {meta > 0 ? Math.round((completos / meta) * 100) : 0}%
-                </p>
+                <h2 className="text-xl font-bold mt-1">Saúde geral{filtroAssociacao === 'todas' ? ' da União Norte Nordeste' : ' — ' + (associacoes.find(a => a.id === filtroAssociacao)?.sigla || 'filtro')}</h2>
               </div>
-              <div className="grid grid-cols-4 gap-4">
+              <button
+                onClick={() => { fetchRespostas(); fetchAssociacoes(); fetchIgrejasMembros() }}
+                disabled={loading}
+                className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white inline-flex items-center gap-1.5 disabled:opacity-50"
+                title="Recarregar dados do banco"
+              >
+                <svg className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                {loading ? 'Atualizando...' : 'Atualizar'}
+              </button>
+            </div>
+
+            {/* Linha 1: Números principais */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-5 pb-5 border-b border-white/10">
+              <ExecNum label="Membros (inv.)" value={totalMembrosInventario.toLocaleString('pt-BR')} hint="via Inventário" />
+              <ExecNum label="Total Cadastros" value={total.toLocaleString('pt-BR')} />
+              <ExecNum label="Completos" value={completos.toLocaleString('pt-BR')} accent="emerald" />
+              <ExecNum label="Parciais" value={parciais.toLocaleString('pt-BR')} accent="amber" />
+              <ExecNum label="Parou Final" value={parouFinal.toLocaleString('pt-BR')} accent="orange" />
+              <ExecNum label="Conclusão" value={`${taxaComplecao}%`} accent="indigo" />
+              <ExecNum label="Cobertura" value={`${pctCobertura}%`} accent={pctCobertura >= 75 ? 'emerald' : pctCobertura >= 40 ? 'amber' : 'red'} hint={`${faltamMeta} faltam`} />
+            </div>
+
+            {/* Linha 2: KPIs compostos (índices analíticos) */}
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Índices compostos (0–100)</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <ExecKpi label="Vida Espiritual" value={indicesUniao.vidaEspiritual} />
                 <ExecKpi label="Mobilização" value={indicesUniao.mobilizacao} />
                 <ExecKpi label="Saúde Relacional" value={indicesUniao.saudeRelacional} />
@@ -1159,44 +1181,69 @@ export default function CadastroDashboardPage() {
           {/* Matriz Importância × Desempenho */}
           {matrizIxD.length > 0 && (
             <div className="card">
-              <h3 className="text-base font-semibold text-gray-800 mb-1">Matriz Importância × Desempenho (União)</h3>
-              <p className="text-xs text-gray-500 mb-4">
-                Cruzamento entre as prioridades demandadas pelos membros e a satisfação atual da área correspondente.
-              </p>
+              <div className="flex items-start justify-between mb-3 gap-3 flex-wrap">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-800">Matriz Importância × Desempenho</h3>
+                  <p className="text-xs text-gray-500 mt-1 max-w-2xl">
+                    Cruza <strong>prioridades demandadas</strong> (etapa 9 do formulário) com a <strong>satisfação atual</strong>
+                    da área avaliada correspondente (etapa 8). Uma área pode ter nota baixa <em>e</em> não estar em "Agir Agora"
+                    se os membros ainda não a destacaram como prioridade — nesse caso vale comunicação proativa.
+                  </p>
+                </div>
+              </div>
               <ExecMatriz items={matrizIxD} />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-500">
+                <p>• <strong>Importância</strong>: % de membros que marcaram a prioridade.</p>
+                <p>• <strong>Desempenho</strong>: 0–100 (nota média 1–4 normalizada).</p>
+              </div>
             </div>
           )}
 
-          {/* Áreas mais críticas vs mais saudáveis */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="card border border-red-200">
-              <h3 className="text-base font-semibold text-red-700 mb-3">Áreas mais críticas</h3>
-              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').sort((a, b) => a.media - b.media).slice(0, 5).map(s => {
-                const cor = classColors(s.classificacao)
-                return (
-                  <div key={s.area} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-700">{s.area}</span>
-                    <span className={`text-xs font-medium tabular-nums ${cor.text}`}>{s.media.toFixed(2)}/4 · {s.respondentes} resp.</span>
+          {/* Termômetro de áreas: críticas + saudáveis em cards grandes coloridos */}
+          {areaScoresUniao.filter(a => a.respondentes > 0).length > 0 && (
+            <div>
+              <h3 className="text-base font-semibold text-gray-800 mb-1">Termômetro de áreas</h3>
+              <p className="text-xs text-gray-500 mb-4">
+                Cada card mostra a nota média (1–4), o equivalente em índice 0–100 e a classificação automática.
+              </p>
+
+              {/* Áreas em atenção / críticas */}
+              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                    <p className="text-xs font-semibold uppercase tracking-wider text-red-700">
+                      Pedem ação ({areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length})
+                    </p>
                   </div>
-                )
-              })}
-              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel').length === 0 && (
-                <p className="text-sm text-gray-400">Nenhuma área crítica — parabéns!</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {areaScoresUniao
+                      .filter(a => a.respondentes > 0 && a.classificacao !== 'saudavel')
+                      .sort((a, b) => a.media - b.media)
+                      .map(s => <AreaScoreCard key={s.area} score={s} />)}
+                  </div>
+                </div>
+              )}
+
+              {/* Áreas saudáveis */}
+              {areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao === 'saudavel').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                      Saudáveis ({areaScoresUniao.filter(a => a.respondentes > 0 && a.classificacao === 'saudavel').length})
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {areaScoresUniao
+                      .filter(a => a.respondentes > 0 && a.classificacao === 'saudavel')
+                      .sort((a, b) => b.media - a.media)
+                      .map(s => <AreaScoreCard key={s.area} score={s} />)}
+                  </div>
+                </div>
               )}
             </div>
-            <div className="card border border-emerald-200">
-              <h3 className="text-base font-semibold text-emerald-700 mb-3">Áreas mais saudáveis</h3>
-              {areaScoresUniao.filter(a => a.respondentes > 0).sort((a, b) => b.media - a.media).slice(0, 5).map(s => {
-                const cor = classColors(s.classificacao)
-                return (
-                  <div key={s.area} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-700">{s.area}</span>
-                    <span className={`text-xs font-medium tabular-nums ${cor.text}`}>{s.media.toFixed(2)}/4 · {s.respondentes} resp.</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          )}
         </section>
       )}
 
@@ -2101,6 +2148,23 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
 }
 
 // ====== Componentes da Visão Executiva (estratégico) ======
+function ExecNum({ label, value, accent, hint }: { label: string; value: string; accent?: 'emerald' | 'amber' | 'orange' | 'red' | 'indigo' | 'teal'; hint?: string }) {
+  const cor = accent === 'emerald' ? 'text-emerald-300'
+    : accent === 'amber' ? 'text-amber-300'
+    : accent === 'orange' ? 'text-orange-300'
+    : accent === 'red' ? 'text-red-300'
+    : accent === 'indigo' ? 'text-indigo-300'
+    : accent === 'teal' ? 'text-teal-300'
+    : 'text-white'
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+      <p className={`text-xl sm:text-2xl font-bold tabular-nums ${cor}`}>{value}</p>
+      {hint && <p className="text-[10px] text-slate-500 mt-0.5">{hint}</p>}
+    </div>
+  )
+}
+
 function ExecKpi({ label, value }: { label: string; value: number }) {
   const c = classifyScore(value / 25)
   const cor = c === 'saudavel' ? 'text-emerald-300'
@@ -2108,19 +2172,58 @@ function ExecKpi({ label, value }: { label: string; value: number }) {
     : c === 'critico' ? 'text-red-300'
     : 'text-slate-400'
   return (
-    <div className="text-center">
+    <div>
       <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
       <p className={`text-2xl font-bold tabular-nums ${cor}`}>{value}<span className="text-xs font-normal text-slate-500">/100</span></p>
+      <div className="h-1 mt-1 bg-white/10 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${value}%`, backgroundColor: c === 'saudavel' ? '#10b981' : c === 'atencao' ? '#f59e0b' : c === 'critico' ? '#ef4444' : '#94a3b8' }} />
+      </div>
+    </div>
+  )
+}
+
+function AreaScoreCard({ score }: { score: ReturnType<typeof computeAreaScores>[number] }) {
+  const cor = classColors(score.classificacao)
+  const labelClass = score.classificacao === 'saudavel' ? 'Saudável'
+    : score.classificacao === 'atencao' ? 'Atenção'
+    : score.classificacao === 'critico' ? 'Crítico'
+    : 'Sem dados'
+  return (
+    <div className={`rounded-xl border-2 ${cor.border} bg-white p-4 hover:shadow-md transition-shadow`}>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <h4 className="text-sm font-semibold text-gray-800 leading-tight">{score.area}</h4>
+        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${cor.bg} ${cor.text} shrink-0`}>
+          {labelClass}
+        </span>
+      </div>
+
+      <div className="flex items-end gap-3 mb-2">
+        <div className="flex-1">
+          <div className="flex items-baseline gap-1">
+            <span className={`text-3xl font-bold tabular-nums ${cor.text}`}>{score.media.toFixed(2)}</span>
+            <span className="text-xs text-gray-400">/ 4</span>
+          </div>
+          <p className="text-[10px] text-gray-500 mt-0.5">{score.respondentes} {score.respondentes === 1 ? 'resposta' : 'respostas'}</p>
+        </div>
+        <div className="text-right">
+          <span className={`text-2xl font-bold tabular-nums ${cor.text}`}>{score.pct}</span>
+          <p className="text-[10px] text-gray-400">índice / 100</p>
+        </div>
+      </div>
+
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${score.pct}%`, backgroundColor: cor.solid }} />
+      </div>
     </div>
   )
 }
 
 function ExecMatriz({ items }: { items: ReturnType<typeof importanciaXDesempenho> }) {
   const buckets = {
-    agir_agora: items.filter(i => i.quadrante === 'agir_agora').slice(0, 5),
-    manter:     items.filter(i => i.quadrante === 'manter').slice(0, 5),
-    over_invest: items.filter(i => i.quadrante === 'over_invest').slice(0, 5),
-    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia').slice(0, 5),
+    agir_agora: items.filter(i => i.quadrante === 'agir_agora').slice(0, 10),
+    manter:     items.filter(i => i.quadrante === 'manter').slice(0, 10),
+    over_invest: items.filter(i => i.quadrante === 'over_invest').slice(0, 10),
+    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia').slice(0, 10),
   }
   const Q = ({ titulo, subtitulo, cor, items: it }: { titulo: string; subtitulo: string; cor: 'red'|'green'|'gray'|'blue'; items: any[] }) => {
     const pal = {
