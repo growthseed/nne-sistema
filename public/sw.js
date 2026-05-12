@@ -1,5 +1,8 @@
 // Service Worker - NNE Sistema PWA
-const CACHE_NAME = 'nne-v1'
+// IMPORTANTE: bump esta versão a cada deploy que mude bundles JS/CSS pra
+// forçar limpeza automática do cache no cliente (assets antigos com mojibake
+// ou bugs já corrigidos só somem quando essa string muda).
+const CACHE_NAME = 'nne-v3-20260512'
 const PRECACHE = [
   '/',
   '/img/logo-nne.png',
