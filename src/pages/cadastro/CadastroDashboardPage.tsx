@@ -242,23 +242,39 @@ export default function CadastroDashboardPage() {
   async function fetchRespostas() {
     setLoading(true)
     try {
-      let query = supabase
-        .from('cadastro_respostas')
-        .select('*')
-        .order('created_at', { ascending: false })
+      // IMPORTANTE: Supabase tem limit padrão de 1000 rows por query.
+      // Sem paginação, o total mostrado no dashboard fica capado em 1000,
+      // criando divergência com o painel da associação (que faz query
+      // separada por escopo e bate 100%). Paginamos em lotes de 1000.
+      const PAGE_SIZE = 1000
+      const all: CadastroRow[] = []
+      let from = 0
 
-      // Scope filtering by RBAC hierarchy
-      if (profile!.papel === 'admin_uniao') {
-        query = query.eq('uniao_id', profile!.uniao_id!)
-      } else if (profile!.papel === 'admin_associacao') {
-        query = query.eq('associacao_id', profile!.associacao_id!)
-      } else if (profile!.papel !== 'admin') {
-        query = query.eq('igreja_id', profile!.igreja_id!)
+      while (true) {
+        let query = supabase
+          .from('cadastro_respostas')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, from + PAGE_SIZE - 1)
+
+        if (profile!.papel === 'admin_uniao') {
+          query = query.eq('uniao_id', profile!.uniao_id!)
+        } else if (profile!.papel === 'admin_associacao') {
+          query = query.eq('associacao_id', profile!.associacao_id!)
+        } else if (profile!.papel !== 'admin') {
+          query = query.eq('igreja_id', profile!.igreja_id!)
+        }
+
+        const { data, error } = await query
+        if (error) throw error
+        const batch = (data || []) as CadastroRow[]
+        all.push(...batch)
+        if (batch.length < PAGE_SIZE) break  // último lote
+        from += PAGE_SIZE
+        if (from > 50_000) break  // safety cap (50k respostas é absurdo)
       }
 
-      const { data, error } = await query
-      if (error) throw error
-      setRespostas((data || []) as CadastroRow[])
+      setRespostas(all)
     } catch (err) {
       console.error('Erro ao buscar respostas:', err)
     } finally {
