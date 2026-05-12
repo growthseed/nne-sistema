@@ -36,6 +36,10 @@ import {
   HiOutlineSearch,
   HiOutlineDownload,
   HiOutlineUsers,
+  HiOutlineSparkles,
+  HiOutlineLightningBolt,
+  HiOutlineHeart,
+  HiOutlineChartBar,
 } from 'react-icons/hi'
 
 ChartJS.register(
@@ -1050,49 +1054,9 @@ export default function CadastroDashboardPage() {
 
       {/* ========== TAB: DASHBOARD ========== */}
       {pageTab === 'dashboard' && <>
-      {/* Visão Executiva — números principais + KPIs compostos + Ranking + Heatmap + Matriz IxD */}
+      {/* Análises estratégicas: Ranking + Heatmap + Matriz IxD + Termômetro */}
       {total > 0 && (
         <section className="space-y-5">
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl text-white p-6 shadow-lg">
-            <div className="flex items-start justify-between flex-wrap gap-3 mb-5">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-slate-300">Visão Executiva · Estratégico</p>
-                <h2 className="text-xl font-bold mt-1">Saúde geral{filtroAssociacao === 'todas' ? ' da União Norte Nordeste' : ' — ' + (associacoes.find(a => a.id === filtroAssociacao)?.sigla || 'filtro')}</h2>
-              </div>
-              <button
-                onClick={() => { fetchRespostas(); fetchAssociacoes(); fetchIgrejasMembros() }}
-                disabled={loading}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white inline-flex items-center gap-1.5 disabled:opacity-50"
-                title="Recarregar dados do banco"
-              >
-                <svg className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                {loading ? 'Atualizando...' : 'Atualizar'}
-              </button>
-            </div>
-
-            {/* Linha 1: Números principais */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-5 pb-5 border-b border-white/10">
-              <ExecNum label="Membros (inv.)" value={totalMembrosInventario.toLocaleString('pt-BR')} hint="via Inventário" />
-              <ExecNum label="Total Cadastros" value={total.toLocaleString('pt-BR')} />
-              <ExecNum label="Completos" value={completos.toLocaleString('pt-BR')} accent="emerald" />
-              <ExecNum label="Parciais" value={parciais.toLocaleString('pt-BR')} accent="amber" />
-              <ExecNum label="Parou Final" value={parouFinal.toLocaleString('pt-BR')} accent="orange" />
-              <ExecNum label="Conclusão" value={`${taxaComplecao}%`} accent="indigo" />
-              <ExecNum label="Cobertura" value={`${pctCobertura}%`} accent={pctCobertura >= 75 ? 'emerald' : pctCobertura >= 40 ? 'amber' : 'red'} hint={`${faltamMeta} faltam`} />
-            </div>
-
-            {/* Linha 2: KPIs compostos (índices analíticos) */}
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Índices compostos (0–100)</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <ExecKpi label="Vida Espiritual" value={indicesUniao.vidaEspiritual} />
-                <ExecKpi label="Mobilização" value={indicesUniao.mobilizacao} />
-                <ExecKpi label="Saúde Relacional" value={indicesUniao.saudeRelacional} />
-                <ExecKpi label="Geral" value={indicesUniao.geral} />
-              </div>
-            </div>
-          </div>
-
           {/* Ranking de associações */}
           <div className="card">
             <div className="flex items-center justify-between mb-3">
@@ -1269,10 +1233,19 @@ export default function CadastroDashboardPage() {
           <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary text-xs flex items-center gap-1.5 whitespace-nowrap" title="Abrir link">
             <HiOutlineExternalLink className="w-4 h-4" />
           </a>
+          <button
+            onClick={() => { fetchRespostas(); fetchAssociacoes(); fetchIgrejasMembros() }}
+            disabled={loading}
+            className="btn-secondary text-xs flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50"
+            title="Recarregar dados do banco"
+          >
+            <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            {loading ? 'Atualizando' : 'Atualizar'}
+          </button>
         </div>
       </div>
 
-      {/* Stat Cards */}
+      {/* Stat Cards — números operacionais */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-5">
         <div
           className="card flex items-start gap-4"
@@ -1352,6 +1325,26 @@ export default function CadastroDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Índices compostos (KPIs analíticos derivados das respostas) */}
+      {total > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">
+              Índices compostos · 0–100
+            </p>
+            <p className="text-[10px] text-gray-400">
+              Calculados a partir das notas de satisfação e frequência respondidas
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+            <KpiIndice label="Vida Espiritual" value={indicesUniao.vidaEspiritual} icon={HiOutlineSparkles} iconBg="bg-amber-500" />
+            <KpiIndice label="Mobilização" value={indicesUniao.mobilizacao} icon={HiOutlineLightningBolt} iconBg="bg-rose-500" />
+            <KpiIndice label="Saúde Relacional" value={indicesUniao.saudeRelacional} icon={HiOutlineHeart} iconBg="bg-pink-500" />
+            <KpiIndice label="Geral" value={indicesUniao.geral} icon={HiOutlineChartBar} iconBg="bg-emerald-500" />
+          </div>
+        </div>
+      )}
 
       {/* Meta de Cobertura (cadastros vs membros) */}
       <div className="card">
@@ -2160,36 +2153,30 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
   )
 }
 
-// ====== Componentes da Visão Executiva (estratégico) ======
-function ExecNum({ label, value, accent, hint }: { label: string; value: string; accent?: 'emerald' | 'amber' | 'orange' | 'red' | 'indigo' | 'teal'; hint?: string }) {
-  const cor = accent === 'emerald' ? 'text-emerald-300'
-    : accent === 'amber' ? 'text-amber-300'
-    : accent === 'orange' ? 'text-orange-300'
-    : accent === 'red' ? 'text-red-300'
-    : accent === 'indigo' ? 'text-indigo-300'
-    : accent === 'teal' ? 'text-teal-300'
-    : 'text-white'
-  return (
-    <div>
-      <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
-      <p className={`text-xl sm:text-2xl font-bold tabular-nums ${cor}`}>{value}</p>
-      {hint && <p className="text-[10px] text-slate-500 mt-0.5">{hint}</p>}
-    </div>
-  )
-}
+// ====== Componentes da matriz I×D (estratégico) ======
 
-function ExecKpi({ label, value }: { label: string; value: number }) {
+// Card branco no padrão dos Stat Cards para os 4 KPIs compostos (0–100).
+function KpiIndice({ label, value, icon: Icon, iconBg }: { label: string; value: number; icon: any; iconBg: string }) {
   const c = classifyScore(value / 25)
-  const cor = c === 'saudavel' ? 'text-emerald-300'
-    : c === 'atencao' ? 'text-amber-300'
-    : c === 'critico' ? 'text-red-300'
-    : 'text-slate-400'
+  const cor = classColors(c)
+  const labelCls = c === 'saudavel' ? 'Saudável'
+    : c === 'atencao' ? 'Atenção'
+    : c === 'critico' ? 'Crítico'
+    : '—'
   return (
-    <div>
-      <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
-      <p className={`text-2xl font-bold tabular-nums ${cor}`}>{value}<span className="text-xs font-normal text-slate-500">/100</span></p>
-      <div className="h-1 mt-1 bg-white/10 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${value}%`, backgroundColor: c === 'saudavel' ? '#10b981' : c === 'atencao' ? '#f59e0b' : c === 'critico' ? '#ef4444' : '#94a3b8' }} />
+    <div className="card flex items-start gap-4">
+      <div className={`${iconBg} p-3 rounded-xl text-white`}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className={`text-2xl font-bold tabular-nums ${cor.text}`}>
+          {value}<span className="text-sm font-normal text-gray-400">/100</span>
+        </p>
+        <div className="h-1 mt-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all" style={{ width: `${value}%`, backgroundColor: cor.solid }} />
+        </div>
+        <p className={`text-[10px] mt-0.5 ${cor.text} font-medium`}>{labelCls}</p>
       </div>
     </div>
   )
