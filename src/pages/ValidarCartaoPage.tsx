@@ -154,7 +154,7 @@ export default function ValidarCartaoPage() {
         {/* Search Form */}
         <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-700 mb-3">
-            Informe o numero da credencial do membro para validar
+            Informe o número da credencial do membro para validar
           </h2>
           <form id="validar-form" onSubmit={handleSearch} className="flex gap-3">
             <div className="flex-1 relative">
@@ -192,8 +192,8 @@ export default function ValidarCartaoPage() {
             </div>
             <h3 className="text-lg font-bold text-gray-800 mb-2">Credencial nao encontrada</h3>
             <p className="text-gray-500 text-sm">
-              Nao foi possivel encontrar um membro com o numero de credencial informado.
-              Verifique se o numero esta correto e tente novamente.
+              Não foi possível encontrar um membro com o número de credencial informado.
+              Verifique se o número esta correto e tente novamente.
             </p>
           </div>
         )}
@@ -301,7 +301,7 @@ export default function ValidarCartaoPage() {
                     <p className="font-medium text-gray-500 mb-1">Verificacao Digital</p>
                     <p>
                       Escaneie o QR Code para verificar a autenticidade desta credencial
-                      ou acesse o link de validacao com o numero do membro.
+                      ou acesse o link de validacao com o número do membro.
                     </p>
                   </div>
                 </div>

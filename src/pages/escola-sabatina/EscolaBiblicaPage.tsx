@@ -29,7 +29,7 @@ export default function EscolaBiblicaPage() {
   const manager = canManage(userPapel)
 
   const tabs: { id: TabType; label: string; icon: any; visible: boolean }[] = [
-    { id: 'conteudo', label: 'ConteÃºdo', icon: HiOutlineBookOpen, visible: true },
+    { id: 'conteudo', label: 'Conteúdo', icon: HiOutlineBookOpen, visible: true },
     { id: 'turmas', label: 'Turmas & Alunos', icon: HiOutlineUserGroup, visible: manager },
     { id: 'respostas', label: 'Respostas', icon: HiOutlineClipboardCheck, visible: manager },
   ]
@@ -45,9 +45,9 @@ export default function EscolaBiblicaPage() {
               <HiOutlineAcademicCap className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Escola BÃ­blica</h1>
+              <h1 className="text-2xl font-bold">Escola Bíblica</h1>
               <p className="text-white/80 text-sm">
-                {master ? 'Gerencie mÃ³dulos, conteÃºdo e turmas' : 'Gerencie turmas e acompanhe alunos'}
+                {master ? 'Gerencie modulos, conteúdo e turmas' : 'Gerencie turmas e acompanhe alunos'}
               </p>
             </div>
           </div>

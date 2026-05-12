@@ -122,7 +122,7 @@ function TabTurmas() {
   const [showNovaInteracao, setShowNovaInteracao] = useState<string | null>(null)
   const [interacaoForm, setInteracaoForm] = useState({ tipo: 'visita', descricao: '', pedido_oracao: false, data: new Date().toISOString().slice(0, 10) })
 
-  // DiÃ¡rio de turma
+  // Diário de turma
   const [showNovoDiario, setShowNovoDiario] = useState(false)
   const [diarioForm, setDiarioForm] = useState({ data: new Date().toISOString().slice(0, 10), ponto_numero: 0, ponto_titulo: '', resumo: '', observacoes: '', presentes: 0, ausentes: 0 })
   const [savingNovoAluno, setSavingNovoAluno] = useState(false)
@@ -174,8 +174,8 @@ function TabTurmas() {
     }
 
     const moduloTitulos: Record<string, string> = {
-      principios_fe: 'PrincÃ­pios de FÃ©',
-      crencas_fundamentais: 'CrenÃ§as Fundamentais',
+      principios_fe: 'Princípios de Fé',
+      crencas_fundamentais: 'Crenças Fundamentais',
     }
     const moduloPontos: Record<string, number> = { principios_fe: 37, crencas_fundamentais: 25 }
     const igrejaSelecionada = scopedIgrejas.find((igreja) => igreja.id === igrejaId)
@@ -200,7 +200,7 @@ function TabTurmas() {
       setNovaTurma({ nome: '', modulo_id: 'principios_fe', data_inicio: '', igreja_id: igrejaId })
     } catch (error) {
       console.error('Erro ao criar turma:', error)
-      toastError('Nao foi possivel criar a turma agora.')
+      toastError('Não foi possível criar a turma agora.')
     }
   }
 
@@ -222,7 +222,7 @@ function TabTurmas() {
       setAlunoSearch('')
     } catch (error) {
       console.error('Erro ao adicionar aluno:', error)
-      toastError('Nao foi possivel adicionar o aluno agora.')
+      toastError('Não foi possível adicionar o aluno agora.')
     }
   }
 
@@ -246,7 +246,7 @@ function TabTurmas() {
       setNovoAluno({ nome: '', celular: '', email: '', tipo: 'interessado' })
     } catch (error) {
       console.error('Erro ao criar novo aluno:', error)
-      toastError('Nao foi possivel cadastrar o interessado agora.')
+      toastError('Não foi possível cadastrar o interessado agora.')
     } finally {
       setSavingNovoAluno(false)
     }
@@ -259,7 +259,7 @@ function TabTurmas() {
       toastSuccess('Aluno removido da turma.')
     } catch (error) {
       console.error('Erro ao remover aluno:', error)
-      toastError('Nao foi possivel remover o aluno agora.')
+      toastError('Não foi possível remover o aluno agora.')
     }
   }
 
@@ -274,7 +274,7 @@ function TabTurmas() {
       toastSuccess(a.decisao_batismo ? 'Decisao removida.' : 'Decisao registrada.')
     } catch (error) {
       console.error('Erro ao atualizar decisao:', error)
-      toastError('Nao foi possivel atualizar a decisao agora.')
+      toastError('Não foi possível atualizar a decisão agora.')
     } finally {
       setProcessingAlunoId(null)
     }
@@ -299,7 +299,7 @@ function TabTurmas() {
       setBatismoDate(new Date().toISOString().slice(0, 10))
     } catch (error) {
       console.error('Erro ao registrar batismo:', error)
-      toastError('Nao foi possivel registrar o batismo agora.')
+      toastError('Não foi possível registrar o batismo agora.')
     } finally {
       setRegisteringBatismoId(null)
     }
@@ -322,7 +322,7 @@ function TabTurmas() {
       setNovaAula({ ponto_numero: novaAula.ponto_numero + 1, ponto_titulo: '', presentes: [] })
     } catch (error) {
       console.error('Erro ao ativar aula:', error)
-      toastError('Nao foi possivel ativar a aula agora.')
+      toastError('Não foi possível ativar a aula agora.')
     }
   }
 
@@ -332,10 +332,10 @@ function TabTurmas() {
         aula_id: aulaId,
         profile_id: profile?.id || null,
       })
-      toastSuccess('Questionario liberado para a turma.')
+      toastSuccess('Questionário liberado para a turma.')
     } catch (error) {
-      console.error('Erro ao liberar questionario:', error)
-      toastError('Nao foi possivel liberar o questionario agora.')
+      console.error('Erro ao liberar questionário:', error)
+      toastError('Não foi possível liberar o questionário agora.')
     }
   }
 
@@ -354,13 +354,13 @@ function TabTurmas() {
         professor_id: profile.id,
         professor_nome: profile.nome || null,
       })
-      toastSuccess('Diario salvo com sucesso.')
+      toastSuccess('Diário salvo com sucesso.')
       setShowNovoDiario(false)
       setDiarioForm({ data: new Date().toISOString().slice(0, 10), ponto_numero: 0, ponto_titulo: '', resumo: '', observacoes: '', presentes: 0, ausentes: 0 })
       await refetchTurmaExtras()
     } catch (error) {
       console.error('Erro ao salvar diario:', error)
-      toastError('Nao foi possivel salvar o diario agora.')
+      toastError('Não foi possível salvar o diário agora.')
     }
   }
 
@@ -384,7 +384,7 @@ function TabTurmas() {
       await refetchTurmaExtras()
     } catch (error) {
       console.error('Erro ao registrar interacao:', error)
-      toastError('Nao foi possivel registrar a interacao agora.')
+      toastError('Não foi possível registrar a interação agora.')
     } finally {
       setSavingInteracaoAlunoId(null)
     }
@@ -397,15 +397,15 @@ function TabTurmas() {
     }
     const num = celular.replace(/\D/g, '')
     if (num.length < 10) {
-      toastError('O numero do aluno parece incompleto.')
+      toastError('O número do aluno parece incompleto.')
       return
     }
-    const msg = encodeURIComponent(`OlÃ¡ ${nomeAluno}, tudo bem? Estou entrando em contato sobre a Escola BÃ­blica.`)
+    const msg = encodeURIComponent(`Olá ${nomeAluno}, tudo bem? Estou entrando em contato sobre a Escola Bíblica.`)
     window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
   }
 
   function getNome(a: AlunoEB) {
-    return Array.isArray(a.pessoa) ? a.pessoa[0]?.nome || 'â€”' : (a.pessoa as any)?.nome || 'â€”'
+    return Array.isArray(a.pessoa) ? a.pessoa[0]?.nome || '"”' : (a.pessoa as any)?.nome || '"”'
   }
 
   function getCelular(a: AlunoEB) {
@@ -420,7 +420,7 @@ function TabTurmas() {
       toastSuccess('Link copiado. Agora voce pode enviar para os alunos.')
     } catch (error) {
       console.error('Erro ao copiar link da turma:', error)
-      toastError('Nao foi possivel copiar o link agora.')
+      toastError('Não foi possível copiar o link agora.')
     } finally {
       setCopyingLink(false)
     }
@@ -449,7 +449,7 @@ function TabTurmas() {
             <div>
               <h2 className="text-lg font-bold text-gray-800">{selectedTurma.nome}</h2>
               <p className="text-sm text-gray-500 mt-0.5">
-                {igrejaNome}{selectedTurma.data_inicio && ` â€¢ InÃ­cio: ${formatDate(selectedTurma.data_inicio)}`}
+                {igrejaNome}{selectedTurma.data_inicio && ` • Início: ${formatDate(selectedTurma.data_inicio)}`}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -468,9 +468,9 @@ function TabTurmas() {
           <div className="grid grid-cols-4 gap-3 mt-4">
             {[
               { v: alunos.length, l: 'Alunos', c: 'text-gray-700' },
-              { v: decisoes, l: 'DecisÃµes', c: 'text-green-600' },
+              { v: decisoes, l: 'Decisões', c: 'text-green-600' },
               { v: aulas.length, l: 'Aulas', c: 'text-blue-600' },
-              { v: aulas.filter(a => a.questionario_liberado).length, l: 'QuestionÃ¡rios', c: 'text-purple-600' },
+              { v: aulas.filter(a => a.questionário_liberado).length, l: 'Questionarios', c: 'text-purple-600' },
             ].map((s, i) => (
               <div key={i} className="text-center">
                 <p className={`text-xl font-bold ${s.c}`}>{s.v}</p>
@@ -494,7 +494,7 @@ function TabTurmas() {
           <div className="card border border-red-200 bg-red-50/70 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar todos os detalhes da turma.</p>
+                <p className="text-sm font-semibold text-red-700">Não foi possível carregar todos os detalhes da turma.</p>
                 <p className="text-xs text-red-600 mt-1">{turmaDetailError || turmaExtrasError}</p>
               </div>
               <button
@@ -515,8 +515,8 @@ function TabTurmas() {
           {[
             { id: 'alunos' as const, label: 'Alunos', icon: HiOutlineUserGroup },
             { id: 'aulas' as const, label: 'Aulas', icon: HiOutlineAcademicCap },
-            { id: 'interacoes' as const, label: `InteraÃ§Ãµes (${interacoes.length})`, icon: HiOutlineClipboardCheck },
-            { id: 'diario' as const, label: `DiÃ¡rio (${diario.length})`, icon: HiOutlineDocumentText },
+            { id: 'interacoes' as const, label: `Interações (${interacoes.length})`, icon: HiOutlineClipboardCheck },
+            { id: 'diario' as const, label: `Diário (${diario.length})`, icon: HiOutlineDocumentText },
           ].map(t => {
             const Icon = t.icon
             return (
@@ -585,7 +585,7 @@ function TabTurmas() {
                 </div>
                 {searchingAluno && <p className="text-xs text-gray-400">Buscando...</p>}
                 {alunoResultsError && (
-                  <p className="text-xs text-red-600">Nao foi possivel buscar pessoas agora.</p>
+                  <p className="text-xs text-red-600">Não foi possível buscar pessoas agora.</p>
                 )}
                 {!searchingAluno && !alunoResultsError && alunoSearch.trim().length >= 2 && alunoResults.length === 0 && (
                   <p className="text-xs text-gray-500">Nenhuma pessoa encontrada para esta igreja.</p>
@@ -623,8 +623,8 @@ function TabTurmas() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-800 truncate">{getNome(a)}</p>
                       <p className="text-[10px] text-gray-400">
-                        {a.licoes_concluidas} liÃ§Ãµes
-                        {getCelular(a) && ` â€¢ ${getCelular(a)}`}
+                        {a.licoes_concluidas} lições
+                        {getCelular(a) && ` • ${getCelular(a)}`}
                       </p>
                     </div>
                     {a.decisao_batismo && (a as any).status !== 'batizado' && (
@@ -653,7 +653,7 @@ function TabTurmas() {
                         }`}
                         disabled={processingAlunoId === a.id}>
                         <HiOutlineCheck className="w-3.5 h-3.5 inline mr-0.5" />
-                        {processingAlunoId === a.id ? 'Salvando...' : a.decisao_batismo ? 'DecisÃ£o âœ“' : 'Batismo?'}
+                        {processingAlunoId === a.id ? 'Salvando...' : a.decisao_batismo ? 'Decisão ✓' : 'Batismo?'}
                       </button>
                     )}
                     <button
@@ -717,13 +717,13 @@ function TabTurmas() {
             {showNovaAula && alunos.length > 0 && (
               <div className="p-4 bg-blue-50/50 border border-blue-200 rounded-xl space-y-3">
                 <div>
-                  <label className="text-[10px] text-gray-400 mb-1 block">Selecione o ponto doutrinÃ¡rio</label>
+                  <label className="text-[10px] text-gray-400 mb-1 block">Selecione o ponto doutrinário</label>
                   {loadingPontosDisponiveis ? (
-                    <p className="text-xs text-gray-500 bg-white rounded-lg p-2">Carregando pontos disponÃ­veis...</p>
+                    <p className="text-xs text-gray-500 bg-white rounded-lg p-2">Carregando pontos disponíveis...</p>
                   ) : pontosDisponiveisError ? (
                     <p className="text-xs text-red-600 bg-red-50 rounded-lg p-2">{pontosDisponiveisError}</p>
                   ) : pontosDisponiveis.length === 0 ? (
-                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2">Todos os pontos jÃ¡ foram ativados nesta turma.</p>
+                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg p-2">Todos os pontos já foram ativados nesta turma.</p>
                   ) : (
                     <select
                       value={novaAula.ponto_numero}
@@ -737,7 +737,7 @@ function TabTurmas() {
                       <option value={0}>Selecione um ponto...</option>
                       {pontosDisponiveis.map(p => (
                         <option key={p.ponto_numero} value={p.ponto_numero}>
-                          Ponto {p.ponto_numero} â€” {p.titulo}
+                          Ponto {p.ponto_numero} "” {p.titulo}
                         </option>
                       ))}
                     </select>
@@ -745,7 +745,7 @@ function TabTurmas() {
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[10px] text-gray-400">PresenÃ§a</label>
+                    <label className="text-[10px] text-gray-400">Presença</label>
                     <button onClick={() => setNovaAula(prev => ({
                       ...prev, presentes: prev.presentes.length === alunos.length ? [] : alunos.map(a => a.pessoa_id),
                     }))} className="text-[10px] text-blue-600 hover:underline">
@@ -792,7 +792,7 @@ function TabTurmas() {
                       <p className="text-sm font-medium text-gray-700 truncate">{a.ponto_titulo || `Ponto ${a.ponto_numero}`}</p>
                       <p className="text-[10px] text-gray-400">{formatDate(a.data_aula)}</p>
                     </div>
-                    {a.questionario_liberado ? (
+                    {a.questionário_liberado ? (
                       <span className="text-[10px] px-2.5 py-1 rounded-full bg-green-100 text-green-700 flex items-center gap-1">
                         <HiOutlineLockOpen className="w-3 h-3" /> Liberado
                       </span>
@@ -810,18 +810,18 @@ function TabTurmas() {
           </div>
         )}
 
-        {/* Tab: DiÃ¡rio de Turma */}
+        {/* Tab: Diário de Turma */}
         {detailTab === 'diario' && (
           <div className="card p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700">DiÃ¡rio de Turma</h3>
+              <h3 className="text-sm font-semibold text-gray-700">Diário de Turma</h3>
               <button onClick={() => setShowNovoDiario(!showNovoDiario)}
                 className="btn-primary text-xs flex items-center gap-1">
                 <HiOutlinePlus className="w-3.5 h-3.5" /> Novo Registro
               </button>
             </div>
 
-            {/* Form novo diÃ¡rio */}
+            {/* Form novo diário */}
             {showNovoDiario && (
               <div className="p-4 bg-primary-50/30 border border-primary-200 rounded-xl space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -832,7 +832,7 @@ function TabTurmas() {
                   <div>
                     <label className="text-[10px] text-gray-400">Ponto estudado</label>
                     {loadingPontosDisponiveis && (
-                      <p className="text-xs text-gray-500 bg-white rounded-lg p-2 mt-1">Carregando pontos disponÃ­veis...</p>
+                      <p className="text-xs text-gray-500 bg-white rounded-lg p-2 mt-1">Carregando pontos disponíveis...</p>
                     )}
                     {pontosDisponiveisError && (
                       <p className="text-xs text-red-600 bg-red-50 rounded-lg p-2 mt-1">{pontosDisponiveisError}</p>
@@ -847,7 +847,7 @@ function TabTurmas() {
                       disabled={loadingPontosDisponiveis || !!pontosDisponiveisError}>
                       <option value={0}>Selecione...</option>
                       {aulas.map(a => (
-                        <option key={a.ponto_numero} value={a.ponto_numero}>Ponto {a.ponto_numero} â€” {a.ponto_titulo}</option>
+                        <option key={a.ponto_numero} value={a.ponto_numero}>Ponto {a.ponto_numero} "” {a.ponto_titulo}</option>
                       ))}
                     </select>
                   </div>
@@ -857,14 +857,14 @@ function TabTurmas() {
                   <textarea value={diarioForm.resumo}
                     onChange={e => setDiarioForm(prev => ({ ...prev, resumo: e.target.value }))}
                     className="input-field text-sm min-h-[80px]"
-                    placeholder="O que foi estudado, discussÃµes, pontos principais..." />
+                    placeholder="O que foi estudado, discussões, pontos principais..." />
                 </div>
                 <div>
-                  <label className="text-[10px] text-gray-400">ObservaÃ§Ãµes (opcional)</label>
+                  <label className="text-[10px] text-gray-400">Observações (opcional)</label>
                   <textarea value={diarioForm.observacoes}
                     onChange={e => setDiarioForm(prev => ({ ...prev, observacoes: e.target.value }))}
                     className="input-field text-sm"
-                    placeholder="Alunos que precisam de atenÃ§Ã£o, pendÃªncias..." rows={2} />
+                    placeholder="Alunos que precisam de atenção, pendências..." rows={2} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -891,7 +891,7 @@ function TabTurmas() {
 
             {/* Lista de registros */}
             {diario.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">Nenhum registro no diÃ¡rio</p>
+              <p className="text-sm text-gray-400 text-center py-6">Nenhum registro no diário</p>
             ) : (
               <div className="space-y-3">
                 {diario.map(d => (
@@ -914,7 +914,7 @@ function TabTurmas() {
                     {d.observacoes && (
                       <p className="text-xs text-gray-500 mt-2 bg-gray-50 rounded-lg p-2 italic">{d.observacoes}</p>
                     )}
-                    <p className="text-[10px] text-gray-300 mt-2">Prof. {d.professor_nome || 'â€”'}</p>
+                    <p className="text-[10px] text-gray-300 mt-2">Prof. {d.professor_nome || '"”'}</p>
                   </div>
                 ))}
               </div>
@@ -922,17 +922,17 @@ function TabTurmas() {
           </div>
         )}
 
-        {/* Tab: InteraÃ§Ãµes do Professor */}
+        {/* Tab: Interações do Professor */}
         {detailTab === 'interacoes' && (
           <div className="card p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700">Registro de InteraÃ§Ãµes</h3>
+              <h3 className="text-sm font-semibold text-gray-700">Registro de Interações</h3>
               <span className="text-xs text-gray-400">{interacoes.length} registros</span>
             </div>
 
-            {/* AÃ§Ãµes rÃ¡pidas por aluno */}
+            {/* Ações rápidas por aluno */}
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">Selecione um aluno para registrar uma aÃ§Ã£o:</p>
+              <p className="text-xs text-gray-500">Selecione um aluno para registrar uma ação:</p>
               {alunos.map(a => {
                 const nome = getNome(a)
                 const cel = getCelular(a)
@@ -947,7 +947,7 @@ function TabTurmas() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-800 truncate">{nome}</p>
-                        <p className="text-[10px] text-gray-400">{alunoInteracoes.length} interaÃ§Ãµes</p>
+                        <p className="text-[10px] text-gray-400">{alunoInteracoes.length} interações</p>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         {cel && (
@@ -963,16 +963,16 @@ function TabTurmas() {
                       </div>
                     </div>
 
-                    {/* FormulÃ¡rio de interaÃ§Ã£o */}
+                    {/* Formulário de interação */}
                     {isOpen && (
                       <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-gray-100 space-y-3">
                         <div className="flex gap-2 items-end">
                           <div className="flex-1 flex gap-2">
                             {[
                               { id: 'visita', label: 'Visita', emoji: 'ðŸ ' },
-                              { id: 'ligacao', label: 'LigaÃ§Ã£o', emoji: 'ðŸ“ž' },
+                              { id: 'ligacao', label: 'Ligação', emoji: 'ðŸ“ž' },
                               { id: 'mensagem', label: 'Mensagem', emoji: 'ðŸ’¬' },
-                              { id: 'oracao', label: 'OraÃ§Ã£o', emoji: 'ðŸ™' },
+                              { id: 'oracao', label: 'Oração', emoji: '🙏' },
                             ].map(t => (
                               <button key={t.id} onClick={() => setInteracaoForm(prev => ({ ...prev, tipo: t.id }))}
                                 className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
@@ -988,13 +988,13 @@ function TabTurmas() {
                         </div>
                         <textarea value={interacaoForm.descricao}
                           onChange={e => setInteracaoForm(prev => ({ ...prev, descricao: e.target.value }))}
-                          className="input-field text-sm min-h-[60px]" placeholder="Descreva a interaÃ§Ã£o (opcional)..." />
+                          className="input-field text-sm min-h-[60px]" placeholder="Descreva a interação (opcional)..." />
                         <div className="flex items-center justify-between">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" checked={interacaoForm.pedido_oracao}
                               onChange={e => setInteracaoForm(prev => ({ ...prev, pedido_oracao: e.target.checked }))}
                               className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                            <span className="text-xs text-gray-600">Pedido de oraÃ§Ã£o</span>
+                            <span className="text-xs text-gray-600">Pedido de oração</span>
                           </label>
                           <button onClick={() => registrarInteracao(a.id)}
                             className="bg-primary-600 hover:bg-primary-700 text-white text-xs px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
@@ -1005,12 +1005,12 @@ function TabTurmas() {
                       </div>
                     )}
 
-                    {/* HistÃ³rico rÃ¡pido do aluno */}
+                    {/* Histórico rápido do aluno */}
                     {alunoInteracoes.length > 0 && !isOpen && (
                       <div className="px-4 pb-3 flex gap-1.5 overflow-x-auto">
                         {alunoInteracoes.slice(0, 5).map(i => (
                           <span key={i.id} className="shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                            {i.tipo === 'visita' ? 'ðŸ ' : i.tipo === 'ligacao' ? 'ðŸ“ž' : i.tipo === 'mensagem' ? 'ðŸ’¬' : 'ðŸ™'}
+                            {i.tipo === 'visita' ? 'ðŸ ' : i.tipo === 'ligacao' ? 'ðŸ“ž' : i.tipo === 'mensagem' ? 'ðŸ’¬' : '🙏'}
                             {' '}{formatDate(i.data_interacao)}
                           </span>
                         ))}
@@ -1021,18 +1021,18 @@ function TabTurmas() {
               })}
             </div>
 
-            {/* HistÃ³rico geral */}
+            {/* Histórico geral */}
             {interacoes.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold text-gray-600 mb-2 mt-4">HistÃ³rico Completo</h4>
+                <h4 className="text-xs font-semibold text-gray-600 mb-2 mt-4">Histórico Completo</h4>
                 <div className="space-y-1.5 max-h-64 overflow-y-auto">
                   {interacoes.map(i => {
                     const aluno = alunos.find(a => a.id === i.aluno_id)
-                    const nomeAluno = aluno ? getNome(aluno) : 'â€”'
+                    const nomeAluno = aluno ? getNome(aluno) : '"”'
                     return (
                       <div key={i.id} className="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 text-xs">
                         <span className="text-lg shrink-0">
-                          {i.tipo === 'visita' ? 'ðŸ ' : i.tipo === 'ligacao' ? 'ðŸ“ž' : i.tipo === 'mensagem' ? 'ðŸ’¬' : 'ðŸ™'}
+                          {i.tipo === 'visita' ? 'ðŸ ' : i.tipo === 'ligacao' ? 'ðŸ“ž' : i.tipo === 'mensagem' ? 'ðŸ’¬' : '🙏'}
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-700">
@@ -1041,7 +1041,7 @@ function TabTurmas() {
                             <span>{nomeAluno}</span>
                           </p>
                           {i.descricao && <p className="text-gray-500 mt-0.5">{i.descricao}</p>}
-                          {i.pedido_oracao && <span className="text-[10px] text-amber-600">Pedido de oraÃ§Ã£o</span>}
+                          {i.pedido_oracao && <span className="text-[10px] text-amber-600">Pedido de oração</span>}
                         </div>
                         <span className="text-[10px] text-gray-400 shrink-0">{formatDate(i.data_interacao)}</span>
                       </div>
@@ -1062,7 +1062,7 @@ function TabTurmas() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-gray-800">Turmas</h2>
-          <p className="text-xs text-gray-500">Gerencie suas turmas de estudo bÃ­blico</p>
+          <p className="text-xs text-gray-500">Gerencie suas turmas de estudo bíblico</p>
         </div>
         <button onClick={() => setShowNova(!showNova)} className="btn-primary text-sm flex items-center gap-1.5">
           <HiOutlinePlus className="w-4 h-4" /> Nova Turma
@@ -1073,7 +1073,7 @@ function TabTurmas() {
         <div className="card border border-red-200 bg-red-50/70 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar as turmas.</p>
+              <p className="text-sm font-semibold text-red-700">Não foi possível carregar as turmas.</p>
               <p className="text-xs text-red-600 mt-1">{turmasError}</p>
             </div>
             <button onClick={() => refetchTurmas()} className="btn-secondary text-sm w-fit">
@@ -1118,20 +1118,20 @@ function TabTurmas() {
               className={`p-3 rounded-xl border-2 text-left transition-all ${
                 novaTurma.modulo_id === 'principios_fe' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'
               }`}>
-              <p className="text-sm font-semibold text-gray-800">PrincÃ­pios de FÃ©</p>
-              <p className="text-xs text-gray-500">37 pontos doutrinÃ¡rios</p>
+              <p className="text-sm font-semibold text-gray-800">Princípios de Fé</p>
+              <p className="text-xs text-gray-500">37 pontos doutrinários</p>
             </button>
             <button type="button" onClick={() => setNovaTurma(p => ({ ...p, modulo_id: 'crencas_fundamentais' }))}
               className={`p-3 rounded-xl border-2 text-left transition-all ${
                 novaTurma.modulo_id === 'crencas_fundamentais' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'
               }`}>
-              <p className="text-sm font-semibold text-gray-800">CrenÃ§as Fundamentais</p>
+              <p className="text-sm font-semibold text-gray-800">Crenças Fundamentais</p>
               <p className="text-xs text-gray-500">25 temas essenciais</p>
             </button>
           </div>
           <input value={novaTurma.nome} onChange={e => setNovaTurma(p => ({ ...p, nome: e.target.value }))}
-            className="input-field" placeholder="Nome da turma (ex: Turma SÃ¡bado ManhÃ£ - Central)" autoFocus />
-          <DateDropdowns label="Data de inÃ­cio" value={novaTurma.data_inicio} onChange={v => setNovaTurma(p => ({ ...p, data_inicio: v }))} yearRange={2} futureYears={1} />
+            className="input-field" placeholder="Nome da turma (ex: Turma Sábado Manhã - Central)" autoFocus />
+          <DateDropdowns label="Data de início" value={novaTurma.data_inicio} onChange={v => setNovaTurma(p => ({ ...p, data_inicio: v }))} yearRange={2} futureYears={1} />
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowNova(false)} className="btn-secondary text-sm">Cancelar</button>
             <button
@@ -1157,7 +1157,7 @@ function TabTurmas() {
         </div>
         <div className="card py-3 text-center">
           <p className="text-2xl font-bold text-blue-600">{turmas.filter(t => t.status === 'concluida').length}</p>
-          <p className="text-xs text-gray-500">ConcluÃ­das</p>
+          <p className="text-xs text-gray-500">Concluídas</p>
         </div>
       </div>
 
@@ -1190,8 +1190,8 @@ function TabTurmas() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {igNome}{t.instrutor_nome && ` â€¢ Prof. ${t.instrutor_nome}`}
-                      {t.data_inicio && ` â€¢ ${formatDate(t.data_inicio)}`}
+                      {igNome}{t.instrutor_nome && ` • Prof. ${t.instrutor_nome}`}
+                      {t.data_inicio && ` • ${formatDate(t.data_inicio)}`}
                     </p>
                   </div>
                   <div className="text-right shrink-0 ml-4">

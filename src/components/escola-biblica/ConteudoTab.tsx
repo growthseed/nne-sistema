@@ -42,7 +42,7 @@ function genId() {
 }
 
 // =============================================
-// RENDER SEÃ‡Ã•ES (conteÃºdo estruturado)
+// RENDER SEÇÃ•ES (conteúdo estruturado)
 // =============================================
 
 
@@ -153,7 +153,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
       setEditing(false)
     } catch (error) {
       trackError(error, { context: 'eb_salvar_ponto', ponto_id: selectedPonto?.id })
-      toastError('Nao foi possivel salvar o ponto agora.')
+      toastError('Não foi possível salvar o ponto agora.')
     }
   }
 
@@ -165,7 +165,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
       setEditingModulo(null)
     } catch (error) {
       trackError(error, { context: 'eb_salvar_modulo', modulo_id: editingModulo?.id })
-      toastError('Nao foi possivel salvar o modulo agora.')
+      toastError('Não foi possível salvar o módulo agora.')
     }
   }
 
@@ -188,18 +188,18 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
       setNovoPonto({ titulo: '', subtitulo: '' })
     } catch (error) {
       trackError(error, { context: 'eb_criar_ponto' })
-      toastError('Nao foi possivel criar o ponto agora.')
+      toastError('Não foi possível criar o ponto agora.')
     }
   }
 
   async function deletePonto(id: string) {
-    if (!confirm('Excluir este ponto? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) return
+    if (!confirm('Excluir este ponto? Esta ação não pode ser desfeita.')) return
     try {
       await deletePontoMutation.mutateAsync({ id, moduloId: selectedModulo })
       setSelectedPonto(null)
     } catch (error) {
       trackError(error, { context: 'eb_excluir_ponto', ponto_id: id })
-      toastError('Nao foi possivel excluir o ponto agora.')
+      toastError('Não foi possível excluir o ponto agora.')
     }
   }
 
@@ -273,7 +273,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           </div>
           <div className="pr-24">
             <p className="text-white/70 text-xs font-medium uppercase tracking-wider mb-1">
-              {currentModulo?.titulo} â€¢ Ponto {selectedPonto.ponto_numero}
+              {currentModulo?.titulo} • Ponto {selectedPonto.ponto_numero}
             </p>
             {editing ? (
               <input value={selectedPonto.titulo}
@@ -322,14 +322,14 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           </div>{/* close relative p-6 */}
         </div>
 
-        {/* Imagem separada removida â€” agora Ã© background do header */}
+        {/* Imagem separada removida "” agora é background do header */}
         {selectedPonto.imagem_url && !editing && false && (
           <div className="rounded-xl overflow-hidden">
             <img src={selectedPonto.imagem_url} alt={selectedPonto.titulo} className="w-full h-48 object-cover" />
           </div>
         )}
 
-        {/* VÃ­deo embed (sempre visÃ­vel) */}
+        {/* Vídeo embed (sempre visível) */}
         {selectedPonto.video_url && !editing && (
           <div className="rounded-xl overflow-hidden shadow-sm">
             {(() => {
@@ -343,7 +343,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
                   <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                     <iframe
                       src={`https://www.youtube.com/embed/${embedId}?rel=0&modestbranding=1`}
-                      title="VÃ­deo da aula"
+                      title="Vídeo da aula"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       className="absolute inset-0 w-full h-full rounded-xl"
@@ -358,7 +358,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
                     <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
                       <HiOutlinePlay className="w-5 h-5" />
                     </div>
-                    Assistir vÃ­deo da aula
+                    Assistir vídeo da aula
                   </a>
                 </div>
               )
@@ -366,11 +366,11 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           </div>
         )}
 
-        {/* MÃ­dia (modo ediÃ§Ã£o) */}
+        {/* Mídia (modo edição) */}
         {editing && (
           <div className="card p-5 space-y-4">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <HiOutlinePhotograph className="w-4 h-4" /> MÃ­dia
+              <HiOutlinePhotograph className="w-4 h-4" /> Mídia
             </h3>
             <div className="grid sm:grid-cols-2 gap-3">
               <div>
@@ -379,7 +379,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
                   className="input-field text-sm" placeholder="https://..." />
               </div>
               <div>
-                <label className="text-xs text-gray-500">URL do VÃ­deo (YouTube)</label>
+                <label className="text-xs text-gray-500">URL do Vídeo (YouTube)</label>
                 <input value={selectedPonto.video_url || ''} onChange={e => setSelectedPonto({ ...selectedPonto, video_url: e.target.value })}
                   className="input-field text-sm" placeholder="https://youtube.com/..." />
               </div>
@@ -390,29 +390,29 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           </div>
         )}
 
-        {/* ConteÃºdo / IntroduÃ§Ã£o */}
+        {/* Conteúdo / Introdução */}
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-3">
-            <HiOutlineDocumentText className="w-4 h-4" /> ConteÃºdo
+            <HiOutlineDocumentText className="w-4 h-4" /> Conteúdo
           </h3>
           {selectedPonto.secoes && selectedPonto.secoes.length > 0 ? (
             <RenderSecoes secoes={selectedPonto.secoes} />
           ) : editing ? (
             <textarea value={selectedPonto.introducao || ''}
               onChange={e => setSelectedPonto({ ...selectedPonto, introducao: e.target.value })}
-              className="input-field text-sm min-h-[120px]" placeholder="Texto introdutÃ³rio do ponto..." />
+              className="input-field text-sm min-h-[120px]" placeholder="Texto introdutório do ponto..." />
           ) : selectedPonto.introducao ? (
             <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{selectedPonto.introducao}</p>
           ) : (
-            <p className="text-sm text-gray-400 italic">Nenhum conteÃºdo adicionado</p>
+            <p className="text-sm text-gray-400 italic">Nenhum conteúdo adicionado</p>
           )}
         </div>
 
-        {/* QuestionÃ¡rio */}
+        {/* Questionário */}
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <HiOutlineClipboardCheck className="w-4 h-4" /> QuestionÃ¡rio
+              <HiOutlineClipboardCheck className="w-4 h-4" /> Questionário
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
                 {selectedPonto.perguntas?.length || 0} perguntas
               </span>
@@ -451,12 +451,12 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
                                   {o.id.toUpperCase()}
                                 </button>
                                 <input value={o.texto} onChange={e => updateOpcao(idx, oi, e.target.value)}
-                                  className="input-field text-xs flex-1" placeholder={`OpÃ§Ã£o ${o.id.toUpperCase()}`} />
+                                  className="input-field text-xs flex-1" placeholder={`Opção ${o.id.toUpperCase()}`} />
                               </div>
                             ))}
                           </div>
                           <textarea value={p.explicacao} onChange={e => updatePergunta(idx, 'explicacao', e.target.value)}
-                            className="input-field text-xs" placeholder="ExplicaÃ§Ã£o da resposta..." rows={2} />
+                            className="input-field text-xs" placeholder="Explicação da resposta..." rows={2} />
                           <button onClick={() => removePergunta(idx)}
                             className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1">
                             <HiOutlineTrash className="w-3 h-3" /> Remover pergunta
@@ -477,7 +477,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
                                 }`}>
                                   {o.id.toUpperCase()}
                                 </span>
-                                {o.texto || 'â€”'}
+                                {o.texto || '"”'}
                               </div>
                             ))}
                           </div>
@@ -505,11 +505,11 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
           )}
         </div>
 
-        {/* Compromissos de FÃ© */}
+        {/* Compromissos de Fé */}
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <HiOutlineStar className="w-4 h-4" /> Compromissos de FÃ©
+              <HiOutlineStar className="w-4 h-4" /> Compromissos de Fé
             </h3>
             {editing && (
               <button onClick={addCompromisso} className="btn-primary text-xs flex items-center gap-1">
@@ -549,7 +549,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
   // ---- LIST VIEW ----
   return (
     <div className="space-y-4">
-      {/* MÃ³dulos selector */}
+      {/* Modulos selector */}
       <div className="grid grid-cols-2 gap-3">
         {modulos.map(m => (
           <button key={m.id} onClick={() => setSelectedModulo(m.id)}
@@ -570,23 +570,23 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
             {canEdit && selectedModulo === m.id && (
               <button onClick={(e) => { e.stopPropagation(); setEditingModulo(m) }}
                 className="mt-2 text-[10px] text-primary-600 hover:underline flex items-center gap-1">
-                <HiOutlinePencil className="w-3 h-3" /> Editar mÃ³dulo
+                <HiOutlinePencil className="w-3 h-3" /> Editar módulo
               </button>
             )}
           </button>
         ))}
       </div>
 
-      {/* Editar mÃ³dulo inline */}
+      {/* Editar módulo inline */}
       {editingModulo && (
         <div className="card p-4 space-y-3 border-primary-200">
-          <h4 className="text-sm font-semibold text-gray-700">Editar MÃ³dulo</h4>
+          <h4 className="text-sm font-semibold text-gray-700">Editar Módulo</h4>
           <input value={editingModulo.titulo} onChange={e => setEditingModulo({ ...editingModulo, titulo: e.target.value })}
-            className="input-field text-sm" placeholder="TÃ­tulo" />
+            className="input-field text-sm" placeholder="Título" />
           <input value={editingModulo.subtitulo || ''} onChange={e => setEditingModulo({ ...editingModulo, subtitulo: e.target.value })}
-            className="input-field text-sm" placeholder="SubtÃ­tulo" />
+            className="input-field text-sm" placeholder="Subtítulo" />
           <textarea value={editingModulo.descricao || ''} onChange={e => setEditingModulo({ ...editingModulo, descricao: e.target.value })}
-            className="input-field text-sm" placeholder="DescriÃ§Ã£o" rows={2} />
+            className="input-field text-sm" placeholder="Descrição" rows={2} />
           <div className="flex gap-2 justify-end">
             <button onClick={() => setEditingModulo(null)} className="btn-secondary text-xs">Cancelar</button>
             <button onClick={saveModulo} className="btn-primary text-xs">Salvar</button>
@@ -613,9 +613,9 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
       {showNovoPonto && (
         <div className="card p-4 space-y-3 border-blue-200">
           <input value={novoPonto.titulo} onChange={e => setNovoPonto({ ...novoPonto, titulo: e.target.value })}
-            className="input-field text-sm" placeholder="TÃ­tulo do ponto (ex: A BÃ­blia Sagrada)" autoFocus />
+            className="input-field text-sm" placeholder="Título do ponto (ex: A Bíblia Sagrada)" autoFocus />
           <input value={novoPonto.subtitulo} onChange={e => setNovoPonto({ ...novoPonto, subtitulo: e.target.value })}
-            className="input-field text-sm" placeholder="SubtÃ­tulo (opcional)" />
+            className="input-field text-sm" placeholder="Subtítulo (opcional)" />
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowNovoPonto(false)} className="btn-secondary text-xs">Cancelar</button>
             <button onClick={criarPonto} className="btn-primary text-xs" disabled={!novoPonto.titulo.trim()}>Criar Ponto</button>
@@ -627,7 +627,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
         <div className="card border border-red-200 bg-red-50/70 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar os pontos.</p>
+              <p className="text-sm font-semibold text-red-700">Não foi possível carregar os pontos.</p>
               <p className="text-xs text-red-600 mt-1">{pontosError}</p>
             </div>
             <button onClick={() => refetchPontos()} className="btn-secondary text-sm w-fit">
@@ -640,7 +640,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
         <div className="card border border-red-200 bg-red-50/70 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar o ponto selecionado.</p>
+              <p className="text-sm font-semibold text-red-700">Não foi possível carregar o ponto selecionado.</p>
               <p className="text-xs text-red-600 mt-1">{pontoError}</p>
             </div>
             <button onClick={() => refetchPonto()} className="btn-secondary text-sm w-fit">
@@ -656,7 +656,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
       ) : filteredPontos.length === 0 ? (
         <div className="card py-12 text-center">
           <HiOutlineBookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{search ? 'Nenhum ponto encontrado' : 'Nenhum ponto cadastrado neste mÃ³dulo'}</p>
+          <p className="text-gray-500">{search ? 'Nenhum ponto encontrado' : 'Nenhum ponto cadastrado neste módulo'}</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -678,7 +678,7 @@ function TabConteudo({ canEdit }: { canEdit: boolean }) {
                 )}
                 {(p.secoes?.length || 0) > 0 && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-600 font-medium">
-                    ConteÃºdo
+                    Conteúdo
                   </span>
                 )}
               </div>

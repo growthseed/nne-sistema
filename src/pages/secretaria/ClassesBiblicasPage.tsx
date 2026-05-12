@@ -186,7 +186,7 @@ export default function ClassesBiblicasPage() {
       })
     } catch (err) {
       console.error('Erro ao criar classe:', err)
-      toast.error('Nao foi possivel criar a classe agora.')
+      toast.error('Não foi possível criar a classe agora.')
     }
   }
 
@@ -212,7 +212,7 @@ export default function ClassesBiblicasPage() {
       setPessoasSearch('')
     } catch (err) {
       console.error('Erro ao adicionar aluno:', err)
-      toast.error('Nao foi possivel adicionar o aluno agora.')
+      toast.error('Não foi possível adicionar o aluno agora.')
     }
   }
 
@@ -224,7 +224,7 @@ export default function ClassesBiblicasPage() {
       toast.success('Aluno removido da classe.')
     } catch (err) {
       console.error(err)
-      toast.error('Nao foi possivel remover o aluno agora.')
+      toast.error('Não foi possível remover o aluno agora.')
     }
   }
 
@@ -239,7 +239,7 @@ export default function ClassesBiblicasPage() {
       toast.success(aluno.decisao_batismo ? 'Decisao removida.' : 'Decisao registrada.')
     } catch (err) {
       console.error(err)
-      toast.error('Nao foi possivel atualizar a decisao agora.')
+      toast.error('Não foi possível atualizar a decisão agora.')
     }
   }
 
@@ -260,7 +260,7 @@ export default function ClassesBiblicasPage() {
       setNovaLicao({ numero: novaLicao.numero + 1, titulo: '', presentes: [] })
     } catch (err) {
       console.error('Erro ao registrar licao:', err)
-      toast.error('Nao foi possivel registrar a licao agora.')
+      toast.error('Não foi possível registrar a licao agora.')
     }
   }
   function togglePresente(pessoaId: string) {
@@ -291,7 +291,7 @@ export default function ClassesBiblicasPage() {
       setNovaAula({ ponto_numero: novaAula.ponto_numero + 1, ponto_titulo: '', presentes: [] })
     } catch (err) {
       console.error('Erro ao ativar aula:', err)
-      toast.error('Nao foi possivel ativar a aula agora.')
+      toast.error('Não foi possível ativar a aula agora.')
     }
   }
 
@@ -302,10 +302,10 @@ export default function ClassesBiblicasPage() {
         profile_id: profile?.id || null,
       })
 
-      toast.success('Questionario liberado para a turma.')
+      toast.success('Questionário liberado para a turma.')
     } catch (err) {
-      console.error('Erro ao liberar questionario:', err)
-      toast.error('Nao foi possivel liberar o questionario agora.')
+      console.error('Erro ao liberar questionário:', err)
+      toast.error('Não foi possível liberar o questionário agora.')
     }
   }
   function toggleAulaPresente(pessoaId: string) {
@@ -354,7 +354,7 @@ export default function ClassesBiblicasPage() {
           <div className="card border border-red-200 bg-red-50/70 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar os detalhes da classe.</p>
+                <p className="text-sm font-semibold text-red-700">Não foi possível carregar os detalhes da classe.</p>
                 <p className="text-xs text-red-600 mt-1">{detailError}</p>
               </div>
               <button onClick={() => refetchDetail()} className="btn-secondary text-sm w-fit">
@@ -371,7 +371,7 @@ export default function ClassesBiblicasPage() {
               <h1 className="text-xl font-bold text-gray-800">{selectedClasse.nome}</h1>
               <p className="text-sm text-gray-500 mt-1">
                 {getNomeIgreja(selectedClasse)}
-                {selectedClasse.data_inicio && ` â€¢ InÃ­cio: ${formatDateBR(selectedClasse.data_inicio)}`}
+                {selectedClasse.data_inicio && ` • Início: ${formatDateBR(selectedClasse.data_inicio)}`}
               </p>
             </div>
             <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${statusColors[selectedClasse.status] || 'bg-gray-100 text-gray-600'}`}>
@@ -381,7 +381,7 @@ export default function ClassesBiblicasPage() {
           {/* Progress bar */}
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{presencas.length} de {selectedClasse.total_licoes} liÃ§Ãµes</span>
+              <span>{presencas.length} de {selectedClasse.total_licoes} lições</span>
               <span>{progresso}%</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -396,11 +396,11 @@ export default function ClassesBiblicasPage() {
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-green-600">{decisoes}</p>
-              <p className="text-[10px] text-gray-400">DecisÃµes</p>
+              <p className="text-[10px] text-gray-400">Decisões</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-primary-600">{presencas.length}</p>
-              <p className="text-[10px] text-gray-400">LiÃ§Ãµes Dadas</p>
+              <p className="text-[10px] text-gray-400">Lições Dadas</p>
             </div>
           </div>
         </div>
@@ -471,7 +471,7 @@ export default function ClassesBiblicasPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate">{getNomePessoa(a)}</p>
                     <p className="text-[10px] text-gray-400">
-                      {a.licoes_concluidas} liÃ§Ãµes â€¢ {a.status}
+                      {a.licoes_concluidas} lições • {a.status}
                     </p>
                   </div>
                   <button
@@ -481,11 +481,11 @@ export default function ClassesBiblicasPage() {
                         ? 'border-green-400 bg-green-50 text-green-700'
                         : 'border-gray-200 text-gray-400 hover:border-green-300 hover:text-green-600'
                     }`}
-                    title={a.decisao_batismo ? 'DecisÃ£o registrada' : 'Registrar decisÃ£o de batismo'}
+                    title={a.decisao_batismo ? 'Decisão registrada' : 'Registrar decisão de batismo'}
                     disabled={toggleDecisaoMutation.isPending}
                   >
                     <HiOutlineCheck className="w-3.5 h-3.5 inline mr-0.5" />
-                    {a.decisao_batismo ? 'DecisÃ£o' : 'Batismo?'}
+                    {a.decisao_batismo ? 'Decisão' : 'Batismo?'}
                   </button>
                   <button
                     onClick={() => removeAluno(a.id)}
@@ -505,14 +505,14 @@ export default function ClassesBiblicasPage() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-              <HiOutlineBookOpen className="w-4 h-4" /> LiÃ§Ãµes & PresenÃ§a
+              <HiOutlineBookOpen className="w-4 h-4" /> Lições & Presença
             </h2>
             <button
               onClick={() => { setShowNovaLicao(!showNovaLicao); setNovaLicao(prev => ({ ...prev, presentes: [] })) }}
               className="btn-primary text-xs flex items-center gap-1"
               disabled={alunos.length === 0 || registrarLicaoMutation.isPending}
             >
-              <HiOutlinePlus className="w-3.5 h-3.5" /> Registrar LiÃ§Ã£o
+              <HiOutlinePlus className="w-3.5 h-3.5" /> Registrar Lição
             </button>
           </div>
 
@@ -521,7 +521,7 @@ export default function ClassesBiblicasPage() {
             <div className="mb-4 p-3 bg-primary-50/30 border border-primary-200 rounded-lg space-y-3">
               <div className="flex gap-2">
                 <div className="w-20">
-                  <label className="text-[10px] text-gray-400">LiÃ§Ã£o nÂº</label>
+                  <label className="text-[10px] text-gray-400">Lição nº</label>
                   <input
                     type="number"
                     value={novaLicao.numero}
@@ -531,19 +531,19 @@ export default function ClassesBiblicasPage() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] text-gray-400">TÃ­tulo (opcional)</label>
+                  <label className="text-[10px] text-gray-400">Título (opcional)</label>
                   <input
                     value={novaLicao.titulo}
                     onChange={e => setNovaLicao(prev => ({ ...prev, titulo: e.target.value }))}
                     className="input-field text-sm"
-                    placeholder="TÃ­tulo da liÃ§Ã£o..."
+                    placeholder="Título da lição..."
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[10px] text-gray-400">PresenÃ§a</label>
+                  <label className="text-[10px] text-gray-400">Presença</label>
                   <button
                     onClick={() => setNovaLicao(prev => ({
                       ...prev,
@@ -587,7 +587,7 @@ export default function ClassesBiblicasPage() {
 
           {/* Lesson history */}
           {presencas.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">Nenhuma liÃ§Ã£o registrada</p>
+            <p className="text-sm text-gray-400 text-center py-4">Nenhuma lição registrada</p>
           ) : (
             <div className="space-y-1">
               {presencas.map(p => (
@@ -596,7 +596,7 @@ export default function ClassesBiblicasPage() {
                     {p.licao_numero}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 truncate">{p.licao_titulo || `LiÃ§Ã£o ${p.licao_numero}`}</p>
+                    <p className="text-sm text-gray-700 truncate">{p.licao_titulo || `Lição ${p.licao_numero}`}</p>
                     <p className="text-[10px] text-gray-400">{formatDateBR(p.data)}</p>
                   </div>
                   <div className="text-right shrink-0">
@@ -626,12 +626,12 @@ export default function ClassesBiblicasPage() {
             </button>
           </div>
 
-          {/* FormulÃ¡rio nova aula */}
+          {/* Formulário nova aula */}
           {showNovaAula && alunos.length > 0 && (
             <div className="mb-4 p-3 bg-blue-50/50 border border-blue-200 rounded-lg space-y-3">
               <div className="flex gap-2">
                 <div className="w-20">
-                  <label className="text-[10px] text-gray-400">Ponto nÂº</label>
+                  <label className="text-[10px] text-gray-400">Ponto nº</label>
                   <input
                     type="number"
                     value={novaAula.ponto_numero}
@@ -641,7 +641,7 @@ export default function ClassesBiblicasPage() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] text-gray-400">TÃ­tulo do ponto</label>
+                  <label className="text-[10px] text-gray-400">Título do ponto</label>
                   <input
                     value={novaAula.ponto_titulo}
                     onChange={e => setNovaAula(prev => ({ ...prev, ponto_titulo: e.target.value }))}
@@ -653,7 +653,7 @@ export default function ClassesBiblicasPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[10px] text-gray-400">PresenÃ§a</label>
+                  <label className="text-[10px] text-gray-400">Presença</label>
                   <button
                     onClick={() => setNovaAula(prev => ({
                       ...prev,
@@ -711,19 +711,19 @@ export default function ClassesBiblicasPage() {
                     <p className="text-sm text-gray-700 truncate">{a.ponto_titulo || `Ponto ${a.ponto_numero}`}</p>
                     <p className="text-[10px] text-gray-400">
                       {a.data_aula ? formatDateBR(a.data_aula) : ''}
-                      {a.ativada && ' â€¢ Ativada'}
+                      {a.ativada && ' • Ativada'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {a.questionario_liberado ? (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700">QuestionÃ¡rio liberado</span>
+                    {a.questionário_liberado ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700">Questionário liberado</span>
                     ) : (
                       <button
                         onClick={() => liberarQuestionario(a.id)}
                         className="text-[10px] px-2 py-1 rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-60"
                         disabled={liberarQuestionarioMutation.isPending}
                       >
-                        Liberar QuestionÃ¡rio
+                        Liberar Questionário
                       </button>
                     )}
                   </div>
@@ -741,7 +741,7 @@ export default function ClassesBiblicasPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Classes BÃ­blicas</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Classes Bíblicas</h1>
           <p className="text-gray-500 mt-1">Gerencie turmas e acompanhe o progresso dos estudos</p>
         </div>
         <button
@@ -757,7 +757,7 @@ export default function ClassesBiblicasPage() {
         <div className="card border border-red-200 bg-red-50/70 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar as classes biblicas.</p>
+              <p className="text-sm font-semibold text-red-700">Não foi possível carregar as classes biblicas.</p>
               <p className="text-xs text-red-600 mt-1">{error}</p>
             </div>
             <button onClick={() => refetch()} className="btn-secondary text-sm w-fit">
@@ -770,7 +770,7 @@ export default function ClassesBiblicasPage() {
       {/* New class form */}
       {showNovaClasse && (
         <div className="card p-5 space-y-4 border-blue-200">
-          <h3 className="text-sm font-semibold text-gray-700">Criar Nova Classe BÃ­blica</h3>
+          <h3 className="text-sm font-semibold text-gray-700">Criar Nova Classe Bíblica</h3>
 
           {scopedIgrejas.length > 1 && (
             <div>
@@ -804,7 +804,7 @@ export default function ClassesBiblicasPage() {
             </div>
           )}
 
-          {/* SeleÃ§Ã£o de MÃ³dulo */}
+          {/* Seleção de Módulo */}
           <div>
             <label className="text-xs text-gray-500 mb-1.5 block">Material de Estudo</label>
             <div className="grid grid-cols-2 gap-3">
@@ -817,8 +817,8 @@ export default function ClassesBiblicasPage() {
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-800">PrincÃ­pios de FÃ©</p>
-                <p className="text-xs text-gray-500 mt-0.5">37 pontos doutrinÃ¡rios</p>
+                <p className="text-sm font-semibold text-gray-800">Princípios de Fé</p>
+                <p className="text-xs text-gray-500 mt-0.5">37 pontos doutrinários</p>
               </button>
               <button
                 type="button"
@@ -829,7 +829,7 @@ export default function ClassesBiblicasPage() {
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
-                <p className="text-sm font-semibold text-gray-800">CrenÃ§as Fundamentais</p>
+                <p className="text-sm font-semibold text-gray-800">Crenças Fundamentais</p>
                 <p className="text-xs text-gray-500 mt-0.5">25 temas (formato Typeform)</p>
               </button>
             </div>
@@ -839,12 +839,12 @@ export default function ClassesBiblicasPage() {
             value={novaClasse.nome}
             onChange={e => setNovaClasse(prev => ({ ...prev, nome: e.target.value }))}
             className="input-field"
-            placeholder="Nome da classe (ex: Classe BÃ­blica Central - SÃ¡bado ManhÃ£)"
+            placeholder="Nome da classe (ex: Classe Bíblica Central - Sábado Manhã)"
             autoFocus
           />
           <div className="flex gap-3">
             <div className="flex-1">
-              <DateDropdowns label="Data de inÃ­cio" value={novaClasse.data_inicio} onChange={v => setNovaClasse(prev => ({ ...prev, data_inicio: v }))} yearRange={2} futureYears={1} />
+              <DateDropdowns label="Data de início" value={novaClasse.data_inicio} onChange={v => setNovaClasse(prev => ({ ...prev, data_inicio: v }))} yearRange={2} futureYears={1} />
             </div>
             <div className="w-28">
               <label className="text-xs text-gray-400">Total de pontos</label>
@@ -882,7 +882,7 @@ export default function ClassesBiblicasPage() {
         </div>
         <div className="card py-3 text-center">
           <p className="text-2xl font-bold text-blue-600">{classes.filter(c => c.status === 'concluida').length}</p>
-          <p className="text-xs text-gray-500">ConcluÃ­das</p>
+          <p className="text-xs text-gray-500">Concluídas</p>
         </div>
       </div>
 
@@ -890,7 +890,7 @@ export default function ClassesBiblicasPage() {
       {classes.length === 0 ? (
         <div className="card py-12 text-center">
           <HiOutlineAcademicCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Nenhuma classe bÃ­blica criada</p>
+          <p className="text-gray-500">Nenhuma classe bíblica criada</p>
           <button onClick={() => setShowNovaClasse(true)} className="text-primary-600 hover:underline text-sm mt-2">
             Criar primeira classe
           </button>
@@ -920,9 +920,9 @@ export default function ClassesBiblicasPage() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {c.modulo_titulo || ''}{c.modulo_titulo && getNomeIgreja(c) ? ' â€¢ ' : ''}
+                      {c.modulo_titulo || ''}{c.modulo_titulo && getNomeIgreja(c) ? ' • ' : ''}
                       {getNomeIgreja(c)}
-                      {c.data_inicio && ` â€¢ InÃ­cio: ${formatDateBR(c.data_inicio)}`}
+                      {c.data_inicio && ` • Início: ${formatDateBR(c.data_inicio)}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-4 shrink-0 text-right">
@@ -932,7 +932,7 @@ export default function ClassesBiblicasPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-primary-600">{c._licoes_dadas || 0}/{c.total_licoes}</p>
-                      <p className="text-[10px] text-gray-400">liÃ§Ãµes</p>
+                      <p className="text-[10px] text-gray-400">lições</p>
                     </div>
                   </div>
                 </div>

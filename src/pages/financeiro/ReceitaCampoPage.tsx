@@ -160,7 +160,7 @@ export default function ReceitaCampoPage() {
       {error && (
         <div className="card flex flex-col gap-3 border border-red-200 bg-red-50 text-sm text-red-700">
           <div>
-            <p className="font-medium">Nao foi possivel carregar a receita do campo deste periodo.</p>
+            <p className="font-medium">Não foi possível carregar a receita do campo deste período.</p>
             <p className="mt-1 text-red-600/90">{error}</p>
           </div>
           <div>
@@ -209,7 +209,7 @@ export default function ReceitaCampoPage() {
           </div>
 
           {resumoPorIgreja.length === 0 ? (
-            <p className="py-8 text-center text-gray-400">Nenhum lancamento encontrado para este periodo</p>
+            <p className="py-8 text-center text-gray-400">Nenhum lançamento encontrado para este período</p>
           ) : (
             <>
               <div className="hidden md:block overflow-x-auto">

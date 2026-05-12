@@ -105,7 +105,7 @@ export default function EscolaBiblicaRespostasTab() {
       toast.success('Resposta revisada com sucesso.')
     } catch (reviewError) {
       console.error('Erro ao revisar resposta:', reviewError)
-      toast.error('Nao foi possivel revisar a resposta agora.')
+      toast.error('Não foi possível revisar a resposta agora.')
     } finally {
       setReviewingRespostaId(null)
     }
@@ -166,7 +166,7 @@ export default function EscolaBiblicaRespostasTab() {
               value={responseSearch}
               onChange={(event) => setResponseSearch(event.target.value)}
               className="input-field pl-10 text-sm"
-              placeholder="Buscar por aluno, ponto ou numero..."
+              placeholder="Buscar por aluno, ponto ou número..."
             />
           </div>
         </>
@@ -176,7 +176,7 @@ export default function EscolaBiblicaRespostasTab() {
         <div className="card border border-red-200 bg-red-50/70 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-red-700">Nao foi possivel carregar as respostas.</p>
+              <p className="text-sm font-semibold text-red-700">Não foi possível carregar as respostas.</p>
               <p className="text-xs text-red-600 mt-1">{error}</p>
             </div>
             <button onClick={() => refetch()} className="btn-secondary text-sm w-fit">

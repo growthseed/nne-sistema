@@ -284,7 +284,7 @@ export default function LancamentosPage() {
       toastSuccess(editingId ? 'Lancamento atualizado com sucesso.' : 'Lancamento salvo com sucesso.')
     } catch (mutationError) {
       console.error('Erro ao salvar lancamento:', mutationError)
-      toastError('Nao foi possivel salvar o lancamento agora.')
+      toastError('Não foi possível salvar o lançamento agora.')
     }
   }
 
@@ -297,7 +297,7 @@ export default function LancamentosPage() {
       toastSuccess(newStatus === 'aprovado' ? 'Lancamento aprovado.' : 'Lancamento rejeitado.')
     } catch (mutationError) {
       console.error('Erro ao atualizar status:', mutationError)
-      toastError('Nao foi possivel atualizar o status do lancamento.')
+      toastError('Não foi possível atualizar o status do lançamento.')
     } finally {
       setBusyEntryId(null)
       setBusyAction(null)
@@ -315,7 +315,7 @@ export default function LancamentosPage() {
       toastSuccess('Lancamento excluido com sucesso.')
     } catch (mutationError) {
       console.error('Erro ao excluir lancamento:', mutationError)
-      toastError('Nao foi possivel excluir o lancamento.')
+      toastError('Não foi possível excluir o lançamento.')
     } finally {
       setBusyEntryId(null)
       setBusyAction(null)
@@ -501,7 +501,7 @@ export default function LancamentosPage() {
       {error && (
         <div className="card flex flex-col gap-3 border border-red-200 bg-red-50 text-sm text-red-700">
           <div>
-            <p className="font-medium">Nao foi possivel carregar os lancamentos do periodo.</p>
+            <p className="font-medium">Não foi possível carregar os lancamentos do período.</p>
             <p className="mt-1 text-red-600/90">{error}</p>
           </div>
           <div>
@@ -570,7 +570,7 @@ export default function LancamentosPage() {
                 getKey={(e) => e.id}
                 rowHeight={52}
                 maxHeight={520}
-                emptyMessage="Nenhum lancamento encontrado"
+                emptyMessage="Nenhum lançamento encontrado"
                 columns={[
                   {
                     key: 'igreja',

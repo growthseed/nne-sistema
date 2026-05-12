@@ -279,7 +279,7 @@ export default function RelatorioCampoPage() {
     const fem = pessoas.filter(p => p.sexo === 'feminino').length
     const other = pessoas.length - masc - fem
     return {
-      labels: ['Masculino', 'Feminino', ...(other > 0 ? ['Nao informado'] : [])],
+      labels: ['Masculino', 'Feminino', ...(other > 0 ? ['Não informado'] : [])],
       datasets: [{
         data: [masc, fem, ...(other > 0 ? [other] : [])],
         backgroundColor: ['#0F3999', '#EC4899', ...(other > 0 ? ['#9CA3AF'] : [])],
