@@ -67,6 +67,16 @@ export interface ClasseBiblicaPontoDisponivel {
 export interface PessoaOption {
   id: string
   nome: string
+  // 'pessoa' = registro canônico em pessoas
+  // 'censo' = ainda só existe em cadastro_respostas (será criado em pessoas ao adicionar)
+  fonte?: 'pessoa' | 'censo'
+  // Campos auxiliares do censo (para criar a pessoa na hora do add):
+  cadastro_id?: string
+  data_nascimento?: string | null
+  email?: string | null
+  telefone?: string | null
+  associacao_id?: string | null
+  uniao_id?: string | null
 }
 
 export interface ClasseBiblicaDetail {
@@ -92,6 +102,17 @@ interface CreateClasseBiblicaPayload {
 interface AddAlunoPayload {
   classe_id: string
   pessoa_id: string
+  igreja_id?: string  // necessário quando criamos a pessoa do censo on-the-fly
+  // Quando a opção vem do censo, passe estes para criar a pessoa primeiro:
+  censo_origem?: {
+    cadastro_id: string
+    nome: string
+    data_nascimento?: string | null
+    email?: string | null
+    telefone?: string | null
+    associacao_id?: string | null
+    uniao_id?: string | null
+  }
 }
 
 interface RemoveAlunoPayload {
@@ -262,17 +283,48 @@ async function searchPessoasClasse(params: SearchPessoasParams): Promise<PessoaO
     return []
   }
 
-  const { data, error } = await supabase
+  // 1) Pessoas canônicas (membros + interessados em pessoas, qualquer tipo)
+  const { data: pessoasData, error: pessoasErr } = await supabase
     .from('pessoas')
     .select('id, nome')
     .eq('igreja_id', params.igrejaId)
     .ilike('nome', `%${normalizedSearch}%`)
-    .limit(10)
+    .limit(15)
 
-  if (error) throw error
+  if (pessoasErr) throw pessoasErr
 
   const excludeSet = new Set(params.excludePessoaIds)
-  return ((data as PessoaOption[]) || []).filter((pessoa) => !excludeSet.has(pessoa.id))
+  const fromPessoas: PessoaOption[] = ((pessoasData || []) as Array<{ id: string; nome: string }>)
+    .filter((p) => !excludeSet.has(p.id))
+    .map((p) => ({ id: p.id, nome: p.nome, fonte: 'pessoa' as const }))
+
+  // 2) Respostas do censo que ainda não viraram pessoa (pessoa_id NULL).
+  // Permite ao professor adicionar alguém que apenas preencheu o senso.
+  const { data: censoData } = await supabase
+    .from('cadastro_respostas')
+    .select('id, nome, data_nascimento, email, telefone, associacao_id, uniao_id')
+    .eq('igreja_id', params.igrejaId)
+    .is('pessoa_id', null)
+    .ilike('nome', `%${normalizedSearch}%`)
+    .limit(10)
+
+  // Dedup: não mostra do censo nomes que já existem em pessoas (mesmo nome+igreja)
+  const seenNomes = new Set(fromPessoas.map((p) => p.nome.toLowerCase().trim()))
+  const fromCenso: PessoaOption[] = ((censoData || []) as any[])
+    .filter((r) => r.nome && !seenNomes.has(r.nome.toLowerCase().trim()))
+    .map((r) => ({
+      id: `censo_${r.id}`,
+      nome: r.nome,
+      fonte: 'censo' as const,
+      cadastro_id: r.id,
+      data_nascimento: r.data_nascimento,
+      email: r.email,
+      telefone: r.telefone,
+      associacao_id: r.associacao_id,
+      uniao_id: r.uniao_id,
+    }))
+
+  return [...fromPessoas, ...fromCenso].slice(0, 15)
 }
 
 async function createClasseBiblica(payload: CreateClasseBiblicaPayload) {
@@ -281,13 +333,52 @@ async function createClasseBiblica(payload: CreateClasseBiblicaPayload) {
 }
 
 async function addAlunoClasseBiblica(payload: AddAlunoPayload) {
-  const { error } = await supabase.from('classe_biblica_alunos').insert(payload)
+  let realPessoaId = payload.pessoa_id
+
+  // Se vem do censo (não existe ainda em pessoas), criamos a pessoa primeiro
+  // como 'interessado' e linkamos o cadastro de origem.
+  if (payload.censo_origem) {
+    const origem = payload.censo_origem
+    const { data: novaPessoa, error: createErr } = await supabase
+      .from('pessoas')
+      .insert({
+        nome: origem.nome,
+        data_nascimento: origem.data_nascimento || null,
+        email: origem.email || null,
+        telefone: origem.telefone || null,
+        igreja_id: payload.igreja_id || null,
+        associacao_id: origem.associacao_id || null,
+        uniao_id: origem.uniao_id || null,
+        tipo: 'interessado',
+        situacao: 'ativo',
+        ativo: true,
+        cadastro_resposta_id: origem.cadastro_id,
+        fonte: 'censo_2026',
+        sincronizado_em: new Date().toISOString(),
+        etapa_funil: 'classe_biblica',
+      })
+      .select('id')
+      .single()
+
+    if (createErr) throw createErr
+    realPessoaId = novaPessoa.id
+
+    // Linka de volta no cadastro_respostas
+    await supabase
+      .from('cadastro_respostas')
+      .update({ pessoa_id: realPessoaId })
+      .eq('id', origem.cadastro_id)
+  }
+
+  const { error } = await supabase
+    .from('classe_biblica_alunos')
+    .insert({ classe_id: payload.classe_id, pessoa_id: realPessoaId })
   if (error) throw error
 
   const { error: pessoaError } = await supabase
     .from('pessoas')
     .update({ etapa_funil: 'classe_biblica' })
-    .eq('id', payload.pessoa_id)
+    .eq('id', realPessoaId)
 
   if (pessoaError) throw pessoaError
 }

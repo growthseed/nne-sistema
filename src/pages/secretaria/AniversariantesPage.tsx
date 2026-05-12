@@ -22,6 +22,7 @@ interface Aniversariante {
   foto: string | null
   igreja_nome: string | null
   felicitado: boolean
+  fonte: 'pessoa' | 'censo_parcial'  // origem do registro
 }
 
 export default function AniversariantesPage() {
@@ -38,14 +39,37 @@ export default function AniversariantesPage() {
   async function fetchAniversariantes() {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+
+      // 1) Membros ativos em pessoas (incluindo os 1.034 sincronizados do censo)
+      let pessoasQuery = supabase
         .from('pessoas')
-        .select('id, nome, data_nascimento, celular, telefone, email, foto, igreja:igrejas(nome)')
+        .select('id, nome, data_nascimento, celular, telefone, email, foto, igreja_id, associacao_id, uniao_id, igreja:igrejas(nome)')
         .eq('tipo', 'membro')
         .eq('situacao', 'ativo')
         .not('data_nascimento', 'is', null)
 
-      if (error) throw error
+      // Scope por papel
+      if (profile?.papel === 'admin_uniao') pessoasQuery = pessoasQuery.eq('uniao_id', profile.uniao_id!)
+      else if (profile?.papel === 'admin_associacao') pessoasQuery = pessoasQuery.eq('associacao_id', profile.associacao_id!)
+      else if (profile?.papel && profile.papel !== 'admin' && profile.igreja_id) pessoasQuery = pessoasQuery.eq('igreja_id', profile.igreja_id)
+
+      const { data: pessoasData, error: pessoasErr } = await pessoasQuery
+      if (pessoasErr) throw pessoasErr
+
+      // 2) Aniversariantes vindos APENAS do censo (parciais ou completos que
+      // ainda não foram sincronizados para pessoas — pessoa_id IS NULL)
+      let censoQuery = supabase
+        .from('cadastro_respostas')
+        .select('id, nome, data_nascimento, telefone, email, igreja_id, associacao_id, uniao_id, completo, igreja:igrejas(nome)')
+        .not('data_nascimento', 'is', null)
+        .not('nome', 'is', null)
+        .is('pessoa_id', null)
+
+      if (profile?.papel === 'admin_uniao') censoQuery = censoQuery.eq('uniao_id', profile.uniao_id!)
+      else if (profile?.papel === 'admin_associacao') censoQuery = censoQuery.eq('associacao_id', profile.associacao_id!)
+      else if (profile?.papel && profile.papel !== 'admin' && profile.igreja_id) censoQuery = censoQuery.eq('igreja_id', profile.igreja_id)
+
+      const { data: censoData } = await censoQuery
 
       // Check felicitados this year
       const anoAtual = new Date().getFullYear()
@@ -57,7 +81,7 @@ export default function AniversariantesPage() {
       const felicitadosSet = new Set((notifs || []).map(n => n.pessoa_id))
       setFelicitados(felicitadosSet)
 
-      setPessoas((data || []).map(p => ({
+      const fromPessoas: Aniversariante[] = (pessoasData || []).map(p => ({
         id: p.id,
         nome: p.nome,
         data_nascimento: p.data_nascimento,
@@ -67,7 +91,33 @@ export default function AniversariantesPage() {
         foto: (p as any).foto || null,
         igreja_nome: (p.igreja as any)?.nome || null,
         felicitado: felicitadosSet.has(p.id),
-      })))
+        fonte: 'pessoa' as const,
+      }))
+
+      // Dedup com pessoas via nome+nascimento normalizado (caso já tenha entrado de outro modo)
+      const seenKeys = new Set(fromPessoas.map(p =>
+        `${(p.nome || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()}_${p.data_nascimento}`,
+      ))
+
+      const fromCenso: Aniversariante[] = (censoData || [])
+        .filter((r: any) => {
+          const key = `${(r.nome || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()}_${r.data_nascimento}`
+          return !seenKeys.has(key)
+        })
+        .map((r: any) => ({
+          id: `censo_${r.id}`,
+          nome: r.nome || 'Sem nome',
+          data_nascimento: r.data_nascimento,
+          celular: r.telefone || null,
+          telefone: r.telefone || null,
+          email: r.email || null,
+          foto: null,
+          igreja_nome: (r.igreja as any)?.nome || null,
+          felicitado: false,
+          fonte: 'censo_parcial' as const,
+        }))
+
+      setPessoas([...fromPessoas, ...fromCenso])
     } catch (err) {
       console.error('Error:', err)
     } finally {
@@ -271,19 +321,36 @@ export default function AniversariantesPage() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <Link
-                    to={`/membros/${p.id}`}
-                    className="group inline-flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-primary-700 dark:hover:text-primary-400 truncate"
-                    title="Abrir ficha do membro"
-                  >
-                    <span className="truncate">{p.nome}</span>
-                    <HiOutlineExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    {isToday && (
-                      <span className="ml-2 text-xs bg-pink-200 text-pink-700 px-2 py-0.5 rounded-full whitespace-nowrap">
-                        Hoje!
+                  {p.fonte === 'pessoa' ? (
+                    <Link
+                      to={`/membros/${p.id}`}
+                      className="group inline-flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-primary-700 dark:hover:text-primary-400 truncate"
+                      title="Abrir ficha do membro"
+                    >
+                      <span className="truncate">{p.nome}</span>
+                      <HiOutlineExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                      {isToday && (
+                        <span className="ml-2 text-xs bg-pink-200 text-pink-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+                          Hoje!
+                        </span>
+                      )}
+                    </Link>
+                  ) : (
+                    <div className="inline-flex items-center gap-1 text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                      <span className="truncate">{p.nome}</span>
+                      {isToday && (
+                        <span className="ml-2 text-xs bg-pink-200 text-pink-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+                          Hoje!
+                        </span>
+                      )}
+                      <span
+                        className="ml-1.5 text-[10px] font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded"
+                        title="Vindo do Censo (ainda não tem ficha de membro)"
+                      >
+                        Censo
                       </span>
-                    )}
-                  </Link>
+                    </div>
+                  )}
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {p.igreja_nome || '—'}
                   </p>

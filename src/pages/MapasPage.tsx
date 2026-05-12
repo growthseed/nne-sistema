@@ -32,6 +32,10 @@ type Camada = 'igrejas' | 'densidade'
 const mapContainerStyle = { width: '100%', height: 'calc(100vh - 280px)' }
 const defaultCenter = { lat: -7.5, lng: -38.5 }
 
+// Por enquanto o mapa só mostra igrejas da União Norte Nordeste.
+// Quando houver outras uniões cadastradas, este filtro pode virar opcional.
+const UNIAO_NNE_ID = 'a0000000-0000-0000-0000-000000000001'
+
 export default function MapasPage() {
   const { profile } = useAuth()
 
@@ -64,17 +68,17 @@ export default function MapasPage() {
 
   async function fetchIgrejas() {
     if (!profile) return
+    // Trava: mapa só mostra igrejas da NNE (mesmo para admin master).
     let query = supabase
       .from('igrejas')
       .select('*, membros_ativos, interessados, associacao:associacoes(nome, sigla)')
       .eq('ativo', true)
+      .eq('uniao_id', UNIAO_NNE_ID)
       .order('nome')
 
-    if (profile.papel === 'admin_uniao') {
-      query = query.eq('uniao_id', profile.uniao_id!)
-    } else if (profile.papel === 'admin_associacao') {
+    if (profile.papel === 'admin_associacao') {
       query = query.eq('associacao_id', profile.associacao_id!)
-    } else if (profile.papel !== 'admin') {
+    } else if (profile.papel !== 'admin' && profile.papel !== 'admin_uniao') {
       if (profile.igreja_id) query = query.eq('id', profile.igreja_id)
     }
 
@@ -89,10 +93,10 @@ export default function MapasPage() {
       .from('associacoes')
       .select('*')
       .eq('ativo', true)
+      .eq('uniao_id', UNIAO_NNE_ID)
       .order('nome')
 
-    if (profile.papel === 'admin_uniao') query = query.eq('uniao_id', profile.uniao_id!)
-    else if (profile.papel === 'admin_associacao') query = query.eq('id', profile.associacao_id!)
+    if (profile.papel === 'admin_associacao') query = query.eq('id', profile.associacao_id!)
 
     const { data, error } = await query
     if (error) { console.error('Erro ao buscar associações:', error); return }
@@ -106,6 +110,7 @@ export default function MapasPage() {
         .from('igrejas')
         .select('endereco_cidade, endereco_estado, membros_ativos, interessados, coordenadas_lat, coordenadas_lng')
         .eq('ativo', true)
+        .eq('uniao_id', UNIAO_NNE_ID)
 
       if (!igData) return
 

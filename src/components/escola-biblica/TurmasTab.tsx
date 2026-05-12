@@ -213,10 +213,28 @@ function TabTurmas() {
     setAlunoSearch(q)
   }
 
-  async function addAluno(pessoaId: string) {
+  async function addAluno(opt: { id: string; fonte?: 'pessoa' | 'censo'; cadastro_id?: string; nome?: string; data_nascimento?: string | null; email?: string | null; telefone?: string | null; associacao_id?: string | null; uniao_id?: string | null }) {
     if (!selectedTurma) return
     try {
-      await addAlunoMutation.mutateAsync({ classe_id: selectedTurma.id, pessoa_id: pessoaId })
+      if (opt.fonte === 'censo' && opt.cadastro_id) {
+        // Cria a pessoa a partir do censo e adiciona como aluno
+        await addAlunoMutation.mutateAsync({
+          classe_id: selectedTurma.id,
+          pessoa_id: '__placeholder__',  // ignorado, será sobrescrito
+          igreja_id: selectedTurma.igreja_id,
+          censo_origem: {
+            cadastro_id: opt.cadastro_id,
+            nome: opt.nome || 'Sem nome',
+            data_nascimento: opt.data_nascimento,
+            email: opt.email,
+            telefone: opt.telefone,
+            associacao_id: opt.associacao_id,
+            uniao_id: opt.uniao_id,
+          },
+        })
+      } else {
+        await addAlunoMutation.mutateAsync({ classe_id: selectedTurma.id, pessoa_id: opt.id })
+      }
       toastSuccess('Aluno adicionado com sucesso.')
       setShowAddAluno(false)
       setAlunoSearch('')
@@ -593,10 +611,18 @@ function TabTurmas() {
                 {alunoResults.length > 0 && (
                   <div className="space-y-1 max-h-40 overflow-y-auto">
                     {alunoResults.map(p => (
-                      <button key={p.id} onClick={() => addAluno(p.id)}
-                        className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-primary-50 text-gray-700 disabled:opacity-60"
+                      <button key={p.id} onClick={() => addAluno(p)}
+                        className="w-full text-left text-sm px-3 py-2 rounded-lg hover:bg-primary-50 text-gray-700 disabled:opacity-60 flex items-center justify-between gap-2"
                         disabled={addAlunoMutation.isPending}>
-                        {addAlunoMutation.isPending ? 'Adicionando...' : p.nome}
+                        <span className="flex-1 truncate">{addAlunoMutation.isPending ? 'Adicionando...' : p.nome}</span>
+                        {p.fonte === 'censo' && (
+                          <span
+                            className="text-[10px] font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded shrink-0"
+                            title="Vindo do Censo — pessoa será criada como interessado ao adicionar"
+                          >
+                            Censo
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
