@@ -68,6 +68,9 @@ export default function MembrosPage() {
   const [countAtivos, setCountAtivos] = useState(0)
   const [countInativos, setCountInativos] = useState(0)
   const [countInteressados, setCountInteressados] = useState(0)
+  // Fonte canônica de Membros: soma de igrejas.membros_ativos (Inventário).
+  // Os 'Cadastrados em pessoas' podem divergir e isso é exibido como indicador.
+  const [inventarioTotal, setInventarioTotal] = useState(0)
 
   useEffect(() => {
     fetchMembros()
@@ -137,14 +140,24 @@ export default function MembrosPage() {
   }
 
   async function fetchCounts() {
-    const [ativosRes, inativosRes, interessadosRes] = await Promise.all([
+    const [ativosRes, inativosRes, interessadosRes, inventarioRes] = await Promise.all([
       buildScopeFilter(supabase.from('pessoas').select('id', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'ativo')),
       buildScopeFilter(supabase.from('pessoas').select('id', { count: 'exact', head: true }).eq('tipo', 'membro').eq('situacao', 'inativo')),
       buildScopeFilter(supabase.from('pessoas').select('id', { count: 'exact', head: true }).eq('tipo', 'interessado')),
+      // Inventário (fonte canônica): soma de igrejas.membros_ativos no escopo
+      (() => {
+        let q = supabase.from('igrejas').select('membros_ativos').eq('ativo', true)
+        if (profile?.papel === 'admin_uniao') q = q.eq('uniao_id', profile.uniao_id!)
+        else if (profile?.papel === 'admin_associacao') q = q.eq('associacao_id', profile.associacao_id!)
+        else if (profile?.papel !== 'admin' && profile?.igreja_id) q = q.eq('id', profile.igreja_id)
+        return q
+      })(),
     ])
     setCountAtivos(ativosRes.count || 0)
     setCountInativos(inativosRes.count || 0)
     setCountInteressados(interessadosRes.count || 0)
+    const inv = (inventarioRes.data || []).reduce((s: number, ig: any) => s + (ig.membros_ativos || 0), 0)
+    setInventarioTotal(inv)
   }
 
   async function fetchMembros() {
@@ -298,26 +311,38 @@ export default function MembrosPage() {
       </div>
 
       {/* Quick counters */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Inventário — fonte canônica (mesmo número do Censo) */}
+        <div className="card py-3 text-center bg-teal-50 border-teal-200" title="Soma de igrejas.membros_ativos (Inventário). Mesma fonte canônica usada no Censo.">
+          <p className="text-2xl font-bold text-teal-700">{inventarioTotal.toLocaleString('pt-BR')}</p>
+          <p className="text-xs text-teal-700 font-medium">Membros (Inventário)</p>
+          <p className="text-[10px] text-teal-600 mt-0.5">fonte oficial</p>
+        </div>
         <button
           onClick={() => { setFiltroTipo('membro'); setFiltroSituacao('ativo'); setPage(0) }}
           className={`card py-3 text-center transition-all ${filtroTipo === 'membro' && filtroSituacao === 'ativo' ? 'ring-2 ring-green-400' : 'hover:shadow-md'}`}
+          title="Pessoas cadastradas em pessoas com tipo=membro e situacao=ativo. Pode divergir do Inventário se igrejas.membros_ativos estiver desatualizado."
         >
-          <p className="text-2xl font-bold text-green-600">{countAtivos}</p>
-          <p className="text-xs text-gray-500">Membros Ativos</p>
+          <p className="text-2xl font-bold text-green-600">{countAtivos.toLocaleString('pt-BR')}</p>
+          <p className="text-xs text-gray-500">Cadastrados ativos</p>
+          {inventarioTotal > 0 && countAtivos !== inventarioTotal && (
+            <p className={`text-[10px] mt-0.5 ${countAtivos > inventarioTotal ? 'text-amber-600' : 'text-blue-600'}`}>
+              {countAtivos > inventarioTotal ? `+${countAtivos - inventarioTotal}` : `${countAtivos - inventarioTotal}`} vs Inv.
+            </p>
+          )}
         </button>
         <button
           onClick={() => { setFiltroTipo('membro'); setFiltroSituacao('inativo'); setPage(0) }}
           className={`card py-3 text-center transition-all ${filtroTipo === 'membro' && filtroSituacao === 'inativo' ? 'ring-2 ring-gray-400' : 'hover:shadow-md'}`}
         >
-          <p className="text-2xl font-bold text-gray-500">{countInativos}</p>
-          <p className="text-xs text-gray-500">Membros Inativos</p>
+          <p className="text-2xl font-bold text-gray-500">{countInativos.toLocaleString('pt-BR')}</p>
+          <p className="text-xs text-gray-500">Inativos</p>
         </button>
         <button
           onClick={() => { setFiltroTipo('interessado'); setFiltroSituacao('todos'); setPage(0) }}
           className={`card py-3 text-center transition-all ${filtroTipo === 'interessado' ? 'ring-2 ring-amber-400' : 'hover:shadow-md'}`}
         >
-          <p className="text-2xl font-bold text-amber-600">{countInteressados}</p>
+          <p className="text-2xl font-bold text-amber-600">{countInteressados.toLocaleString('pt-BR')}</p>
           <p className="text-xs text-gray-500">Interessados</p>
         </button>
       </div>
