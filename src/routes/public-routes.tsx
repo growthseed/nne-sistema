@@ -7,6 +7,9 @@ const ValidarCartaoPage = lazy(() => import('@/pages/ValidarCartaoPage'))
 const DiretorioIgrejasPage = lazy(() => import('@/pages/DiretorioIgrejasPage'))
 const EBPublicPage = lazy(() => import('@/pages/public/EBPublicPage'))
 const FichaPublicaPage = lazy(() => import('@/pages/public/FichaPublicaPage'))
+const DownloadsHomePagePublic = lazy(() => import('@/pages/downloads/DownloadsHomePage'))
+const DownloadsCategoriaPagePublic = lazy(() => import('@/pages/downloads/DownloadsCategoriaPage'))
+const DownloadsItemPagePublic = lazy(() => import('@/pages/downloads/DownloadsItemPage'))
 const PortalLoginPage = lazy(() => import('@/pages/portal/PortalLoginPage'))
 const PortalLandingPage = lazy(() => import('@/pages/portal/PortalLandingPage'))
 const PortalDashboardPage = lazy(() => import('@/pages/portal/PortalDashboardPage'))
@@ -20,6 +23,10 @@ export const publicRoutes: RouteObject[] = [
   { path: '/validar-cartao', element: <ValidarCartaoPage /> },
   { path: '/diretorio', element: <DiretorioIgrejasPage /> },
   { path: '/eb/:classeId', element: <EBPublicPage /> },
+  // Downloads — públicos (igual a downloads.adventistas.org)
+  { path: '/downloads', element: <DownloadsHomePagePublic /> },
+  { path: '/downloads/:slug', element: <DownloadsCategoriaPagePublic /> },
+  { path: '/downloads/:categoria_slug/:item_slug', element: <DownloadsItemPagePublic /> },
   { path: '/portal/login', element: <PortalLoginPage /> },
   { path: '/portal/inicio', element: <PortalLandingPage /> },
   {
