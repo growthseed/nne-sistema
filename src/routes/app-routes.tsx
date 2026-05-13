@@ -14,6 +14,7 @@ const MembroDetalhePage = lazy(() => import('@/pages/membros/MembroDetalhePage')
 const CartaoMembroPage = lazy(() => import('@/pages/membros/CartaoMembroPage'))
 const FamiliasPage = lazy(() => import('@/pages/membros/FamiliasPage'))
 const SecretariaPage = lazy(() => import('@/pages/secretaria/SecretariaPage'))
+const CampanhasPage = lazy(() => import('@/pages/marketing/CampanhasPage'))
 const ReconciliarPessoasPage = lazy(() => import('@/pages/secretaria/ReconciliarPessoasPage'))
 const ContagemMensalPage = lazy(() => import('@/pages/secretaria/ContagemMensalPage'))
 const TransferenciasPage = lazy(() => import('@/pages/secretaria/TransferenciasPage'))
@@ -79,6 +80,10 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'cadastro/igreja/:id',
         element: withAccess('cadastro_dashboard', <IgrejaPerfilPage />),
+      },
+      {
+        path: 'marketing/campanhas',
+        element: withAccess('cadastro_dashboard', <CampanhasPage />),
       },
       {
         path: 'missoes',
