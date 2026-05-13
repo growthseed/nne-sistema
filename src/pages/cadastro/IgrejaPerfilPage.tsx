@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import {
-  Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
+  ResponsiveContainer, Tooltip,
   Radar, RadarChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis,
 } from 'recharts'
 import {
   HiOutlineArrowLeft, HiOutlineUsers, HiOutlineHeart, HiOutlineSparkles, HiOutlineExclamationCircle,
-  HiOutlineLocationMarker, HiOutlineUserGroup, HiOutlineDocumentText, HiOutlineChartBar,
+  HiOutlineUserGroup, HiOutlineDocumentText, HiOutlineExternalLink,
+  HiOutlineAcademicCap, HiOutlineGlobeAlt, HiOutlineBriefcase, HiOutlineChartBar,
+  HiOutlineEye, HiOutlineSearch, HiOutlineDownload, HiOutlineIdentification,
 } from 'react-icons/hi'
 import {
   type CensoRow,
@@ -15,6 +17,7 @@ import {
   topPontos, topPrioridades, computeDemographics,
   classColors, classifyScore,
 } from '@/lib/censo-metrics'
+import { populacaoPorCidadeUF, normCidade } from '@/lib/ibge-api'
 
 interface IgrejaInfo {
   id: string
@@ -22,8 +25,32 @@ interface IgrejaInfo {
   endereco_cidade: string | null
   endereco_estado: string | null
   membros_ativos: number | null
+  interessados: number | null
   associacao: { id: string; nome: string; sigla: string } | null
   uniao_id: string | null
+}
+
+type IgrejaTab = 'overview' | 'membros' | 'missionarios' | 'classe_biblica' | 'alcance'
+type ListFilter = 'todos' | 'completos' | 'parciais' | 'membros' | 'interessados'
+
+// Linha enriquecida com campos extras que vêm de cadastro_respostas via select('*')
+// mas não estão no tipo público CensoRow.
+interface CensoRowFull extends CensoRow {
+  draft_token?: string | null
+  whatsapp_parente?: string | null
+}
+
+function isInteressado(r: CensoRow): boolean {
+  return (r.tempo_membro || '').toLowerCase() === 'interessado'
+}
+
+function digitsOnly(s: string | null | undefined): string {
+  return (s || '').replace(/\D/g, '')
+}
+
+function buildResumeUrl(r: CensoRowFull): string | null {
+  if (!r.draft_token) return null
+  return `${window.location.origin}/formulario?resume=${r.id}&token=${r.draft_token}`
 }
 
 export default function IgrejaPerfilPage() {
@@ -32,10 +59,78 @@ export default function IgrejaPerfilPage() {
   const [rows, setRows] = useState<CensoRow[]>([])
   const [unionRows, setUnionRows] = useState<CensoRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<IgrejaTab>('overview')
+  const [showList, setShowList] = useState<ListFilter | null>(null)
+
+  // Dados lazy por aba
+  const [pessoas, setPessoas] = useState<any[]>([])
+  const [pessoasLoading, setPessoasLoading] = useState(false)
+  const [missionarios, setMissionarios] = useState<any[]>([])
+  const [missionariosLoading, setMissionariosLoading] = useState(false)
+  const [classesBiblicas, setClassesBiblicas] = useState<any[]>([])
+  const [cbLoading, setCbLoading] = useState(false)
+  const [populacao, setPopulacao] = useState<number | null>(null)
+  const [popLoading, setPopLoading] = useState(false)
 
   useEffect(() => {
     if (id) load()
   }, [id])
+
+  useEffect(() => {
+    if (!id || !igreja) return
+    if (tab === 'membros' && pessoas.length === 0 && !pessoasLoading) loadPessoas()
+    if (tab === 'missionarios' && missionarios.length === 0 && !missionariosLoading) loadMissionarios()
+    if (tab === 'classe_biblica' && classesBiblicas.length === 0 && !cbLoading) loadClassesBiblicas()
+    if (tab === 'alcance' && populacao === null && !popLoading && igreja.endereco_cidade && igreja.endereco_estado) loadPopulacao()
+  }, [tab, igreja])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function loadPessoas() {
+    setPessoasLoading(true)
+    const { data } = await supabase
+      .from('pessoas')
+      .select('id, nome, foto, data_nascimento, sexo, telefone, celular, email, tipo, situacao, cargo, fonte')
+      .eq('igreja_id', id!)
+      .order('nome')
+    setPessoas(data || [])
+    setPessoasLoading(false)
+  }
+
+  async function loadMissionarios() {
+    setMissionariosLoading(true)
+    const { data } = await supabase
+      .from('usuarios')
+      .select('id, nome, email, telefone, papel, ativo')
+      .eq('igreja_id', id!)
+      .in('papel', ['missionario', 'pastor', 'lider'])
+      .order('nome')
+    setMissionarios(data || [])
+    setMissionariosLoading(false)
+  }
+
+  async function loadClassesBiblicas() {
+    setCbLoading(true)
+    const { data } = await supabase
+      .from('classes_biblicas')
+      .select('id, nome, data_inicio, status, instrutor_nome, modulo_titulo, total_licoes')
+      .eq('igreja_id', id!)
+      .order('data_inicio', { ascending: false })
+    setClassesBiblicas(data || [])
+    setCbLoading(false)
+  }
+
+  async function loadPopulacao() {
+    if (!igreja?.endereco_cidade || !igreja?.endereco_estado) return
+    setPopLoading(true)
+    try {
+      const m = await populacaoPorCidadeUF([{ cidade: igreja.endereco_cidade, uf: igreja.endereco_estado }])
+      const key = `${normCidade(igreja.endereco_cidade)}__${igreja.endereco_estado.toUpperCase()}`
+      setPopulacao(m.get(key) ?? null)
+    } catch {
+      setPopulacao(null)
+    } finally {
+      setPopLoading(false)
+    }
+  }
 
   async function load() {
     setLoading(true)
@@ -82,6 +177,9 @@ export default function IgrejaPerfilPage() {
   const total = rows.length
   const completos = rows.filter(r => r.completo).length
   const parciais = total - completos
+  const interessados = rows.filter(isInteressado).length
+  const membros = rows.filter(r => r.tempo_membro && !isInteressado(r)).length
+  const semClassificacao = total - membros - interessados
   const cobertura = igreja.membros_ativos && igreja.membros_ativos > 0
     ? Math.min(100, Math.round((completos / igreja.membros_ativos) * 100))
     : 0
@@ -149,13 +247,78 @@ export default function IgrejaPerfilPage() {
         <CompostoCard icon={HiOutlineUsers} label="Comunhão" value={indices.comunhao} bench={indicesUniao.comunhao} />
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard icon={HiOutlineDocumentText} label="Respostas" value={total} />
-        <StatCard icon={HiOutlineSparkles} label="Completos" value={completos} color="text-green-600" />
-        <StatCard icon={HiOutlineExclamationCircle} label="Parciais" value={parciais} color="text-amber-600" />
-        <StatCard icon={HiOutlineUsers} label="Membros (Inv.)" value={igreja.membros_ativos || 0} color="text-teal-600" />
+      {/* Stats row — KPIs operacionais (clicáveis) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <ClickStatCard
+          icon={HiOutlineDocumentText}
+          label="Respostas"
+          value={total}
+          onClick={() => total > 0 && setShowList('todos')}
+          hoverRing="hover:ring-gray-200"
+        />
+        <ClickStatCard
+          icon={HiOutlineIdentification}
+          label="Membros"
+          value={membros}
+          color="text-indigo-600"
+          onClick={() => membros > 0 && setShowList('membros')}
+          hoverRing="hover:ring-indigo-200"
+          hint="Respondentes que se declararam membros (tempo de membro > interessado)"
+        />
+        <ClickStatCard
+          icon={HiOutlineUserGroup}
+          label="Interessados"
+          value={interessados}
+          color="text-fuchsia-600"
+          onClick={() => interessados > 0 && setShowList('interessados')}
+          hoverRing="hover:ring-fuchsia-200"
+          hint="Respondentes que marcaram 'Sou interessado/visitante'"
+        />
+        <ClickStatCard
+          icon={HiOutlineSparkles}
+          label="Completos"
+          value={completos}
+          color="text-green-600"
+          onClick={() => completos > 0 && setShowList('completos')}
+          hoverRing="hover:ring-green-200"
+        />
+        <ClickStatCard
+          icon={HiOutlineExclamationCircle}
+          label="Parciais"
+          value={parciais}
+          color="text-amber-600"
+          onClick={() => parciais > 0 && setShowList('parciais')}
+          hoverRing="hover:ring-amber-200"
+        />
+        <StatCard
+          icon={HiOutlineUsers}
+          label="Membros (Inv.)"
+          value={igreja.membros_ativos || 0}
+          color="text-teal-600"
+        />
       </div>
+      {semClassificacao > 0 && total > 0 && (
+        <p className="text-[11px] text-gray-400 -mt-2">
+          {semClassificacao} respondente{semClassificacao !== 1 ? 's' : ''} ainda não classificado{semClassificacao !== 1 ? 's' : ''} (parou antes da etapa de tempo de membro).
+        </p>
+      )}
+
+      {/* Lista permanente — facilita visão dos missionários da igreja */}
+      <RespondentesIgrejaTable
+        rows={rows as CensoRowFull[]}
+        igrejaNome={igreja.nome}
+        onOpenList={setShowList}
+      />
+
+      {/* Modal de lista */}
+      {showList && (
+        <IgrejaListModal
+          rows={rows as CensoRowFull[]}
+          filter={showList}
+          igrejaNome={igreja.nome}
+          onClose={() => setShowList(null)}
+        />
+      )}
 
       {/* Notas por área (operacional core) */}
       <div className="card">
@@ -326,6 +489,427 @@ function StatCard({ icon: Icon, label, value, color = 'text-gray-800' }: { icon:
       <div>
         <p className="text-xs text-gray-500">{label}</p>
         <p className={`text-xl font-bold ${color} tabular-nums`}>{value.toLocaleString('pt-BR')}</p>
+      </div>
+    </div>
+  )
+}
+
+function ClickStatCard({ icon: Icon, label, value, color = 'text-gray-800', onClick, hoverRing, hint }: {
+  icon: any
+  label: string
+  value: number
+  color?: string
+  onClick: () => void
+  hoverRing: string
+  hint?: string
+}) {
+  const disabled = value === 0
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={hint || `Clique para ver a lista (${value})`}
+      className={`card flex items-center gap-3 text-left transition-all ${
+        disabled ? 'opacity-60 cursor-default' : `cursor-pointer hover:ring-2 ${hoverRing}`
+      }`}
+    >
+      <Icon className={`w-5 h-5 ${disabled ? 'text-gray-300' : 'text-gray-400'}`} />
+      <div className="min-w-0">
+        <p className="text-xs text-gray-500 truncate">{label}</p>
+        <p className={`text-xl font-bold ${color} tabular-nums`}>{value.toLocaleString('pt-BR')}</p>
+      </div>
+    </button>
+  )
+}
+
+// ===== Lista permanente: respondentes da igreja (visão missionário) =====
+function RespondentesIgrejaTable({ rows, igrejaNome, onOpenList }: {
+  rows: CensoRowFull[]
+  igrejaNome: string
+  onOpenList: (f: ListFilter) => void
+}) {
+  const [q, setQ] = useState('')
+  const [aba, setAba] = useState<'todos' | 'membros' | 'interessados'>('todos')
+
+  const filtered = rows
+    .filter(r => {
+      if (aba === 'membros') return r.tempo_membro && !isInteressado(r)
+      if (aba === 'interessados') return isInteressado(r)
+      return true
+    })
+    .filter(r => {
+      const t = q.trim().toLowerCase()
+      if (!t) return true
+      return (
+        (r.nome || '').toLowerCase().includes(t) ||
+        (r.email || '').toLowerCase().includes(t) ||
+        (r.telefone || '').includes(t)
+      )
+    })
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'))
+
+  const total = rows.length
+  const totalMembros = rows.filter(r => r.tempo_membro && !isInteressado(r)).length
+  const totalInteressados = rows.filter(isInteressado).length
+
+  if (total === 0) return null
+
+  return (
+    <div className="card">
+      <div className="flex flex-wrap items-center gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <HiOutlineUsers className="w-5 h-5 text-primary-700" />
+          <h2 className="text-base font-semibold text-gray-800">Respondentes desta igreja</h2>
+        </div>
+        <span className="text-xs text-gray-400">{igrejaNome}</span>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenList('todos')}
+            className="text-xs text-primary-600 hover:text-primary-800 hover:underline"
+            title="Abrir lista expandida com ações (link de retomada, WhatsApp, e-mail)"
+          >
+            Abrir em modal ↗
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs Membros / Interessados / Todos */}
+      <div className="flex items-center gap-1 mb-3 border-b border-gray-100">
+        {([
+          ['todos', 'Todos', total, 'text-gray-700'],
+          ['membros', 'Membros', totalMembros, 'text-indigo-700'],
+          ['interessados', 'Interessados', totalInteressados, 'text-fuchsia-700'],
+        ] as const).map(([k, lbl, n, c]) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setAba(k)}
+            className={`px-3 py-1.5 text-xs font-medium border-b-2 transition-colors ${
+              aba === k ? `${c} border-current` : 'text-gray-400 border-transparent hover:text-gray-600'
+            }`}
+          >
+            {lbl} <span className="ml-1 text-[10px] tabular-nums opacity-70">({n})</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Busca */}
+      <div className="relative mb-2">
+        <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          className="input-field pl-9 text-sm"
+          placeholder="Buscar por nome, email ou telefone..."
+        />
+      </div>
+
+      <div className="overflow-x-auto -mx-2 sm:mx-0">
+        {filtered.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-6">Nenhum respondente nesta seleção.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-100">
+                <th className="px-2 py-2">Nome</th>
+                <th className="px-2 py-2">Vínculo</th>
+                <th className="px-2 py-2">Contato</th>
+                <th className="px-2 py-2 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.slice(0, 30).map(r => {
+                const isInt = isInteressado(r)
+                return (
+                  <tr key={r.id} className="hover:bg-gray-50">
+                    <td className="px-2 py-2 font-medium text-gray-800 text-xs">
+                      {r.nome || <span className="text-gray-400 italic">Sem nome</span>}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {isInt ? (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-fuchsia-50 text-fuchsia-700">
+                          Interessado
+                        </span>
+                      ) : r.tempo_membro ? (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                          Membro
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-400 italic">—</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {r.telefone && <span className="block text-gray-700">{r.telefone}</span>}
+                      {r.email && <span className="block text-gray-500">{r.email}</span>}
+                      {!r.telefone && !r.email && <span className="text-gray-400 italic">—</span>}
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      {r.completo ? (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Completo</span>
+                      ) : r.etapa_atual === 11 ? (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Parou final</span>
+                      ) : (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">E{r.etapa_atual}/11</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+        {filtered.length > 30 && (
+          <p className="text-[11px] text-gray-400 mt-2 text-center">
+            Exibindo 30 de {filtered.length} resultados. Use o modal para a lista completa com ações.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ===== Modal expandido com ações por respondente =====
+const LIST_LABELS: Record<ListFilter, string> = {
+  todos: 'Todas as respostas',
+  completos: 'Respostas completas',
+  parciais: 'Respostas parciais',
+  membros: 'Membros respondentes',
+  interessados: 'Interessados / Visitantes',
+}
+
+function IgrejaListModal({ rows, filter, igrejaNome, onClose }: {
+  rows: CensoRowFull[]
+  filter: ListFilter
+  igrejaNome: string
+  onClose: () => void
+}) {
+  const [busca, setBusca] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  function applyFilter(r: CensoRowFull): boolean {
+    if (filter === 'completos') return r.completo
+    if (filter === 'parciais') return !r.completo
+    if (filter === 'membros') return Boolean(r.tempo_membro) && !isInteressado(r)
+    if (filter === 'interessados') return isInteressado(r)
+    return true
+  }
+
+  const respostas = rows.filter(applyFilter)
+  const filtradas = busca.trim()
+    ? respostas.filter(r => {
+        const t = busca.toLowerCase()
+        return (
+          (r.nome || '').toLowerCase().includes(t) ||
+          (r.email || '').toLowerCase().includes(t) ||
+          (r.telefone || '').includes(t) ||
+          (r.cidade || '').toLowerCase().includes(t)
+        )
+      })
+    : respostas
+
+  function copyResume(r: CensoRowFull) {
+    const url = buildResumeUrl(r)
+    if (!url) return
+    navigator.clipboard.writeText(url)
+    setCopiedId(r.id)
+    setTimeout(() => setCopiedId(null), 1800)
+  }
+
+  function whatsappLink(r: CensoRowFull): string | null {
+    const url = buildResumeUrl(r)
+    if (!url) return null
+    const phone = digitsOnly(r.telefone) || digitsOnly(r.whatsapp_parente)
+    if (!phone) return null
+    const phoneE164 = phone.startsWith('55') ? phone : `55${phone}`
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const msg = `Olá ${nome}! Aqui é da Igreja ${igrejaNome}. Você começou o cadastro do Censo mas não concluiu. Pode finalizar de onde parou neste link (suas respostas estão salvas):\n\n${url}\n\nLeva poucos minutos. Obrigado por participar!`
+    return `https://wa.me/${phoneE164}?text=${encodeURIComponent(msg)}`
+  }
+
+  function mailtoLink(r: CensoRowFull): string | null {
+    const url = buildResumeUrl(r)
+    if (!url || !r.email) return null
+    const nome = (r.nome || 'irmão(a)').split(' ')[0]
+    const subject = `Finalize seu cadastro do Censo — etapa ${r.etapa_atual} de 11`
+    const body = `Olá ${nome},\n\nVocê começou o cadastro do Censo mas não concluiu. Suas respostas até a etapa ${r.etapa_atual} estão salvas — basta abrir o link abaixo para continuar de onde parou:\n\n${url}\n\nLeva poucos minutos. Obrigado por participar!\n\n— Secretaria · Igreja ${igrejaNome}`
+    return `mailto:${r.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  function handleExport() {
+    if (filtradas.length === 0) return
+    const headers = ['Nome', 'Vinculo', 'Telefone', 'Email', 'Cidade', 'UF', 'Status', 'Etapa', 'Tempo de Membro']
+    const lines = filtradas.map(r => {
+      const vinculo = isInteressado(r) ? 'Interessado' : r.tempo_membro ? 'Membro' : 'Indefinido'
+      const status = r.completo ? 'Completo' : r.etapa_atual === 11 ? 'Parou final' : 'Parcial'
+      return [
+        r.nome || '',
+        vinculo,
+        r.telefone || '',
+        r.email || '',
+        r.cidade || '',
+        r.estado || '',
+        status,
+        String(r.etapa_atual ?? ''),
+        r.tempo_membro || '',
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+    })
+    const csv = '﻿' + [headers.join(','), ...lines].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `${igrejaNome.replace(/\s+/g, '_')}_${filter}_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
+  const isResumable = filter !== 'completos' && filter !== 'todos' && filter !== 'membros' && filter !== 'interessados'
+    ? true
+    : filter === 'parciais'
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-lg">
+                {igrejaNome}
+              </span>
+              <h2 className="text-lg font-bold text-gray-800">{LIST_LABELS[filter]}</h2>
+            </div>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {filtradas.length} de {respostas.length} {respostas.length === 1 ? 'resposta' : 'respostas'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {filtradas.length > 0 && (
+              <button onClick={handleExport} className="btn-secondary text-xs flex items-center gap-1.5">
+                <HiOutlineDownload className="w-4 h-4" />
+                Exportar CSV
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="px-6 py-3 border-b border-gray-100">
+          <div className="relative">
+            <HiOutlineSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={busca}
+              onChange={e => setBusca(e.target.value)}
+              className="input-field pl-10 text-sm"
+              placeholder="Filtrar por nome, email, telefone, cidade..."
+            />
+          </div>
+        </div>
+
+        <div className="max-h-[65vh] overflow-y-auto">
+          {filtradas.length === 0 ? (
+            <p className="p-8 text-sm text-gray-400 text-center">
+              Nenhuma resposta {busca ? 'casa com a busca' : 'nesta categoria'}.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr className="text-left text-gray-500 text-[10px] uppercase tracking-wider">
+                  <th className="px-4 py-2">Nome</th>
+                  <th className="px-4 py-2">Vínculo</th>
+                  <th className="px-4 py-2">Cidade / UF</th>
+                  <th className="px-4 py-2">Contato</th>
+                  <th className="px-4 py-2 text-center">Status</th>
+                  <th className="px-4 py-2 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtradas.map(r => {
+                  const isInt = isInteressado(r)
+                  const wpp = isResumable ? whatsappLink(r) : null
+                  const mail = isResumable ? mailtoLink(r) : null
+                  const url = isResumable ? buildResumeUrl(r) : null
+                  return (
+                    <tr key={r.id} className="hover:bg-gray-50 align-top">
+                      <td className="px-4 py-2.5">
+                        <p className="font-medium text-gray-800 text-xs">
+                          {r.nome || <span className="text-gray-400 italic">Sem nome</span>}
+                        </p>
+                      </td>
+                      <td className="px-4 py-2.5 text-xs">
+                        {isInt ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-fuchsia-50 text-fuchsia-700">
+                            Interessado
+                          </span>
+                        ) : r.tempo_membro ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                            Membro
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 italic">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs text-gray-500">
+                        {[r.cidade, r.estado].filter(Boolean).join(' / ') || '—'}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs">
+                        {r.telefone && <p className="text-gray-700">{r.telefone}</p>}
+                        {r.email && <p className="text-gray-500">{r.email}</p>}
+                        {!r.telefone && !r.email && <span className="text-gray-400 italic">—</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        {r.completo ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Completo</span>
+                        ) : r.etapa_atual === 11 ? (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Parou final</span>
+                        ) : (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">E{r.etapa_atual}/11</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <div className="inline-flex items-center gap-1 flex-wrap justify-end">
+                          {wpp && (
+                            <a href={wpp} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">
+                              WhatsApp
+                            </a>
+                          )}
+                          {mail && (
+                            <a href={mail}
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+                              E-mail
+                            </a>
+                          )}
+                          {url && (
+                            <button onClick={() => copyResume(r)}
+                              className={`text-[10px] font-medium px-2 py-1 rounded ${
+                                copiedId === r.id ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}>
+                              {copiedId === r.id ? 'Copiado!' : 'Link'}
+                            </button>
+                          )}
+                          {r.nome && (
+                            <a href={`/membros?q=${encodeURIComponent(r.nome)}`} target="_blank" rel="noopener noreferrer"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
+                              Ficha
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   )

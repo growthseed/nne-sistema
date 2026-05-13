@@ -192,6 +192,37 @@ export default function CadastroDashboardPage() {
 
   const publicUrl = `${window.location.origin}/formulario`
 
+  // Admins (master, União, Associação) podem excluir respostas duplicadas/erradas.
+  // RLS já restringe pelo escopo via cadastro_auth_delete_secure.
+  const canDelete = profile?.papel === 'admin'
+    || profile?.papel === 'admin_uniao'
+    || profile?.papel === 'admin_associacao'
+
+  async function handleDeleteResposta(r: CadastroRow): Promise<boolean> {
+    const nome = (r.nome || 'esta resposta').trim()
+    const isOrfa = !r.igreja_id && !r.associacao_id && !r.uniao_id
+    const aviso = isOrfa
+      ? `Excluir DEFINITIVAMENTE a resposta "${nome}"?\n\n(Resposta órfã — provavelmente bot/teste, sem igreja selecionada)\n\nEsta ação não pode ser desfeita.`
+      : `Excluir DEFINITIVAMENTE a resposta de "${nome}"?\n\nEsta ação não pode ser desfeita.`
+    if (!window.confirm(aviso)) return false
+
+    try {
+      // Usa RPC dedicada (SECURITY DEFINER) para conseguir apagar respostas órfãs
+      // de bot/fake que a policy RLS bloqueia (uniao_id/associacao_id NULL).
+      const { error } = await supabase.rpc('admin_delete_cadastro_resposta', { p_id: r.id })
+      if (error) throw error
+      // Atualização otimista — remove do state local sem refetch
+      setRespostas(prev => prev.filter(x => x.id !== r.id))
+      setShowAssocList(prev => prev ? { ...prev, respostas: prev.respostas.filter(x => x.id !== r.id) } : prev)
+      setShowDetail(prev => (prev && prev.id === r.id) ? null : prev)
+      return true
+    } catch (e: any) {
+      alert('Erro ao excluir: ' + (e?.message || 'falha desconhecida'))
+      console.error('[cadastro_excluir_resposta]', e)
+      return false
+    }
+  }
+
   useEffect(() => {
     if (profile) {
       fetchRespostas()
@@ -1748,7 +1779,12 @@ export default function CadastroDashboardPage() {
 
       {/* Detail Modal */}
       {showDetail && (
-        <DetailModal resposta={showDetail} onClose={() => setShowDetail(null)} />
+        <DetailModal
+          resposta={showDetail}
+          onClose={() => setShowDetail(null)}
+          canDelete={canDelete}
+          onDelete={async (r) => { const ok = await handleDeleteResposta(r); if (ok) setShowDetail(null) }}
+        />
       )}
 
       {/* Etapa de Abandono Modal */}
@@ -1775,6 +1811,8 @@ export default function CadastroDashboardPage() {
           onClose={() => setShowAssocList(null)}
           onShowDetail={(r) => { setShowAssocList(null); setShowDetail(r) }}
           exportCSV={exportCSV}
+          canDelete={canDelete}
+          onDelete={handleDeleteResposta}
         />
       )}
     </div>
@@ -1988,11 +2026,15 @@ interface AssocStatusListModalProps {
   onClose: () => void
   onShowDetail: (r: CadastroRow) => void
   exportCSV: (rows: CadastroRow[], filename: string) => void
+  canDelete?: boolean
+  onDelete?: (r: CadastroRow) => Promise<boolean> | void
 }
 
-function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igrejaInfoById, onClose, onShowDetail, exportCSV }: AssocStatusListModalProps) {
+function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igrejaInfoById, onClose, onShowDetail, exportCSV, canDelete, onDelete }: AssocStatusListModalProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
+  const [agruparPorIgreja, setAgruparPorIgreja] = useState(true)
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
   const filtradas = busca.trim()
     ? respostas.filter(r => {
@@ -2005,6 +2047,39 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
         )
       })
     : respostas
+
+  // Agrupamento por igreja (chave: igreja_id ou '__sem__')
+  const grupos = (() => {
+    const map = new Map<string, { igrejaNome: string; cidade: string | null; respostas: CadastroRow[] }>()
+    for (const r of filtradas) {
+      const key = r.igreja_id || '__sem__'
+      const info = r.igreja_id ? igrejaInfoById.get(r.igreja_id) : null
+      const nome = info?.nome || (r.igreja_id ? 'Igreja sem nome' : 'Sem igreja selecionada')
+      const cidade = info?.cidade || null
+      if (!map.has(key)) map.set(key, { igrejaNome: nome, cidade, respostas: [] })
+      map.get(key)!.respostas.push(r)
+    }
+    return Array.from(map.entries())
+      .map(([key, v]) => ({ key, ...v }))
+      .sort((a, b) => {
+        // "Sem igreja" no final
+        if (a.key === '__sem__') return 1
+        if (b.key === '__sem__') return -1
+        return a.igrejaNome.localeCompare(b.igrejaNome, 'pt-BR')
+      })
+  })()
+
+  function toggleCollapsed(key: string) {
+    setCollapsed(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  function expandAll() { setCollapsed(new Set()) }
+  function collapseAll() { setCollapsed(new Set(grupos.map(g => g.key))) }
 
   function copyResume(r: CadastroRow) {
     const url = buildResumeUrl(r)
@@ -2077,9 +2152,9 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
           </div>
         </div>
 
-        {/* Busca */}
-        <div className="px-6 py-3 border-b border-gray-100">
-          <div className="relative">
+        {/* Busca + toggle agrupamento */}
+        <div className="px-6 py-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative flex-1">
             <HiOutlineSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               value={busca}
@@ -2088,13 +2163,205 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
               placeholder="Filtrar por nome, email, telefone, cidade..."
             />
           </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <label className="inline-flex items-center gap-1.5 text-xs text-gray-600 select-none cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agruparPorIgreja}
+                onChange={e => setAgruparPorIgreja(e.target.checked)}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              Agrupar por igreja
+            </label>
+            {agruparPorIgreja && grupos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={expandAll}
+                  className="text-[10px] text-primary-600 hover:underline"
+                  title="Expandir todas as igrejas"
+                >
+                  Expandir
+                </button>
+                <span className="text-gray-300 text-xs">·</span>
+                <button
+                  type="button"
+                  onClick={collapseAll}
+                  className="text-[10px] text-gray-500 hover:underline"
+                  title="Recolher todas as igrejas"
+                >
+                  Recolher
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Body */}
         <div className="max-h-[65vh] overflow-y-auto">
           {filtradas.length === 0 ? (
             <p className="p-8 text-sm text-gray-400 text-center">Nenhuma resposta {busca ? 'casa com a busca' : 'nesta categoria'}.</p>
+          ) : agruparPorIgreja ? (
+            // ====== MODO AGRUPADO POR IGREJA ======
+            <div className="divide-y divide-gray-100">
+              {grupos.map(g => {
+                const isCollapsed = collapsed.has(g.key)
+                const compG = g.respostas.filter(r => r.completo).length
+                const parouG = g.respostas.filter(r => !r.completo && r.etapa_atual === 11).length
+                const parcG = g.respostas.filter(r => !r.completo && r.etapa_atual !== 11).length
+                const infoIg = g.key !== '__sem__' ? igrejaInfoById.get(g.key) : null
+                const membrosIg = infoIg?.membros || 0
+                const cobIg = membrosIg > 0 ? Math.round((compG / membrosIg) * 100) : 0
+                return (
+                  <div key={g.key}>
+                    {/* Header da igreja */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleCollapsed(g.key)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCollapsed(g.key) } }}
+                      className="flex items-center gap-3 px-6 py-3 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer sticky top-0 z-10"
+                    >
+                      <svg
+                        className={`w-3.5 h-3.5 text-gray-500 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">
+                          {g.key === '__sem__' ? (
+                            <span className="text-amber-700 italic">Sem igreja selecionada</span>
+                          ) : (
+                            <Link
+                              to={`/cadastro/igreja/${g.key}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="hover:text-primary-700 hover:underline"
+                              title="Abrir perfil operacional desta igreja"
+                            >
+                              {g.igrejaNome} ↗
+                            </Link>
+                          )}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px]">
+                          {g.cidade && <span className="text-gray-500">{g.cidade}</span>}
+                          {membrosIg > 0 && (
+                            <span className="text-teal-600">
+                              {membrosIg} membros (Inv.) · cobertura {cobIg}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 text-[10px]">
+                        <span className="font-medium px-2 py-0.5 rounded bg-white border border-gray-200 text-gray-700 tabular-nums">
+                          {g.respostas.length} {g.respostas.length === 1 ? 'resp.' : 'resps.'}
+                        </span>
+                        {compG > 0 && (
+                          <span className="font-medium px-2 py-0.5 rounded bg-green-100 text-green-700 tabular-nums">
+                            {compG} compl.
+                          </span>
+                        )}
+                        {parcG > 0 && (
+                          <span className="font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-700 tabular-nums">
+                            {parcG} parc.
+                          </span>
+                        )}
+                        {parouG > 0 && (
+                          <span className="font-medium px-2 py-0.5 rounded bg-orange-100 text-orange-700 tabular-nums">
+                            {parouG} parou final
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Lista de respondentes da igreja */}
+                    {!isCollapsed && (
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-100 bg-white">
+                            <th className="px-4 py-1.5 pl-10">Nome</th>
+                            <th className="px-4 py-1.5">Cidade / UF</th>
+                            <th className="px-4 py-1.5">Contato</th>
+                            <th className="px-4 py-1.5 text-center">Status</th>
+                            <th className="px-4 py-1.5 text-right">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {g.respostas.map(r => {
+                            const wpp = isResumable ? whatsappLink(r) : null
+                            const mail = isResumable ? mailtoLink(r) : null
+                            const url = isResumable ? buildResumeUrl(r) : null
+                            return (
+                              <tr key={r.id} className="hover:bg-gray-50 align-top">
+                                <td className="px-4 py-2 pl-10">
+                                  <p className="font-medium text-gray-800 text-xs">
+                                    {r.nome || <span className="text-gray-400 italic">Sem nome</span>}
+                                  </p>
+                                </td>
+                                <td className="px-4 py-2 text-xs text-gray-500">
+                                  {[r.cidade, r.estado].filter(Boolean).join(' / ') || '—'}
+                                </td>
+                                <td className="px-4 py-2 text-xs">
+                                  {r.telefone && <p className="text-gray-700">{r.telefone}</p>}
+                                  {r.email && <p className="text-gray-500">{r.email}</p>}
+                                  {!r.telefone && !r.email && <span className="text-gray-400 italic">—</span>}
+                                </td>
+                                <td className="px-4 py-2 text-center">
+                                  {r.completo ? (
+                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Completo</span>
+                                  ) : r.etapa_atual === 11 ? (
+                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Parou final</span>
+                                  ) : (
+                                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">E{r.etapa_atual}/11</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2 text-right">
+                                  <div className="inline-flex items-center gap-1 flex-wrap justify-end">
+                                    {wpp && (
+                                      <a href={wpp} target="_blank" rel="noopener noreferrer"
+                                        className="text-[10px] font-medium px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200">
+                                        WhatsApp
+                                      </a>
+                                    )}
+                                    {mail && (
+                                      <a href={mail}
+                                        className="text-[10px] font-medium px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
+                                        E-mail
+                                      </a>
+                                    )}
+                                    {url && (
+                                      <button onClick={() => copyResume(r)}
+                                        className={`text-[10px] font-medium px-2 py-1 rounded ${copiedId === r.id ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                                        {copiedId === r.id ? 'Copiado!' : 'Link'}
+                                      </button>
+                                    )}
+                                    <button onClick={() => onShowDetail(r)}
+                                      className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
+                                      Ficha
+                                    </button>
+                                    {canDelete && onDelete && (
+                                      <button
+                                        onClick={() => onDelete(r)}
+                                        title="Excluir resposta (definitivo)"
+                                        className="text-[10px] font-medium px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100"
+                                      >
+                                        Excluir
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           ) : (
+            // ====== MODO LISTA FLAT (legado) ======
             <table className="w-full text-sm">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr className="text-left text-gray-500 text-[10px] uppercase tracking-wider">
@@ -2160,6 +2427,15 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
                             className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
                             Ficha
                           </button>
+                          {canDelete && onDelete && (
+                            <button
+                              onClick={() => onDelete(r)}
+                              title="Excluir resposta (definitivo)"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100"
+                            >
+                              Excluir
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -2414,7 +2690,12 @@ async function generateFichaPDF(r: CadastroRow, igrejaNome: string | null, assoc
 }
 
 // ========== DETAIL MODAL ==========
-function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: () => void }) {
+function DetailModal({ resposta, onClose, canDelete, onDelete }: {
+  resposta: CadastroRow
+  onClose: () => void
+  canDelete?: boolean
+  onDelete?: (r: CadastroRow) => void | Promise<void>
+}) {
   const COMO_CONHECEU_LABELS: Record<string, string> = {
     amigo_parente: 'Um amigo ou parente convidou',
     conjuge_membro: 'Cônjuge já era membro',
@@ -2780,7 +3061,20 @@ function DetailModal({ resposta, onClose }: { resposta: CadastroRow; onClose: ()
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between gap-3">
+          {canDelete && onDelete ? (
+            <button
+              type="button"
+              onClick={() => onDelete(r)}
+              className="text-xs font-medium px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 inline-flex items-center gap-1.5"
+              title="Excluir esta resposta do banco (definitivo)"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+              </svg>
+              Excluir resposta
+            </button>
+          ) : <span />}
           <button onClick={onClose} className="btn-secondary">Fechar</button>
         </div>
       </div>
