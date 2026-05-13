@@ -179,7 +179,7 @@ export default function TerritorioTab({ rows, igrejas }: TerritorioTabProps) {
             </p>
             <h2 className="text-xl font-bold mt-1">Alcance da denominação por cidade</h2>
             <p className="text-xs text-teal-200 mt-1">
-              Cruza membros do Inventário, respostas do Censo e população IBGE (estimativa 2021) cidade a cidade.
+              Cruza membros do Inventário, respostas do Censo e população IBGE (Censo 2022) cidade a cidade.
             </p>
           </div>
           <button
@@ -326,7 +326,7 @@ export default function TerritorioTab({ rows, igrejas }: TerritorioTabProps) {
       </div>
 
       <p className="text-[11px] text-gray-400 text-center pt-2">
-        Dados de população: API pública IBGE (estimativa 2021 · agregado 6579/9324) ·
+        Dados de população: API pública IBGE (Censo 2022 · agregado 4714/93) ·
         Cache local da sessão pra evitar reconsultas.
       </p>
     </div>

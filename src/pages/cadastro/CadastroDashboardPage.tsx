@@ -177,6 +177,7 @@ export default function CadastroDashboardPage() {
     nome: string
     status: 'todos' | 'completos' | 'parciais' | 'parou_final' | 'sem_igreja' | 'com_igreja'
     respostas: CadastroRow[]
+    todasRespostasAssoc: CadastroRow[]
   } | null>(null)
   const [pageTab, setPageTab] = useState<PageTab>('dashboard')
   const [filtroAssociacao, setFiltroAssociacao] = useState<string>('todas')
@@ -849,7 +850,7 @@ export default function CadastroDashboardPage() {
                   case 'com_igreja':  rows = allAssocRespostas.filter(r => !r.completo && !!r.igreja_id); break
                   default:            rows = allAssocRespostas
                 }
-                setShowAssocList({ sigla: a.sigla, nome: a.nome, status, respostas: rows })
+                setShowAssocList({ sigla: a.sigla, nome: a.nome, status, respostas: rows, todasRespostasAssoc: allAssocRespostas })
               }
               const igrejasAssoc = a.id === 'sem'
                 ? igrejasMembros.filter(ig => !ig.associacao_id)
@@ -1809,6 +1810,7 @@ export default function CadastroDashboardPage() {
           assocNome={showAssocList.nome}
           status={showAssocList.status}
           respostas={showAssocList.respostas}
+          todasRespostasAssoc={showAssocList.todasRespostasAssoc}
           igrejaInfoById={igrejaInfoById}
           onClose={() => setShowAssocList(null)}
           onShowDetail={(r) => { setShowAssocList(null); setShowDetail(r) }}
@@ -2035,6 +2037,10 @@ interface AssocStatusListModalProps {
   assocNome: string
   status: 'todos' | 'completos' | 'parciais' | 'parou_final' | 'sem_igreja' | 'com_igreja'
   respostas: CadastroRow[]
+  // todasRespostasAssoc: TODAS as respostas da associação (independente do filtro).
+  // Usado para calcular cobertura real por igreja, que sempre considera completos
+  // — mesmo quando o modal está filtrado por 'parciais' (que tem 0 completos).
+  todasRespostasAssoc: CadastroRow[]
   igrejaInfoById: Map<string, { nome: string; cidade: string | null; membros: number }>
   onClose: () => void
   onShowDetail: (r: CadastroRow) => void
@@ -2043,7 +2049,7 @@ interface AssocStatusListModalProps {
   onDelete?: (r: CadastroRow) => Promise<boolean> | void
 }
 
-function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igrejaInfoById, onClose, onShowDetail, exportCSV, canDelete, onDelete }: AssocStatusListModalProps) {
+function AssocStatusListModal({ assocSigla, assocNome, status, respostas, todasRespostasAssoc, igrejaInfoById, onClose, onShowDetail, exportCSV, canDelete, onDelete }: AssocStatusListModalProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
   const [agruparPorIgreja, setAgruparPorIgreja] = useState(true)
@@ -2224,7 +2230,13 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
                 const parcG = g.respostas.filter(r => !r.completo && r.etapa_atual !== 11).length
                 const infoIg = g.key !== '__sem__' ? igrejaInfoById.get(g.key) : null
                 const membrosIg = infoIg?.membros || 0
-                const cobIg = membrosIg > 0 ? Math.round((compG / membrosIg) * 100) : 0
+                // Cobertura real da igreja = todos os completos no banco (não só os
+                // do filtro atual). Sem isso, o modal "Parciais" mostraria 0%
+                // porque parciais não têm completos por definição.
+                const completosReaisIgreja = g.key === '__sem__'
+                  ? todasRespostasAssoc.filter(r => !r.igreja_id && r.completo).length
+                  : todasRespostasAssoc.filter(r => r.igreja_id === g.key && r.completo).length
+                const cobIg = membrosIg > 0 ? Math.round((completosReaisIgreja / membrosIg) * 100) : 0
                 return (
                   <div key={g.key}>
                     {/* Header da igreja */}
@@ -2260,7 +2272,13 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, igreja
                           {g.cidade && <span className="text-gray-500">{g.cidade}</span>}
                           {membrosIg > 0 && (
                             <span className="text-teal-600">
-                              {membrosIg} membros (Inv.) · cobertura {cobIg}%
+                              {membrosIg} membros (Inv.)
+                              {completosReaisIgreja > 0 && (
+                                <span className="text-green-600 ml-1">· {completosReaisIgreja} {completosReaisIgreja === 1 ? 'completo' : 'completos'}</span>
+                              )}
+                              <span className={`ml-1 ${cobIg >= 75 ? 'text-green-600' : cobIg >= 40 ? 'text-amber-600' : 'text-red-600'}`}>
+                                · cobertura {cobIg}%
+                              </span>
                             </span>
                           )}
                         </div>

@@ -46,31 +46,42 @@ export async function fetchMunicipiosEstado(uf: string): Promise<MunicipioIBGE[]
   return data
 }
 
-// Busca população (estimativa 2021) em batch. Recebe lista de IDs IBGE.
-// Endpoint agregado: 6579 = População residente · variável 9324 = estimativa.
+// Busca população (Censo 2022 oficial) em batch. Recebe lista de IDs IBGE.
+// Endpoint agregado: 4714 = Censo 2022 (resultados gerais) · variável 93 =
+// População residente. Antes usávamos 6579/9324 (estimativa 2021) mas esse
+// endpoint começou a retornar HTTP 500 em maio/2026. O 4714/93 (Censo 2022)
+// é o dado oficial mais recente e está estável.
 export async function fetchPopulacaoBatch(ibgeIds: number[]): Promise<Map<number, number>> {
   if (ibgeIds.length === 0) return new Map()
-  const cacheKey = `pop_${ibgeIds.slice().sort().join('_')}`
+  const cacheKey = `pop2022_${ibgeIds.slice().sort().join('_')}`
   const cached = ssGet<Array<[number, number]>>(cacheKey)
   if (cached) return new Map(cached)
 
-  const localidades = ibgeIds.join('|')
-  const url = `${IBGE_BASE}/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${localidades}]`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`IBGE população: HTTP ${res.status}`)
-  const json = await res.json()
-
-  // Formato: [{ resultados: [{ series: [{ localidade: { id }, serie: { "2021": "1234" } }] }] }]
+  // API do IBGE recomenda lotes de até ~100 cidades por chamada
+  const BATCH = 80
   const out = new Map<number, number>()
-  try {
-    const series = json?.[0]?.resultados?.[0]?.series ?? []
-    for (const s of series) {
-      const id = Number(s?.localidade?.id)
-      const v = s?.serie?.['2021']
-      const pop = v && v !== '...' ? Number(v) : null
-      if (Number.isFinite(id) && Number.isFinite(pop)) out.set(id, pop as number)
+  for (let i = 0; i < ibgeIds.length; i += BATCH) {
+    const slice = ibgeIds.slice(i, i + BATCH)
+    const localidades = slice.join('|')
+    const url = `${IBGE_BASE}/v3/agregados/4714/periodos/2022/variaveis/93?localidades=N6[${localidades}]`
+    try {
+      const res = await fetch(url)
+      if (!res.ok) {
+        console.warn(`IBGE 4714 lote ${i}-${i + slice.length}: HTTP ${res.status}`)
+        continue
+      }
+      const json = await res.json()
+      const series = json?.[0]?.resultados?.[0]?.series ?? []
+      for (const s of series) {
+        const id = Number(s?.localidade?.id)
+        const v = s?.serie?.['2022']
+        const pop = v && v !== '...' ? Number(v) : null
+        if (Number.isFinite(id) && Number.isFinite(pop)) out.set(id, pop as number)
+      }
+    } catch (e) {
+      console.warn('IBGE 4714 fetch falhou', e)
     }
-  } catch { /* json shape changed */ }
+  }
 
   ssSet(cacheKey, Array.from(out.entries()))
   return out
