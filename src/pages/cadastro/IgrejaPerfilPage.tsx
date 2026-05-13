@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 import {
   ResponsiveContainer, Tooltip,
   Radar, RadarChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis,
@@ -55,12 +56,32 @@ function buildResumeUrl(r: CensoRowFull): string | null {
 
 export default function IgrejaPerfilPage() {
   const { id } = useParams<{ id: string }>()
+  const { profile } = useAuth()
   const [igreja, setIgreja] = useState<IgrejaInfo | null>(null)
   const [rows, setRows] = useState<CensoRow[]>([])
   const [unionRows, setUnionRows] = useState<CensoRow[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<IgrejaTab>('overview')
   const [showList, setShowList] = useState<ListFilter | null>(null)
+
+  const canDelete = profile?.papel === 'admin'
+    || profile?.papel === 'admin_uniao'
+    || profile?.papel === 'admin_associacao'
+
+  async function handleDeleteResposta(r: CensoRowFull): Promise<boolean> {
+    const nome = (r.nome || 'esta resposta').trim()
+    if (!window.confirm(`Excluir DEFINITIVAMENTE a resposta de "${nome}"?\n\nEsta ação não pode ser desfeita.`)) return false
+    try {
+      const { error } = await supabase.rpc('admin_delete_cadastro_resposta', { p_id: r.id })
+      if (error) throw error
+      setRows(prev => prev.filter(x => x.id !== r.id))
+      return true
+    } catch (e: any) {
+      alert('Erro ao excluir: ' + (e?.message || 'falha desconhecida'))
+      console.error('[cadastro_excluir_resposta]', e)
+      return false
+    }
+  }
 
   // Dados lazy por aba
   const [pessoas, setPessoas] = useState<any[]>([])
@@ -308,6 +329,8 @@ export default function IgrejaPerfilPage() {
         rows={rows as CensoRowFull[]}
         igrejaNome={igreja.nome}
         onOpenList={setShowList}
+        canDelete={canDelete}
+        onDelete={handleDeleteResposta}
       />
 
       {/* Modal de lista */}
@@ -317,6 +340,8 @@ export default function IgrejaPerfilPage() {
           filter={showList}
           igrejaNome={igreja.nome}
           onClose={() => setShowList(null)}
+          canDelete={canDelete}
+          onDelete={handleDeleteResposta}
         />
       )}
 
@@ -524,10 +549,12 @@ function ClickStatCard({ icon: Icon, label, value, color = 'text-gray-800', onCl
 }
 
 // ===== Lista permanente: respondentes da igreja (visão missionário) =====
-function RespondentesIgrejaTable({ rows, igrejaNome, onOpenList }: {
+function RespondentesIgrejaTable({ rows, igrejaNome, onOpenList, canDelete, onDelete }: {
   rows: CensoRowFull[]
   igrejaNome: string
   onOpenList: (f: ListFilter) => void
+  canDelete?: boolean
+  onDelete?: (r: CensoRowFull) => Promise<boolean> | void
 }) {
   const [q, setQ] = useState('')
   const [aba, setAba] = useState<'todos' | 'membros' | 'interessados'>('todos')
@@ -617,6 +644,7 @@ function RespondentesIgrejaTable({ rows, igrejaNome, onOpenList }: {
                 <th className="px-2 py-2">Vínculo</th>
                 <th className="px-2 py-2">Contato</th>
                 <th className="px-2 py-2 text-center">Status</th>
+                {canDelete && <th className="px-2 py-2 text-right">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -654,6 +682,18 @@ function RespondentesIgrejaTable({ rows, igrejaNome, onOpenList }: {
                         <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">E{r.etapa_atual}/11</span>
                       )}
                     </td>
+                    {canDelete && (
+                      <td className="px-2 py-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => onDelete?.(r)}
+                          title="Excluir resposta (definitivo)"
+                          className="text-[10px] font-medium px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100"
+                        >
+                          Excluir
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 )
               })}
@@ -679,11 +719,13 @@ const LIST_LABELS: Record<ListFilter, string> = {
   interessados: 'Interessados / Visitantes',
 }
 
-function IgrejaListModal({ rows, filter, igrejaNome, onClose }: {
+function IgrejaListModal({ rows, filter, igrejaNome, onClose, canDelete, onDelete }: {
   rows: CensoRowFull[]
   filter: ListFilter
   igrejaNome: string
   onClose: () => void
+  canDelete?: boolean
+  onDelete?: (r: CensoRowFull) => Promise<boolean> | void
 }) {
   const [busca, setBusca] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -900,6 +942,16 @@ function IgrejaListModal({ rows, filter, igrejaNome, onClose }: {
                               className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
                               Ficha
                             </a>
+                          )}
+                          {canDelete && onDelete && (
+                            <button
+                              type="button"
+                              onClick={() => onDelete(r)}
+                              title="Excluir resposta (definitivo)"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100"
+                            >
+                              Excluir
+                            </button>
                           )}
                         </div>
                       </td>

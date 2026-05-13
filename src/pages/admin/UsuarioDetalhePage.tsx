@@ -128,6 +128,31 @@ export default function UsuarioDetalhePage() {
   const navigate = useNavigate()
   const { hasRole, user: actorUser } = useAuth()
   const canManage = hasRole(['admin', 'admin_uniao', 'admin_associacao'])
+  const [deletingUser, setDeletingUser] = useState(false)
+
+  async function handleDeleteUser() {
+    if (!usuario) return
+    if (actorUser?.id === usuario.id) {
+      alert('Você não pode excluir a si mesmo.')
+      return
+    }
+    const ok = window.confirm(
+      `Excluir DEFINITIVAMENTE o usuário "${usuario.nome}" (${usuario.email})?\n\n` +
+      `Esta ação não pode ser desfeita. O acesso será revogado imediatamente.`,
+    )
+    if (!ok) return
+    setDeletingUser(true)
+    try {
+      const { error } = await supabase.rpc('admin_delete_user', { p_user_id: usuario.id })
+      if (error) throw error
+      navigate('/usuarios')
+    } catch (e: any) {
+      alert('Erro ao excluir usuário: ' + (e?.message || 'falha desconhecida'))
+      console.error('[admin_delete_user]', e)
+    } finally {
+      setDeletingUser(false)
+    }
+  }
 
   const [usuario, setUsuario] = useState<UsuarioFull | null>(null)
   const [loading, setLoading] = useState(true)
@@ -475,6 +500,20 @@ export default function UsuarioDetalhePage() {
             </div>
           </div>
         </div>
+        {canManage && actorUser?.id !== usuario.id && (
+          <button
+            type="button"
+            onClick={handleDeleteUser}
+            disabled={deletingUser}
+            title="Excluir definitivamente este usuário"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-sm font-medium disabled:opacity-60"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+            </svg>
+            {deletingUser ? 'Excluindo...' : 'Excluir usuário'}
+          </button>
+        )}
       </div>
 
       {/* Tabs */}

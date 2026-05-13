@@ -1797,6 +1797,8 @@ export default function CadastroDashboardPage() {
           onClose={() => setShowEtapaModal(null)}
           onShowDetail={(r) => { setShowEtapaModal(null); setShowDetail(r) }}
           exportCSV={exportCSV}
+          canDelete={canDelete}
+          onDelete={handleDeleteResposta}
         />
       )}
 
@@ -1831,9 +1833,11 @@ interface EtapaAbandonoModalProps {
   onClose: () => void
   onShowDetail: (r: CadastroRow) => void
   exportCSV: (rows: CadastroRow[], filename: string) => void
+  canDelete?: boolean
+  onDelete?: (r: CadastroRow) => Promise<boolean> | void
 }
 
-function EtapaAbandonoModal({ etapa, respostas, igrejaInfoById, getAssocSigla, onClose, onShowDetail, exportCSV }: EtapaAbandonoModalProps) {
+function EtapaAbandonoModal({ etapa, respostas, igrejaInfoById, getAssocSigla, onClose, onShowDetail, exportCSV, canDelete, onDelete }: EtapaAbandonoModalProps) {
   const label = ETAPAS_LABELS[etapa] || `Etapa ${etapa}`
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
@@ -1982,6 +1986,15 @@ function EtapaAbandonoModal({ etapa, respostas, igrejaInfoById, getAssocSigla, o
                             className="text-[10px] font-medium px-2 py-1 rounded bg-primary-50 text-primary-700 hover:bg-primary-100">
                             Ficha
                           </button>
+                          {canDelete && onDelete && (
+                            <button
+                              onClick={() => onDelete(r)}
+                              title="Excluir resposta (definitivo)"
+                              className="text-[10px] font-medium px-2 py-1 rounded bg-red-50 text-red-700 hover:bg-red-100"
+                            >
+                              Excluir
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
