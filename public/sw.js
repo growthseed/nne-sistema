@@ -2,7 +2,7 @@
 // IMPORTANTE: bump esta versão a cada deploy que mude bundles JS/CSS pra
 // forçar limpeza automática do cache no cliente (assets antigos com mojibake
 // ou bugs já corrigidos só somem quando essa string muda).
-const CACHE_NAME = 'nne-v6-20260512d'
+const CACHE_NAME = 'nne-v7-20260512e'
 const PRECACHE = [
   '/',
   '/img/logo-nne.png',

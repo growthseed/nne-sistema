@@ -53,16 +53,20 @@ export async function fetchMunicipiosEstado(uf: string): Promise<MunicipioIBGE[]
 // é o dado oficial mais recente e está estável.
 export async function fetchPopulacaoBatch(ibgeIds: number[]): Promise<Map<number, number>> {
   if (ibgeIds.length === 0) return new Map()
-  const cacheKey = `pop2022_${ibgeIds.slice().sort().join('_')}`
+  // v2: nova chave para invalidar cache 'envenenado' por sessões anteriores
+  // que salvaram Map vazio quando o pipe '|' começou a dar HTTP 500.
+  const cacheKey = `pop2022v2_${ibgeIds.slice().sort().join('_')}`
   const cached = ssGet<Array<[number, number]>>(cacheKey)
   if (cached) return new Map(cached)
 
-  // API do IBGE recomenda lotes de até ~100 cidades por chamada
+  // API do IBGE recomenda lotes de até ~100 cidades por chamada.
+  // IMPORTANTE: maio/2026 a API parou de aceitar '|' como separador em
+  // múltiplas localidades (retorna HTTP 500). Vírgula funciona.
   const BATCH = 80
   const out = new Map<number, number>()
   for (let i = 0; i < ibgeIds.length; i += BATCH) {
     const slice = ibgeIds.slice(i, i + BATCH)
-    const localidades = slice.join('|')
+    const localidades = slice.join(',')
     const url = `${IBGE_BASE}/v3/agregados/4714/periodos/2022/variaveis/93?localidades=N6[${localidades}]`
     try {
       const res = await fetch(url)
