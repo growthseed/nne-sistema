@@ -53,6 +53,10 @@ const UsuariosListPage = lazy(() => import('@/pages/admin/UsuariosListPage'))
 const UsuarioNovoPage = lazy(() => import('@/pages/admin/UsuarioNovoPage'))
 const EscolaBiblicaPage = lazy(() => import('@/pages/escola-sabatina/EscolaBiblicaPage'))
 const EBDashboardPage = lazy(() => import('@/pages/escola-biblica/EBDashboardPage'))
+const AdminDownloadsListPage = lazy(() => import('@/pages/admin/downloads/AdminDownloadsListPage'))
+const AdminDownloadsEditPage = lazy(() => import('@/pages/admin/downloads/AdminDownloadsEditPage'))
+const AdminDownloadsCategoriasPage = lazy(() => import('@/pages/admin/downloads/AdminDownloadsCategoriasPage'))
+const AdminDownloadsConfigPage = lazy(() => import('@/pages/admin/downloads/AdminDownloadsConfigPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 
 function withAccess(accessKey: AccessRuleKey, element: ReactElement) {
@@ -282,6 +286,26 @@ export const appRoutes: RouteObject[] = [
       {
         path: 'configuracoes/usuario/:id',
         element: withAccess('configuracoes_usuario', <UsuarioDetalhePage />),
+      },
+      {
+        path: 'admin/downloads',
+        element: withAccess('downloads_admin', <AdminDownloadsListPage />),
+      },
+      {
+        path: 'admin/downloads/categorias',
+        element: withAccess('downloads_admin', <AdminDownloadsCategoriasPage />),
+      },
+      {
+        path: 'admin/downloads/configuracoes',
+        element: withAccess('downloads_admin', <AdminDownloadsConfigPage />),
+      },
+      {
+        path: 'admin/downloads/novo',
+        element: withAccess('downloads_admin', <AdminDownloadsEditPage />),
+      },
+      {
+        path: 'admin/downloads/:id',
+        element: withAccess('downloads_admin', <AdminDownloadsEditPage />),
       },
       {
         path: 'usuarios',

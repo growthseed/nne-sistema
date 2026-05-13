@@ -1,6 +1,7 @@
 ﻿import { lazy } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { RequireSession } from '@/components/auth/RouteGuards'
+import DownloadsShell from '@/components/downloads/DownloadsShell'
 
 const CadastroPublicoPage = lazy(() => import('@/pages/cadastro/CadastroPublicoPage'))
 const ValidarCartaoPage = lazy(() => import('@/pages/ValidarCartaoPage'))
@@ -23,10 +24,16 @@ export const publicRoutes: RouteObject[] = [
   { path: '/validar-cartao', element: <ValidarCartaoPage /> },
   { path: '/diretorio', element: <DiretorioIgrejasPage /> },
   { path: '/eb/:classeId', element: <EBPublicPage /> },
-  // Downloads — públicos (igual a downloads.adventistas.org)
-  { path: '/downloads', element: <DownloadsHomePagePublic /> },
-  { path: '/downloads/:slug', element: <DownloadsCategoriaPagePublic /> },
-  { path: '/downloads/:categoria_slug/:item_slug', element: <DownloadsItemPagePublic /> },
+  // Downloads — sistema público independente com layout próprio
+  {
+    path: '/downloads',
+    element: <DownloadsShell />,
+    children: [
+      { index: true, element: <DownloadsHomePagePublic /> },
+      { path: ':slug', element: <DownloadsCategoriaPagePublic /> },
+      { path: ':categoria_slug/:item_slug', element: <DownloadsItemPagePublic /> },
+    ],
+  },
   { path: '/portal/login', element: <PortalLoginPage /> },
   { path: '/portal/inicio', element: <PortalLandingPage /> },
   {

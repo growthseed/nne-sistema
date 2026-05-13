@@ -58,6 +58,7 @@ export type AccessRuleKey =
   | 'configuracoes_usuario'
   | 'usuarios'
   | 'usuarios_novo'
+  | 'downloads_admin'
 
 export type SidebarGroupKey =
   | 'inicio'
@@ -158,6 +159,7 @@ export const ACCESS_RULES: Record<AccessRuleKey, AccessRule> = {
   configuracoes_usuario: { label: 'Editar Usuario', module: 'admin', roles: ADMIN_ROLES },
   usuarios: { label: 'Usuarios', module: 'admin', roles: ADMIN_ROLES },
   usuarios_novo: { label: 'Novo Usuario', module: 'admin', roles: ADMIN_ROLES },
+  downloads_admin: { label: 'Downloads (Admin)', module: 'admin', roles: ADMIN_ROLES },
 }
 
 export const SIDEBAR_GROUPS: SidebarGroup[] = [
@@ -248,6 +250,7 @@ export const SIDEBAR_GROUPS: SidebarGroup[] = [
       { key: 'configuracoes_admin', to: '/configuracoes', icon: 'cog' },
       { key: 'cadastro_dashboard', to: '/cadastro/dashboard', icon: 'clipboard-check' },
       { key: 'organizacao_unioes', to: '/organizacao/unioes', icon: 'office-building' },
+      { key: 'downloads_admin', to: '/admin/downloads', icon: 'library' },
     ],
   },
 ]
