@@ -118,26 +118,89 @@ async function main() {
   try {
     // ── 1) LOGIN ─────────────────────────────────────────────────────────
     console.log('▶ Abrindo página de login...')
-    await page.goto('https://marketing.escoladainteligencia.com.br/', { waitUntil: 'domcontentloaded' })
+    await page.goto('https://portal.escoladainteligencia.com.br/login', { waitUntil: 'domcontentloaded' })
+    await page.waitForTimeout(2000)
+    await page.screenshot({ path: 'scripts/debug_01_login_page.png', fullPage: true })
+    console.log('  → screenshot scripts/debug_01_login_page.png')
 
-    // Tenta seletores comuns de login (email/senha)
-    const emailInput = page.locator('input[type="email"], input[name="email"], input#email').first()
+    // Lista TODOS os inputs e botões pra debug
+    const formInfo = await page.evaluate(() => {
+      const inputs = Array.from(document.querySelectorAll('input')).map(i => ({
+        type: i.type, name: i.name, id: i.id, placeholder: i.placeholder,
+        ariaLabel: i.getAttribute('aria-label'),
+      }))
+      const buttons = Array.from(document.querySelectorAll('button')).map(b => ({
+        type: b.type, text: b.textContent?.trim().slice(0, 40),
+      }))
+      const forms = Array.from(document.querySelectorAll('form')).map(f => ({
+        action: f.action, method: f.method, id: f.id,
+      }))
+      return { url: location.href, title: document.title, inputs, buttons, forms }
+    })
+    console.log('  Form info:', JSON.stringify(formInfo, null, 2))
+
+    // Tenta seletores comuns de login
+    const emailInput = page.locator('input[type="email"], input[name="email"], input#email, input[name="username"], input[name="login"]').first()
     const passInput  = page.locator('input[type="password"], input[name="password"], input#password').first()
     await emailInput.waitFor({ timeout: 15000 })
     await emailInput.fill(EI_USER)
     await passInput.fill(EI_PASS)
+    await page.screenshot({ path: 'scripts/debug_02_filled.png', fullPage: true })
 
     // Botão de login
-    const loginBtn = page.locator('button[type="submit"], button:has-text("Entrar"), button:has-text("Login")').first()
-    await Promise.all([
-      page.waitForLoadState('networkidle', { timeout: 30000 }),
-      loginBtn.click(),
-    ])
-    console.log('✓ Login OK (URL atual:', page.url(), ')')
+    const loginBtn = page.locator('button[type="submit"], button:has-text("Entrar"), button:has-text("Login"), button:has-text("Acessar"), input[type="submit"]').first()
+    await loginBtn.click()
+    await page.waitForTimeout(5000)  // aguarda redirecionamento e/ou mensagem de erro
+    await page.screenshot({ path: 'scripts/debug_03_after_login.png', fullPage: true })
 
-    // ── 2) IR PARA /campanhas ────────────────────────────────────────────
-    await page.goto('https://marketing.escoladainteligencia.com.br/campanhas', { waitUntil: 'networkidle' })
-    console.log('▶ Página de campanhas aberta')
+    const finalUrl = page.url()
+    console.log('  URL após login:', finalUrl)
+
+    // Captura mensagens de erro visíveis
+    const errMsg = await page.evaluate(() => {
+      const candidates = document.querySelectorAll('[class*="error"], [class*="alert"], [role="alert"], [class*="danger"]')
+      return Array.from(candidates).map(e => e.textContent?.trim()).filter(t => t && t.length < 200).slice(0, 5)
+    })
+    if (errMsg.length > 0) console.log('  ⚠ Mensagens visíveis:', errMsg)
+
+    if (finalUrl.includes('/login') || finalUrl.includes('signin')) {
+      throw new Error('Login falhou — URL ainda em /login. Verifique credenciais ou inspecione debug_03_after_login.png.')
+    }
+    console.log('✓ Login confirmado:', finalUrl)
+
+    // ── 2) IR PARA /home → inspecionar estrutura → tentar /campanhas ─────
+    await page.goto('https://portal.escoladainteligencia.com.br/home', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(2500)
+    await page.screenshot({ path: 'scripts/debug_04_home.png', fullPage: true })
+    console.log('▶ /home aberto, screenshot scripts/debug_04_home.png')
+
+    // Lista links e seções pra entender estrutura
+    const homeInfo = await page.evaluate(() => {
+      const links = Array.from(document.querySelectorAll('a')).map(a => ({
+        text: a.textContent?.trim().slice(0, 50), href: a.getAttribute('href'),
+      })).filter(l => l.href && l.text)
+      const imgs = Array.from(document.querySelectorAll('img')).slice(0, 30).map(i => ({
+        alt: i.alt, src: i.src, w: i.naturalWidth, h: i.naturalHeight,
+      })).filter(i => i.src && !i.src.endsWith('logo.png'))
+      return { url: location.href, title: document.title, links: links.slice(0, 50), imgs: imgs.slice(0, 30) }
+    })
+    console.log('  Home links (50):', JSON.stringify(homeInfo.links, null, 2))
+    console.log('  Home imgs (30):', JSON.stringify(homeInfo.imgs, null, 2))
+
+    // Tenta navegar para /campanhas se aparecer no menu
+    const campanhaLink = homeInfo.links.find(l =>
+      /campanh|cart[oõ]es|materiais|marketing|posts?/i.test(l.text || '') ||
+      /campanh|cart|material|marketing/i.test(l.href || ''),
+    )
+    if (campanhaLink) {
+      const url = campanhaLink.href.startsWith('http') ? campanhaLink.href : `https://portal.escoladainteligencia.com.br${campanhaLink.href}`
+      console.log(`▶ Indo para ${url} (texto: "${campanhaLink.text}")`)
+      await page.goto(url, { waitUntil: 'networkidle' })
+      await page.waitForTimeout(2500)
+      await page.screenshot({ path: 'scripts/debug_05_campanhas.png', fullPage: true })
+    } else {
+      console.log('⚠ Nenhum link de "campanhas/materiais" encontrado no /home — continuando no /home mesmo.')
+    }
 
     // Scroll até o fim pra carregar lazy loading (se houver)
     let prevHeight = 0
@@ -148,6 +211,7 @@ async function main() {
       await page.mouse.wheel(0, 2000)
       await page.waitForTimeout(800)
     }
+    await page.screenshot({ path: 'scripts/debug_06_after_scroll.png', fullPage: true })
 
     // ── 3) EXTRAIR CARDS ─────────────────────────────────────────────────
     // AJUSTE os seletores aqui depois de inspecionar o DOM real do site.
@@ -200,7 +264,7 @@ async function main() {
 
         // Baixa a imagem da fonte externa
         const imgUrl = card.imagemSrc.startsWith('http') ? card.imagemSrc
-                     : `https://marketing.escoladainteligencia.com.br${card.imagemSrc}`
+                     : `https://portal.escoladainteligencia.com.br${card.imagemSrc}`
         const resp = await page.context().request.get(imgUrl)
         if (!resp.ok()) { console.warn(`  ⚠ falha img ${imgUrl}`); errors++; continue }
         const buf = await resp.body()
@@ -218,7 +282,7 @@ async function main() {
           origem_externa_id: origemId,
           origem_externa_url: card.link?.startsWith('http')
             ? card.link
-            : `https://marketing.escoladainteligencia.com.br${card.link || ''}`,
+            : `https://portal.escoladainteligencia.com.br${card.link || ''}`,
         }
 
         if (existing) {
