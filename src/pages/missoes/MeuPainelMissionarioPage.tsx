@@ -206,7 +206,7 @@ export default function MeuPainelMissionarioPage() {
   const goalsProgress = useMemo(() => {
     if (!metas) return []
     return [
-      { label: 'Estudos Biblicos', actual: actualsFromReports.estudos, goal: metas.meta_estudos_biblicos },
+      { label: 'Estudos Bíblicos', actual: actualsFromReports.estudos, goal: metas.meta_estudos_biblicos },
       { label: 'Visitas', actual: actualsFromReports.visitas, goal: metas.meta_visitas },
       { label: 'Literatura', actual: actualsFromReports.literatura, goal: metas.meta_literatura },
       { label: 'Convites', actual: actualsFromReports.convites, goal: metas.meta_convites },
@@ -372,7 +372,7 @@ export default function MeuPainelMissionarioPage() {
               {missionario.data_inicio_ministerio && (
                 <span className="flex items-center gap-1">
                   <FiCalendar className="w-3.5 h-3.5" />
-                  Inicio: {formatDateShort(missionario.data_inicio_ministerio)}
+                  Início: {formatDateShort(missionario.data_inicio_ministerio)}
                 </span>
               )}
               <span className="flex items-center gap-1">
@@ -399,7 +399,7 @@ export default function MeuPainelMissionarioPage() {
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Progresso das Metas - {MESES[currentMonth - 1]}</h3>
 
         {!metas ? (
-          <p className="text-gray-400 text-sm">Nenhuma meta definida para este mes.</p>
+          <p className="text-gray-400 text-sm">Nenhuma meta definida para este mês.</p>
         ) : (
           <div className="space-y-4">
             {goalsProgress.map(item => {
@@ -629,28 +629,28 @@ export default function MeuPainelMissionarioPage() {
                 </select>
               </div>
 
-              {/* Titulo */}
+              {/* Título */}
               <div>
-                <label className="label-field">Titulo</label>
+                <label className="label-field">Título</label>
                 <input
                   type="text"
                   value={form.titulo}
                   onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
                   className="input-field"
                   required
-                  placeholder="Ex: Estudo com familia Silva"
+                  placeholder="Ex: Estudo com família Silva"
                 />
               </div>
 
-              {/* Descricao */}
+              {/* Descrição */}
               <div>
-                <label className="label-field">Descricao</label>
+                <label className="label-field">Descrição</label>
                 <textarea
                   value={form.descricao}
                   onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
                   className="input-field"
                   rows={2}
-                  placeholder="Descricao opcional..."
+                  placeholder="Descrição opcional..."
                 />
               </div>
 
@@ -667,7 +667,7 @@ export default function MeuPainelMissionarioPage() {
                   />
                 </div>
                 <div>
-                  <label className="label-field">Hora Inicio</label>
+                  <label className="label-field">Hora Início</label>
                   <input
                     type="time"
                     value={form.hora_inicio}
@@ -708,14 +708,14 @@ export default function MeuPainelMissionarioPage() {
                     value={form.local_descricao}
                     onChange={e => setForm(f => ({ ...f, local_descricao: e.target.value }))}
                     className="input-field"
-                    placeholder="Endereco ou descricao"
+                    placeholder="Endereço ou descrição"
                   />
                 </div>
               </div>
 
               {/* Participantes */}
               <div>
-                <label className="label-field">Numero de Participantes</label>
+                <label className="label-field">Número de Participantes</label>
                 <input
                   type="number"
                   min={0}

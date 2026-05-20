@@ -310,7 +310,7 @@ export default function RelatorioCampoPage() {
       labels,
       datasets: [
         {
-          label: 'Dizimos',
+          label: 'Dízimos',
           data: sortedKeys.map(k => aggregated[k].dizimos),
           borderColor: '#006D43',
           backgroundColor: '#006D4320',
@@ -331,8 +331,8 @@ export default function RelatorioCampoPage() {
 
   // Missionary activity radar (from relatorio_missionario_diario aggregated)
   const radarLabels = [
-    'Estudos Biblicos', 'Familias Visitadas', 'Membros Visitados',
-    'Interessados', 'Contatos', 'Sermoes',
+    'Estudos Bíblicos', 'Famílias Visitadas', 'Membros Visitados',
+    'Interessados', 'Contatos', 'Sermões',
     'Batizados', 'Classes Bíblicas', 'Folhetos',
   ]
 
@@ -344,7 +344,7 @@ export default function RelatorioCampoPage() {
       labels: radarLabels,
       datasets: [
         {
-          label: 'Missionario',
+          label: 'Missionário',
           data: RADAR_FIELDS.map(f => atividadesMissionario[f] || 0),
           borderColor: '#006D43',
           backgroundColor: '#006D4340',
@@ -352,7 +352,7 @@ export default function RelatorioCampoPage() {
           pointBackgroundColor: '#006D43',
         },
         {
-          label: 'Media da Uniao',
+          label: 'Média da União',
           data: RADAR_FIELDS.map(f => atividadesUniao[f] || 0),
           borderColor: '#3B82F6',
           backgroundColor: '#3B82F630',
@@ -529,7 +529,7 @@ export default function RelatorioCampoPage() {
 
       // Financial sheet
       if (financeiro.length > 0) {
-        const finHeaders = ['Mes', 'Ano', 'Dizimos', 'Ofertas Regular', 'Ofertas Especial', 'Ofertas ES', 'Doacoes']
+        const finHeaders = ['Mês', 'Ano', 'Dízimos', 'Ofertas Regular', 'Ofertas Especial', 'Ofertas ES', 'Doações']
         const finData = financeiro.map(f => [
           f.mes, f.ano,
           ((f as any).receita_dizimos || 0) + ((f as any).dizimo || 0),
@@ -544,7 +544,7 @@ export default function RelatorioCampoPage() {
 
       // Classes sheet
       if (classesBatismais.length > 0) {
-        const classHeaders = ['Nome', 'Instrutor', 'Data Inicio', 'Total Alunos', 'Status']
+        const classHeaders = ['Nome', 'Instrutor', 'Data Início', 'Total Alunos', 'Status']
         const classData = classesBatismais.map(c => [
           c.nome, c.instrutor, c.data_inicio, c.alunos?.length || 0, c.status,
         ])
@@ -557,7 +557,7 @@ export default function RelatorioCampoPage() {
         const repHeaders = ['Campo', 'Total']
         const repData = RADAR_FIELDS.map((f, i) => [radarLabels[i], atividadesMissionario[f] || 0])
         const wsRep = XLSX.utils.aoa_to_sheet([repHeaders, ...repData])
-        XLSX.utils.book_append_sheet(wb, wsRep, 'Atividade Missionaria')
+        XLSX.utils.book_append_sheet(wb, wsRep, 'Atividade Missionária')
       }
 
       const nome = missionario.nome || missionario.usuario?.nome || 'missionario'
@@ -626,7 +626,7 @@ export default function RelatorioCampoPage() {
       {generating && (
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-          <span className="ml-3 text-gray-500">Gerando relatorio...</span>
+          <span className="ml-3 text-gray-500">Gerando relatório...</span>
         </div>
       )}
 
@@ -671,7 +671,7 @@ export default function RelatorioCampoPage() {
             </div>
           </div>
 
-          {/* b. Indice Etario + c. Genero */}
+          {/* b. Índice Etário + c. Gênero */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Age distribution */}
             <div className="card">
@@ -694,7 +694,7 @@ export default function RelatorioCampoPage() {
             <div className="card">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <FiUsers className="w-5 h-5 text-gray-400" />
-                Distribuicao por Genero
+                Distribuição por Gênero
               </h3>
               <div style={{ height: 280 }} className="flex items-center justify-center">
                 {pessoas.length > 0 ? (
@@ -703,24 +703,24 @@ export default function RelatorioCampoPage() {
                     cutout: '55%',
                   }} />
                 ) : (
-                  <div className="text-gray-400">Sem dados disponiveis</div>
+                  <div className="text-gray-400">Sem dados disponíveis</div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* d. Tendencia Financeira */}
+          {/* d. Tendência Financeira */}
           <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FiDollarSign className="w-5 h-5 text-gray-400" />
-              Tendencia Financeira
+              Tendência Financeira
             </h3>
             <div style={{ height: 300 }}>
               {financeiro.length > 0 ? (
                 <Line data={financialChartData} options={chartOptions()} />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">
-                  Sem dados financeiros disponiveis
+                  Sem dados financeiros disponíveis
                 </div>
               )}
             </div>
@@ -731,7 +731,7 @@ export default function RelatorioCampoPage() {
             <div className="card">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <FiBarChart2 className="w-5 h-5 text-gray-400" />
-                Atividade Missionaria (Media Mensal)
+                Atividade Missionária (Média Mensal)
               </h3>
               <div style={{ height: 350 }} className="flex items-center justify-center">
                 <Radar data={radarData} options={{
@@ -760,7 +760,7 @@ export default function RelatorioCampoPage() {
                     <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
                       <th className="px-4 py-3">Nome</th>
                       <th className="px-4 py-3">Instrutor</th>
-                      <th className="px-4 py-3">Data Inicio</th>
+                      <th className="px-4 py-3">Data Início</th>
                       <th className="px-4 py-3 text-center">Total Alunos</th>
                       <th className="px-4 py-3 text-center">Status</th>
                     </tr>
@@ -789,12 +789,12 @@ export default function RelatorioCampoPage() {
             )}
           </div>
 
-          {/* g. Projecao de Crescimento */}
+          {/* g. Projeção de Crescimento */}
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <FiTrendingUp className="w-5 h-5 text-gray-400" />
-                Projecao de Crescimento (Membros)
+                Projeção de Crescimento (Membros)
               </h3>
               {membershipProjection && (
                 <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${

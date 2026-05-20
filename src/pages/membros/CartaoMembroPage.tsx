@@ -123,7 +123,7 @@ export default function CartaoMembroPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <FiCreditCard className="w-6 h-6 text-[#006D43]" />
-              Cartao de Membro Digital
+              Cartão de Membro Digital
             </h1>
             <p className="text-gray-500 mt-1">Gere e imprima credenciais de membros</p>
           </div>
@@ -225,7 +225,7 @@ export default function CartaoMembroPage() {
               <div>
                 {/* Action bar */}
                 <div className="no-print flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-gray-700">Pre-visualizacao do Cartao</h3>
+                  <h3 className="text-sm font-semibold text-gray-700">Pré-visualização do Cartão</h3>
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
@@ -242,7 +242,7 @@ export default function CartaoMembroPage() {
                       className="btn-primary text-xs flex items-center gap-1.5"
                     >
                       <FiPrinter className="w-3.5 h-3.5" />
-                      Imprimir Cartao
+                      Imprimir Cartão
                     </button>
                   </div>
                 </div>
@@ -254,10 +254,10 @@ export default function CartaoMembroPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-green-200 text-xs font-medium tracking-wider uppercase">
-                          Cartao de Membro Digital
+                          Cartão de Membro Digital
                         </p>
                         <h3 className="text-white text-lg font-bold mt-0.5">
-                          IASDMR - Uniao Norte-Nordeste
+                          IASDMR - União Norte-Nordeste
                         </h3>
                       </div>
                       <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -293,7 +293,7 @@ export default function CartaoMembroPage() {
                         </h4>
                         {membroSelecionado.igreja && (
                           <p className="text-sm text-gray-500 mt-1 truncate">
-                            {(membroSelecionado.igreja as any)?.nome || 'Igreja nao informada'}
+                            {(membroSelecionado.igreja as any)?.nome || 'Igreja não informada'}
                           </p>
                         )}
                         {membroSelecionado.cargo && (
@@ -344,10 +344,10 @@ export default function CartaoMembroPage() {
                         <QRCodeSVG value={validationUrl} size={90} />
                       </div>
                       <div className="text-xs text-gray-400 leading-relaxed">
-                        <p className="font-medium text-gray-500 mb-1">Verificacao Digital</p>
+                        <p className="font-medium text-gray-500 mb-1">Verificação Digital</p>
                         <p>
                           Escaneie o QR Code para verificar a autenticidade desta credencial
-                          ou acesse o link de validacao.
+                          ou acesse o link de validação.
                         </p>
                         <p className="font-mono text-[10px] text-gray-300 mt-1 break-all">
                           {validationUrl}
@@ -359,7 +359,7 @@ export default function CartaoMembroPage() {
                   {/* Card Footer */}
                   <div className="bg-gray-50 px-6 py-3 border-t border-gray-100">
                     <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span>IASDMR - Uniao Norte-Nordeste</span>
+                      <span>IASDMR - União Norte-Nordeste</span>
                       <span>Emitido em {new Date().toLocaleDateString('pt-BR')}</span>
                     </div>
                   </div>
@@ -370,7 +370,7 @@ export default function CartaoMembroPage() {
                   <p className="font-medium text-gray-600 mb-1">Informações do Cartão</p>
                   <div className="grid grid-cols-2 gap-2">
                     <p><strong>ID Completo:</strong> <span className="font-mono text-[10px]">{membroSelecionado.id}</span></p>
-                    <p><strong>Link de Validacao:</strong>{' '}
+                    <p><strong>Link de Validação:</strong>{' '}
                       <a
                         href={`/validar-cartao?id=${membroSelecionado.id}`}
                         target="_blank"

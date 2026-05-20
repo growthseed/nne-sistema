@@ -256,7 +256,7 @@ export default function FichaCampoPage() {
           email_pessoal: miss.email_pessoal,
           endereco_cidade: miss.endereco_cidade,
           endereco_uf: miss.endereco_uf,
-          associacao_nome: assoc?.nome || 'Sem Associacao',
+          associacao_nome: assoc?.nome || 'Sem Associação',
           associacao_sigla: assoc?.sigla || '',
         },
         campo,
@@ -400,9 +400,9 @@ export default function FichaCampoPage() {
     return (
       <div className="text-center py-20">
         <FiUsers className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-        <p className="text-gray-500">Obreiro nao encontrado</p>
+        <p className="text-gray-500">Obreiro não encontrado</p>
         <Link to="/missoes/inventario" className="text-green-600 hover:underline text-sm mt-2 inline-block">
-          Voltar ao Inventario
+          Voltar ao Inventário
         </Link>
       </div>
     )
@@ -531,12 +531,12 @@ export default function FichaCampoPage() {
               <p>Emitida em {new Date().toLocaleDateString('pt-BR')}</p>
               {idade && <p>Idade: {idade} anos</p>}
               {m.data_ordenacao && (
-                <p>Ordenacao: {new Date(m.data_ordenacao).toLocaleDateString('pt-BR')}</p>
+                <p>Ordenação: {new Date(m.data_ordenacao).toLocaleDateString('pt-BR')}</p>
               )}
               {m.data_admissao && (
-                <p>Admissao: {new Date(m.data_admissao).toLocaleDateString('pt-BR')}</p>
+                <p>Admissão: {new Date(m.data_admissao).toLocaleDateString('pt-BR')}</p>
               )}
-              {m.formacao_teologica && <p>Formacao: {m.formacao_teologica}</p>}
+              {m.formacao_teologica && <p>Formação: {m.formacao_teologica}</p>}
             </div>
           </div>
         </div>
@@ -556,8 +556,8 @@ export default function FichaCampoPage() {
                     <th className="text-left px-3 py-2.5 text-white font-medium">#</th>
                     <th className="text-left px-3 py-2.5 text-white font-medium">Igreja / Campo</th>
                     <th className="text-left px-3 py-2.5 text-white font-medium">Cidade/UF</th>
-                    <th className="text-left px-3 py-2.5 text-white font-medium">Endereco</th>
-                    <th className="text-left px-3 py-2.5 text-white font-medium">Funcao</th>
+                    <th className="text-left px-3 py-2.5 text-white font-medium">Endereço</th>
+                    <th className="text-left px-3 py-2.5 text-white font-medium">Função</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Membros</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Interess.</th>
                     <th className="text-right px-3 py-2.5 text-white font-medium">Dízimos</th>
@@ -633,7 +633,7 @@ export default function FichaCampoPage() {
           </h2>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Dizimos', valor: financeiro.dizimos, cor: 'green' },
+              { label: 'Dízimos', valor: financeiro.dizimos, cor: 'green' },
               { label: 'Ofertas', valor: financeiro.ofertas, cor: 'blue' },
               { label: 'Total Arrecadado', valor: financeiro.total, cor: 'emerald' },
             ].map(item => (
@@ -650,7 +650,7 @@ export default function FichaCampoPage() {
         {/* === SECTION D: DADOS ECLESIASTICOS === */}
         <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <FiUsers className="text-blue-600" size={18} /> Dados dos Membros da Regiao
+            <FiUsers className="text-blue-600" size={18} /> Dados dos Membros da Região
           </h2>
           <div className="grid grid-cols-5 gap-4">
             {[
@@ -674,7 +674,7 @@ export default function FichaCampoPage() {
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FiTrendingUp className="text-purple-600" size={18} /> Evolução do Campo
               <span className="text-sm font-normal text-gray-400 ml-2">
-                Ultimos {historico.length} meses
+                Últimos {historico.length} meses
               </span>
             </h2>
             <div className="grid grid-cols-2 gap-6">
@@ -705,7 +705,7 @@ export default function FichaCampoPage() {
                   data={{
                     labels: mesesLabels,
                     datasets: [{
-                      label: 'Dizimos',
+                      label: 'Dízimos',
                       data: dadosDizimos,
                       backgroundColor: 'rgba(16,185,129,0.7)',
                       borderColor: '#10b981',
@@ -720,7 +720,7 @@ export default function FichaCampoPage() {
                 />
               </div>
               <div className="border rounded-xl p-4 col-span-2">
-                <p className="text-sm font-medium text-gray-600 mb-3">Batismos por Mes</p>
+                <p className="text-sm font-medium text-gray-600 mb-3">Batismos por Mês</p>
                 <Bar
                   data={{
                     labels: mesesLabels,
@@ -748,7 +748,7 @@ export default function FichaCampoPage() {
             <FiTrendingUp size={36} className="mx-auto mb-3 opacity-30" />
             <p className="font-medium">Histórico em construção</p>
             <p className="text-sm mt-1">
-              Os graficos de evolucao aparecerao conforme os dados mensais forem registrados no sistema.
+              Os gráficos de evolução aparecerão conforme os dados mensais forem registrados no sistema.
             </p>
           </div>
         )}

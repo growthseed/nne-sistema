@@ -6,7 +6,7 @@ import { useFinanceiroLancamentos } from '@/hooks/useFinanceiroLancamentos'
 import type { DadosFinanceiros } from '@/types'
 
 const MESES = [
-  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
@@ -23,7 +23,7 @@ interface ResumoIgreja {
   missoes: number
 }
 
-function calcDizimos(entry: DadosFinanceiros) {
+function calcDízimos(entry: DadosFinanceiros) {
   return (entry.receita_dizimos || 0) + ((entry as any).dizimo || 0)
 }
 
@@ -57,7 +57,7 @@ export default function ReceitaCampoPage() {
     entries.forEach((entry) => {
       const key = entry.igreja_id
       const existing = map.get(key)
-      const dizimos = calcDizimos(entry)
+      const dizimos = calcDízimos(entry)
       const ofertas = calcOfertas(entry)
       const total = dizimos + ofertas
       const missoes = entry.receita_oferta_missoes || 0
@@ -120,7 +120,7 @@ export default function ReceitaCampoPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Receita do Campo</h1>
-            <p className="mt-0.5 text-sm text-gray-500">Resumo financeiro por igreja da associacao</p>
+            <p className="mt-0.5 text-sm text-gray-500">Resumo financeiro por igreja da associação</p>
           </div>
         </div>
       </div>
@@ -128,7 +128,7 @@ export default function ReceitaCampoPage() {
       <div className="card">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Mes:</label>
+            <label className="text-sm font-medium text-gray-600">Mês:</label>
             <select
               value={mes}
               onChange={(e) => setMes(Number(e.target.value))}
@@ -185,15 +185,15 @@ export default function ReceitaCampoPage() {
           </div>
           <div className="card flex flex-col items-center py-6">
             <span className="text-2xl font-bold text-purple-600">{formatCurrency(totais.dizimos)}</span>
-            <span className="mt-1 text-sm text-gray-500">Total Dizimos</span>
+            <span className="mt-1 text-sm text-gray-500">Total Dízimos</span>
           </div>
           <div className="card flex flex-col items-center py-6">
             <span className="text-2xl font-bold text-blue-600">{formatCurrency(totais.associacao)}</span>
-            <span className="mt-1 text-sm text-gray-500">Associacao</span>
+            <span className="mt-1 text-sm text-gray-500">Associação</span>
           </div>
           <div className="card flex flex-col items-center py-6">
             <span className="text-2xl font-bold text-amber-600">{formatCurrency(totais.missoes)}</span>
-            <span className="mt-1 text-sm text-gray-500">Missoes</span>
+            <span className="mt-1 text-sm text-gray-500">Missões</span>
           </div>
         </div>
       )}
@@ -217,10 +217,10 @@ export default function ReceitaCampoPage() {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="px-2 py-3 text-left font-semibold text-gray-600">Igreja</th>
-                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Dizimos</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Dízimos</th>
                     <th className="px-2 py-3 text-right font-semibold text-gray-600">Ofertas</th>
                     <th className="px-2 py-3 text-right font-semibold text-gray-600">Total</th>
-                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Missoes</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Missões</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -252,7 +252,7 @@ export default function ReceitaCampoPage() {
                   <p className="mb-3 font-semibold text-gray-800">{resumo.igrejaNome}</p>
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <span className="text-gray-500">Dizimos</span>
+                      <span className="text-gray-500">Dízimos</span>
                       <p className="font-medium text-purple-600">{formatCurrency(resumo.dizimos)}</p>
                     </div>
                     <div>
@@ -264,7 +264,7 @@ export default function ReceitaCampoPage() {
                       <p className="font-bold text-green-600">{formatCurrency(resumo.total)}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Missoes</span>
+                      <span className="text-gray-500">Missões</span>
                       <p className="font-medium text-amber-600">{formatCurrency(resumo.missoes)}</p>
                     </div>
                   </div>
@@ -275,7 +275,7 @@ export default function ReceitaCampoPage() {
                 <p className="mb-3 font-bold text-gray-800">TOTAL GERAL</p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-gray-500">Dizimos</span>
+                    <span className="text-gray-500">Dízimos</span>
                     <p className="font-bold text-purple-700">{formatCurrency(totais.dizimos)}</p>
                   </div>
                   <div>
@@ -287,7 +287,7 @@ export default function ReceitaCampoPage() {
                     <p className="font-bold text-green-700">{formatCurrency(totais.total)}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Missoes</span>
+                    <span className="text-gray-500">Missões</span>
                     <p className="font-bold text-amber-700">{formatCurrency(totais.missoes)}</p>
                   </div>
                 </div>
@@ -300,14 +300,14 @@ export default function ReceitaCampoPage() {
 
       {!loading && resumoPorIgreja.length > 0 && (
         <div className="card">
-          <h3 className="mb-3 text-sm font-semibold text-gray-700">Distribuicao</h3>
+          <h3 className="mb-3 text-sm font-semibold text-gray-700">Distribuição</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex items-center gap-4 rounded-lg border border-blue-100 bg-blue-50 p-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
                 <FiDollarSign className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-blue-600">Associacao</p>
+                <p className="text-sm font-medium text-blue-600">Associação</p>
                 <p className="text-xl font-bold text-blue-800">{formatCurrency(totais.associacao)}</p>
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function ReceitaCampoPage() {
                 <FiDollarSign className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-amber-600">Missoes</p>
+                <p className="text-sm font-medium text-amber-600">Missões</p>
                 <p className="text-xl font-bold text-amber-800">{formatCurrency(totais.missoes)}</p>
               </div>
             </div>

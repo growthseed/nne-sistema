@@ -344,10 +344,10 @@ export default function RelatorioMissionarioPage() {
         })
         .eq('id', headerIdToUse!)
 
-      alert('Relatorio salvo com sucesso!')
+      alert('Relatório salvo com sucesso!')
     } catch (err) {
       console.error('Erro ao salvar:', err)
-      alert('Erro ao salvar relatorio')
+      alert('Erro ao salvar relatório')
     } finally {
       setSaving(false)
     }
@@ -356,7 +356,7 @@ export default function RelatorioMissionarioPage() {
   // ── Toggle status ──
   async function toggleStatus() {
     const newStatus = status === 'aberto' ? 'fechado' : 'aberto'
-    if (newStatus === 'fechado' && !confirm('Fechar o relatorio? Nao podera mais ser editado (admin pode reabrir).')) return
+    if (newStatus === 'fechado' && !confirm('Fechar o relatório? Não poderá mais ser editado (admin pode reabrir).')) return
     setStatus(newStatus)
     if (relatorioId) {
       await supabase
@@ -776,8 +776,8 @@ export default function RelatorioMissionarioPage() {
             </div>
             <div className="text-center">
               <div className="border-t-2 border-gray-400 pt-2 mt-12">
-                <p className="font-semibold text-gray-800 text-xs">Presidente da Uniao</p>
-                <p className="text-[10px] text-gray-500">Uniao Norte Nordeste Brasileira</p>
+                <p className="font-semibold text-gray-800 text-xs">Presidente da União</p>
+                <p className="text-[10px] text-gray-500">União Norte Nordeste Brasileira</p>
               </div>
             </div>
           </div>

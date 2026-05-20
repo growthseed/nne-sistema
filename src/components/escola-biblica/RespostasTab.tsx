@@ -240,7 +240,7 @@ export default function EscolaBiblicaRespostasTab() {
                     )}
                     {resposta.professor_comentario && (
                       <span className="text-gray-500 flex items-center gap-1">
-                        <HiOutlineChat className="w-3 h-3" /> Comentario salvo
+                        <HiOutlineChat className="w-3 h-3" /> Comentário salvo
                       </span>
                     )}
                   </div>
@@ -250,7 +250,7 @@ export default function EscolaBiblicaRespostasTab() {
                     className="w-fit px-3 py-1.5 rounded-lg text-xs font-medium bg-primary-50 text-primary-700 hover:bg-primary-100 flex items-center gap-1"
                   >
                     {isExpanded ? <HiOutlineChevronUp className="w-4 h-4" /> : <HiOutlineChevronDown className="w-4 h-4" />}
-                    {isExpanded ? 'Ocultar revisao' : 'Abrir revisao'}
+                    {isExpanded ? 'Ocultar revisão' : 'Abrir revisão'}
                   </button>
                 </div>
 
@@ -258,7 +258,7 @@ export default function EscolaBiblicaRespostasTab() {
                   <div className="mt-4 border-t border-gray-100 pt-4 space-y-4">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <div className="rounded-xl bg-gray-50 px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400">Pontuacao</p>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400">Pontuação</p>
                         <p className="text-sm font-semibold text-gray-800">{resposta.pontuacao} de {resposta.total_perguntas}</p>
                       </div>
                       <div className="rounded-xl bg-gray-50 px-3 py-2">
@@ -267,12 +267,12 @@ export default function EscolaBiblicaRespostasTab() {
                       </div>
                       <div className="rounded-xl bg-gray-50 px-3 py-2">
                         <p className="text-[10px] uppercase tracking-wide text-gray-400">Status</p>
-                        <p className="text-sm font-semibold text-gray-800">{resposta.revisado_por_professor ? 'Revisado' : 'Aguardando revisao'}</p>
+                        <p className="text-sm font-semibold text-gray-800">{resposta.revisado_por_professor ? 'Revisado' : 'Aguardando revisão'}</p>
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-xs font-semibold text-gray-600 block mb-1.5">Comentario do professor</label>
+                      <label className="text-xs font-semibold text-gray-600 block mb-1.5">Comentário do professor</label>
                       <textarea
                         value={draft}
                         onChange={(event) => setReviewDrafts((current) => ({ ...current, [resposta.id]: event.target.value }))}
@@ -283,7 +283,7 @@ export default function EscolaBiblicaRespostasTab() {
 
                     {resposta.professor_comentario && (
                       <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-wide text-green-600">Ultimo comentario salvo</p>
+                        <p className="text-[10px] uppercase tracking-wide text-green-600">Último comentário salvo</p>
                         <p className="text-sm text-green-900 mt-1 whitespace-pre-wrap">{resposta.professor_comentario}</p>
                       </div>
                     )}
@@ -291,15 +291,15 @@ export default function EscolaBiblicaRespostasTab() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-xs text-gray-500">
                         {resposta.revisado_por_professor
-                          ? 'Voce pode atualizar o comentario sempre que precisar.'
-                          : 'Ao salvar, esta resposta sera marcada como revisada.'}
+                          ? 'Você pode atualizar o comentário sempre que precisar.'
+                          : 'Ao salvar, esta resposta será marcada como revisada.'}
                       </p>
                       <button
                         onClick={() => revisar(resposta.id)}
                         className="btn-primary text-xs disabled:opacity-60"
                         disabled={reviewMutation.isPending}
                       >
-                        {isReviewing ? 'Salvando...' : resposta.revisado_por_professor ? 'Atualizar revisao' : 'Salvar revisao'}
+                        {isReviewing ? 'Salvando...' : resposta.revisado_por_professor ? 'Atualizar revisão' : 'Salvar revisão'}
                       </button>
                     </div>
                   </div>

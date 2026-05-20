@@ -145,7 +145,7 @@ export default function ValidarCartaoPage() {
             Validar Credencial de Membro
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Igreja Adventista do Setimo Dia Movimento de Reforma
+            Igreja Adventista do Sétimo Dia Movimento de Reforma
           </p>
         </div>
       </header>
@@ -190,10 +190,10 @@ export default function ValidarCartaoPage() {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FiXCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Credencial nao encontrada</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Credencial não encontrada</h3>
             <p className="text-gray-500 text-sm">
               Não foi possível encontrar um membro com o número de credencial informado.
-              Verifique se o número esta correto e tente novamente.
+              Verifique se o número está correto e tente novamente.
             </p>
           </div>
         )}
@@ -208,10 +208,10 @@ export default function ValidarCartaoPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-200 text-xs font-medium tracking-wider uppercase">
-                      Cartao de Membro Digital
+                      Cartão de Membro Digital
                     </p>
                     <h3 className="text-white text-lg font-bold mt-0.5">
-                      IASDMR - Uniao Norte-Nordeste
+                      IASDMR - União Norte-Nordeste
                     </h3>
                   </div>
                   <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -246,7 +246,7 @@ export default function ValidarCartaoPage() {
 
                     {membro.igreja && (
                       <p className="text-sm text-gray-500 mt-1 truncate">
-                        {(membro.igreja as any).nome || 'Igreja nao informada'}
+                        {(membro.igreja as any).nome || 'Igreja não informada'}
                       </p>
                     )}
 
@@ -298,10 +298,10 @@ export default function ValidarCartaoPage() {
                     <QRCodeSVG value={validationUrl} size={90} />
                   </div>
                   <div className="text-xs text-gray-400 leading-relaxed">
-                    <p className="font-medium text-gray-500 mb-1">Verificacao Digital</p>
+                    <p className="font-medium text-gray-500 mb-1">Verificação Digital</p>
                     <p>
                       Escaneie o QR Code para verificar a autenticidade desta credencial
-                      ou acesse o link de validacao com o número do membro.
+                      ou acesse o link de validação com o número do membro.
                     </p>
                   </div>
                 </div>
@@ -310,7 +310,7 @@ export default function ValidarCartaoPage() {
               {/* Card Footer */}
               <div className="bg-gray-50 px-6 py-3 border-t border-gray-100">
                 <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>IASDMR - Uniao Norte-Nordeste</span>
+                  <span>IASDMR - União Norte-Nordeste</span>
                   <span>Credencial verificada em {new Date().toLocaleDateString('pt-BR')}</span>
                 </div>
               </div>
@@ -321,9 +321,9 @@ export default function ValidarCartaoPage() {
               <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
                 <FiCheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-green-800">Credencial valida</p>
+                  <p className="text-sm font-semibold text-green-800">Credencial válida</p>
                   <p className="text-xs text-green-600 mt-0.5">
-                    Este membro possui registro ativo junto a IASDMR - Uniao Norte-Nordeste.
+                    Este membro possui registro ativo junto à IASDMR - União Norte-Nordeste.
                   </p>
                 </div>
               </div>
@@ -333,9 +333,9 @@ export default function ValidarCartaoPage() {
               <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
                 <FiAlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-amber-800">Atencao</p>
+                  <p className="text-sm font-semibold text-amber-800">Atenção</p>
                   <p className="text-xs text-amber-600 mt-0.5">
-                    Este membro possui situacao "{statusCfg?.label || membro.situacao}". Entre em contato com a secretaria da igreja para mais informacoes.
+                    Este membro possui situação "{statusCfg?.label || membro.situacao}". Entre em contato com a secretaria da igreja para mais informações.
                   </p>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function ValidarCartaoPage() {
 
         {/* Footer info */}
         <p className="text-center text-xs text-gray-400 mt-8">
-          Sistema de Gestao Eclesiastica - Uniao Norte-Nordeste - IASDMR
+          Sistema de Gestão Eclesiástica - União Norte-Nordeste - IASDMR
         </p>
       </div>
     </div>

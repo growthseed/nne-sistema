@@ -34,12 +34,12 @@ const chartOptions = (titleText?: string): any => ({
 // ========== Constants ==========
 
 const MESES = [
-  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
 const KPI_FIELDS: { key: keyof MetaMissionario; label: string }[] = [
-  { key: 'meta_estudos_biblicos', label: 'Estudos Biblicos' },
+  { key: 'meta_estudos_biblicos', label: 'Estudos Bíblicos' },
   { key: 'meta_visitas', label: 'Visitas' },
   { key: 'meta_literatura', label: 'Literatura' },
   { key: 'meta_pessoas_contatadas', label: 'Pessoas Contatadas' },
@@ -48,7 +48,7 @@ const KPI_FIELDS: { key: keyof MetaMissionario; label: string }[] = [
   { key: 'meta_horas_trabalho', label: 'Horas de Trabalho' },
   { key: 'meta_batismos', label: 'Batismos' },
   { key: 'meta_classes_batismais', label: 'Classes Bíblicas' },
-  { key: 'meta_receita_dizimos', label: 'Receita Dizimos' },
+  { key: 'meta_receita_dizimos', label: 'Receita Dízimos' },
   { key: 'meta_crescimento_membros', label: 'Crescimento Membros' },
 ]
 
@@ -492,8 +492,8 @@ export default function MetasKPIsPage() {
       <div className="space-y-6">
         <div className="card text-center py-12">
           <FiTarget className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-600">Nenhum missionario encontrado</h2>
-          <p className="text-gray-400 mt-2">Nao ha missionarios cadastrados no seu escopo.</p>
+          <h2 className="text-lg font-semibold text-gray-600">Nenhum missionário encontrado</h2>
+          <p className="text-gray-400 mt-2">Não há missionários cadastrados no seu escopo.</p>
         </div>
       </div>
     )
@@ -505,7 +505,7 @@ export default function MetasKPIsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Metas e KPIs</h1>
-          <p className="text-gray-500 mt-1">Defina e acompanhe metas dos missionarios</p>
+          <p className="text-gray-500 mt-1">Defina e acompanhe metas dos missionários</p>
         </div>
         <button className="btn-primary inline-flex items-center gap-2 w-fit" onClick={openNewMeta}>
           <FiPlus className="w-4 h-4" />
@@ -518,7 +518,7 @@ export default function MetasKPIsPage() {
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           {/* Period type toggle */}
           <div>
-            <label className="label-field">Tipo de Periodo</label>
+            <label className="label-field">Tipo de Período</label>
             <div className="flex rounded-lg overflow-hidden border border-gray-200">
               {(['mensal', 'trimestral', 'anual'] as TipoPeriodoMeta[]).map(tp => (
                 <button
@@ -539,7 +539,7 @@ export default function MetasKPIsPage() {
           {/* Period selector */}
           {tipoPeriodo === 'mensal' && (
             <div className="flex-1">
-              <label className="label-field">Mes</label>
+              <label className="label-field">Mês</label>
               <select
                 value={selectedMes}
                 onChange={e => setSelectedMes(Number(e.target.value))}
@@ -630,7 +630,7 @@ export default function MetasKPIsPage() {
       ) : (
         <div className="card text-center py-8">
           <FiTarget className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Nenhuma meta definida para este periodo.</p>
+          <p className="text-gray-500">Nenhuma meta definida para este período.</p>
           <button
             onClick={openNewMeta}
             className="mt-3 text-primary-600 hover:underline text-sm font-medium"
@@ -670,14 +670,14 @@ export default function MetasKPIsPage() {
 
         {metas.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500 text-sm">Nenhuma meta registrada para este periodo e missionario.</p>
+            <p className="text-gray-500 text-sm">Nenhuma meta registrada para este período e missionário.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                  <th className="px-4 py-3">Periodo</th>
+                  <th className="px-4 py-3">Período</th>
                   <th className="px-4 py-3 text-center">Estudos</th>
                   <th className="px-4 py-3 text-center">Visitas</th>
                   <th className="px-4 py-3 text-center">Literatura</th>
@@ -686,7 +686,7 @@ export default function MetasKPIsPage() {
                   <th className="px-4 py-3 text-center">Horas</th>
                   <th className="px-4 py-3 text-center">Batismos</th>
                   <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Acoes</th>
+                  <th className="px-4 py-3 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -768,7 +768,7 @@ export default function MetasKPIsPage() {
                 )}
 
                 <div>
-                  <label className="label-field">Tipo de Periodo</label>
+                  <label className="label-field">Tipo de Período</label>
                   <div className="flex rounded-lg overflow-hidden border border-gray-200">
                     {(['mensal', 'trimestral', 'anual'] as TipoPeriodoMeta[]).map(tp => (
                       <button
@@ -792,7 +792,7 @@ export default function MetasKPIsPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {form.tipo_periodo === 'mensal' && (
                   <div>
-                    <label className="label-field">Mes</label>
+                    <label className="label-field">Mês</label>
                     <select
                       value={form.mes}
                       onChange={e => setForm(f => ({ ...f, mes: Number(e.target.value) }))}

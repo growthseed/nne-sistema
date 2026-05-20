@@ -415,7 +415,7 @@ export default function DiagnosticoPage() {
 
     if (monthsSince >= 6) return { level: 'RED', detail: `${monthsSince} meses sem batismo` }
     if (monthsSince >= 3) return { level: 'YELLOW', detail: `${monthsSince} meses sem batismo` }
-    return { level: 'GREEN', detail: `Ultimo batismo ha ${monthsSince} mes(es)` }
+    return { level: 'GREEN', detail: `Último batismo há ${monthsSince} mês(es)` }
   }, [contagem, currentYear, currentMonth])
 
   const riskInativos = useMemo((): { level: RiskLevel; detail: string } => {
@@ -610,7 +610,7 @@ export default function DiagnosticoPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-          <span className="ml-3 text-gray-500">Carregando diagnostico...</span>
+          <span className="ml-3 text-gray-500">Carregando diagnóstico...</span>
         </div>
       </div>
     )
@@ -642,7 +642,7 @@ export default function DiagnosticoPage() {
                 {trendArrow(percentMembrosAtivos >= 80 ? 1 : percentMembrosAtivos >= 60 ? 0 : -1)}
               </div>
             </div>
-            {/* Metric 2: Tendencia inativos */}
+            {/* Metric 2: Tendência inativos */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Total Inativos</span>
               <div className="flex items-center gap-2">
@@ -720,7 +720,7 @@ export default function DiagnosticoPage() {
             </div>
             {/* Metric 3: Contatos/mes media */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Contatos/Mes (Media)</span>
+              <span className="text-sm text-gray-600">Contatos/Mês (Média)</span>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-gray-900">{numberFmt.format(mediaContatosMes)}</span>
                 {trendArrow(mediaContatosMes > 0 ? 1 : 0)}
@@ -860,7 +860,7 @@ export default function DiagnosticoPage() {
           <FiMapPin className="w-5 h-5 text-gray-400" />
           <h3 className="text-lg font-semibold text-gray-800">Mapa de Oportunidades</h3>
         </div>
-        <p className="text-sm text-gray-500 mb-4">Cidades com presenca da igreja e alcance populacional (IBGE)</p>
+        <p className="text-sm text-gray-500 mb-4">Cidades com presença da igreja e alcance populacional (IBGE)</p>
 
         {citiesFromPessoas.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
@@ -875,7 +875,7 @@ export default function DiagnosticoPage() {
                   <th className="px-4 py-3">Cidade</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3 text-right">Membros</th>
-                  <th className="px-4 py-3 text-right">Populacao</th>
+                  <th className="px-4 py-3 text-right">População</th>
                   <th className="px-4 py-3 text-right">Alcance</th>
                   <th className="px-4 py-3 text-center">Status</th>
                 </tr>
@@ -930,7 +930,7 @@ export default function DiagnosticoPage() {
 
       {/* Footer */}
       <div className="text-center text-xs text-gray-400 py-4">
-        Diagnostico gerado em {new Date().toLocaleDateString('pt-BR')} as {new Date().toLocaleTimeString('pt-BR')} - NNE Sistema
+        Diagnóstico gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')} - NNE Sistema
       </div>
     </div>
   )

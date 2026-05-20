@@ -14,7 +14,7 @@ import {
 } from '@/hooks/useFinanceiroLancamentos'
 
 const MESES = [
-  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
@@ -70,30 +70,30 @@ interface FormData extends ReceitaFields, DespesaFields {
 }
 
 const receitaLabels: { key: keyof ReceitaFields; label: string }[] = [
-  { key: 'receita_dizimos', label: 'Dizimos' },
-  { key: 'receita_primicias', label: 'Primicias' },
+  { key: 'receita_dizimos', label: 'Dízimos' },
+  { key: 'receita_primicias', label: 'Primícias' },
   { key: 'receita_oferta_regular', label: 'Oferta Regular' },
   { key: 'receita_oferta_especial', label: 'Oferta Especial' },
-  { key: 'receita_oferta_missoes', label: 'Oferta Missoes' },
+  { key: 'receita_oferta_missoes', label: 'Oferta Missões' },
   { key: 'receita_oferta_agradecimento', label: 'Oferta Agradecimento' },
   { key: 'receita_oferta_es', label: 'Oferta Escola Sabatina' },
   { key: 'receita_evangelismo', label: 'Evangelismo' },
-  { key: 'receita_doacoes', label: 'Doacoes' },
+  { key: 'receita_doacoes', label: 'Doações' },
   { key: 'receita_fundo_assistencial', label: 'Fundo Assistencial' },
-  { key: 'receita_radio_colportagem', label: 'Radio/Colportagem' },
-  { key: 'receita_construcao', label: 'Construcao' },
-  { key: 'receita_proventos_imoveis', label: 'Proventos Imoveis' },
-  { key: 'receita_gratificacao_6', label: 'Gratificacao 6%' },
-  { key: 'receita_missoes_mundial', label: 'Missoes Mundial' },
-  { key: 'receita_missoes_autonomas', label: 'Missoes Autonomas' },
+  { key: 'receita_radio_colportagem', label: 'Rádio/Colportagem' },
+  { key: 'receita_construcao', label: 'Construção' },
+  { key: 'receita_proventos_imoveis', label: 'Proventos Imóveis' },
+  { key: 'receita_gratificacao_6', label: 'Gratificação 6%' },
+  { key: 'receita_missoes_mundial', label: 'Missões Mundial' },
+  { key: 'receita_missoes_autonomas', label: 'Missões Autônomas' },
   { key: 'receita_outras', label: 'Outras Receitas' },
 ]
 
 const despesaLabels: { key: keyof DespesaFields; label: string }[] = [
-  { key: 'despesa_salarios', label: 'Salarios' },
+  { key: 'despesa_salarios', label: 'Salários' },
   { key: 'despesa_aluguel', label: 'Aluguel' },
-  { key: 'despesa_manutencao', label: 'Manutencao' },
-  { key: 'despesa_agua', label: 'Agua' },
+  { key: 'despesa_manutencao', label: 'Manutenção' },
+  { key: 'despesa_agua', label: 'Água' },
   { key: 'despesa_energia', label: 'Energia' },
   { key: 'despesa_telefone', label: 'Telefone' },
   { key: 'despesa_internet', label: 'Internet' },
@@ -281,7 +281,7 @@ export default function LancamentosPage() {
       setShowForm(false)
       setEditingId(null)
       setForm(emptyForm)
-      toastSuccess(editingId ? 'Lancamento atualizado com sucesso.' : 'Lancamento salvo com sucesso.')
+      toastSuccess(editingId ? 'Lançamento atualizado com sucesso.' : 'Lançamento salvo com sucesso.')
     } catch (mutationError) {
       console.error('Erro ao salvar lancamento:', mutationError)
       toastError('Não foi possível salvar o lançamento agora.')
@@ -294,7 +294,7 @@ export default function LancamentosPage() {
 
     try {
       await updateLancamentoStatus.mutateAsync({ id, status: newStatus })
-      toastSuccess(newStatus === 'aprovado' ? 'Lancamento aprovado.' : 'Lancamento rejeitado.')
+      toastSuccess(newStatus === 'aprovado' ? 'Lançamento aprovado.' : 'Lançamento rejeitado.')
     } catch (mutationError) {
       console.error('Erro ao atualizar status:', mutationError)
       toastError('Não foi possível atualizar o status do lançamento.')
@@ -312,7 +312,7 @@ export default function LancamentosPage() {
 
     try {
       await deleteLancamento.mutateAsync(id)
-      toastSuccess('Lancamento excluido com sucesso.')
+      toastSuccess('Lançamento excluído com sucesso.')
     } catch (mutationError) {
       console.error('Erro ao excluir lancamento:', mutationError)
       toastError('Não foi possível excluir o lançamento.')
@@ -349,19 +349,19 @@ export default function LancamentosPage() {
           <div className="mb-1 flex items-center gap-2 text-sm text-gray-500">
             <Link to="/financeiro" className="hover:text-blue-600">Financeiro</Link>
             <span>/</span>
-            <span>Lancamentos</span>
+            <span>Lançamentos</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Lancamentos Financeiros</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Lançamentos Financeiros</h1>
         </div>
         <button className="btn-primary" onClick={() => showForm ? setShowForm(false) : openNewForm()}>
-          {showForm ? 'Cancelar' : '+ Novo Lancamento'}
+          {showForm ? 'Cancelar' : '+ Novo Lançamento'}
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={handleSubmit} className="card space-y-6">
           <h2 className="text-lg font-semibold text-gray-800">
-            {editingId ? 'Editar Lancamento' : 'Novo Lancamento'}
+            {editingId ? 'Editar Lançamento' : 'Novo Lançamento'}
           </h2>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -380,7 +380,7 @@ export default function LancamentosPage() {
               </select>
             </div>
             <div>
-              <label className="label-field">Mes</label>
+              <label className="label-field">Mês</label>
               <select
                 value={form.mes}
                 onChange={(e) => setForm((prev) => ({ ...prev, mes: Number(e.target.value) }))}
@@ -463,13 +463,13 @@ export default function LancamentosPage() {
 
           <div className="flex flex-col items-start gap-4 border-t border-gray-200 pt-4 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <label className="label-field">Observacoes</label>
+              <label className="label-field">Observações</label>
               <textarea
                 value={form.observacoes}
                 onChange={(e) => setForm((prev) => ({ ...prev, observacoes: e.target.value }))}
                 className="input-field"
                 rows={2}
-                placeholder="Observacoes opcionais..."
+                placeholder="Observações opcionais..."
               />
             </div>
             <div className="shrink-0 text-right">
@@ -492,7 +492,7 @@ export default function LancamentosPage() {
               Cancelar
             </button>
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Salvando...' : editingId ? 'Atualizar Lancamento' : 'Salvar Lancamento'}
+              {saving ? 'Salvando...' : editingId ? 'Atualizar Lançamento' : 'Salvar Lançamento'}
             </button>
           </div>
         </form>
@@ -523,7 +523,7 @@ export default function LancamentosPage() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="input-field"
-              placeholder="Buscar por igreja ou observacao..."
+              placeholder="Buscar por igreja ou observação..."
             />
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex lg:items-center">
@@ -580,7 +580,7 @@ export default function LancamentosPage() {
                   },
                   {
                     key: 'periodo',
-                    header: 'Periodo',
+                    header: 'Período',
                     width: '1fr',
                     render: (e) => <span className="text-gray-500">{MESES[e.mes - 1]} / {e.ano}</span>,
                   },
@@ -624,7 +624,7 @@ export default function LancamentosPage() {
                   },
                   {
                     key: 'acoes',
-                    header: 'Acoes',
+                    header: 'Ações',
                     width: '180px',
                     headerClass: 'text-right',
                     cellClass: 'justify-end gap-1',

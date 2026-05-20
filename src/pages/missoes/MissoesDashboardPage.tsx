@@ -461,7 +461,7 @@ export default function MissoesDashboardPage() {
 
   // Chart data: radar comparison (current vs previous month)
   const radarChartData = {
-    labels: ['Membros', 'Interessados', 'Dizimos (R$)', 'Primicias (R$)', 'Ofertas (R$)'],
+    labels: ['Membros', 'Interessados', 'Dízimos (R$)', 'Primícias (R$)', 'Ofertas (R$)'],
     datasets: [
       {
         label: MESES[mesAtual - 1],
@@ -493,7 +493,7 @@ export default function MissoesDashboardPage() {
   }
 
   const radarOptions = {
-    ...chartOptions('Mes Atual vs Mes Anterior'),
+    ...chartOptions('Mês Atual vs Mês Anterior'),
     scales: {
       r: {
         beginAtZero: true,
@@ -681,7 +681,7 @@ export default function MissoesDashboardPage() {
           </div>
           <div>
             <p className="font-semibold text-gray-800">Registrar Atividade</p>
-            <p className="text-xs text-gray-500">Novo relatorio missionario</p>
+            <p className="text-xs text-gray-500">Novo relatório missionário</p>
           </div>
         </Link>
 

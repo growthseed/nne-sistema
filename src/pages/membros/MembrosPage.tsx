@@ -321,7 +321,7 @@ export default function MembrosPage() {
         <button
           onClick={() => { setFiltroTipo('membro'); setFiltroSituacao('ativo'); setPage(0) }}
           className={`card py-3 text-center transition-all ${filtroTipo === 'membro' && filtroSituacao === 'ativo' ? 'ring-2 ring-green-400' : 'hover:shadow-md'}`}
-          title="Pessoas cadastradas em pessoas com tipo=membro e situacao=ativo. Pode divergir do Inventário se igrejas.membros_ativos estiver desatualizado."
+          title="Pessoas cadastradas em pessoas com tipo=membro e situação=ativo. Pode divergir do Inventário se igrejas.membros_ativos estiver desatualizado."
         >
           <p className="text-2xl font-bold text-green-600">{countAtivos.toLocaleString('pt-BR')}</p>
           <p className="text-xs text-gray-500">Cadastrados ativos</p>

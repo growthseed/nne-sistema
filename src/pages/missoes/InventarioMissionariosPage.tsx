@@ -661,7 +661,7 @@ export default function InventarioMissionariosPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-          <span className="ml-3 text-gray-500">Carregando inventario...</span>
+          <span className="ml-3 text-gray-500">Carregando inventário...</span>
         </div>
       ) : grupos.length === 0 ? (
         <div className="card text-center py-12">

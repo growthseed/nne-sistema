@@ -289,9 +289,9 @@ function TabTurmas() {
         pessoa_id: a.pessoa_id,
         decisao_atual: a.decisao_batismo,
       })
-      toastSuccess(a.decisao_batismo ? 'Decisao removida.' : 'Decisao registrada.')
+      toastSuccess(a.decisao_batismo ? 'Decisão removida.' : 'Decisão registrada.')
     } catch (error) {
-      console.error('Erro ao atualizar decisao:', error)
+      console.error('Erro ao atualizar decisão:', error)
       toastError('Não foi possível atualizar a decisão agora.')
     } finally {
       setProcessingAlunoId(null)
@@ -396,7 +396,7 @@ function TabTurmas() {
         pedido_oracao: interacaoForm.pedido_oracao,
         data_interacao: interacaoForm.data,
       })
-      toastSuccess('Interacao registrada com sucesso.')
+      toastSuccess('Interação registrada com sucesso.')
       setShowNovaInteracao(null)
       setInteracaoForm({ tipo: 'visita', descricao: '', pedido_oracao: false, data: new Date().toISOString().slice(0, 10) })
       await refetchTurmaExtras()
@@ -410,7 +410,7 @@ function TabTurmas() {
 
   function openWhatsApp(celular: string | null, nomeAluno: string) {
     if (!celular) {
-      toastError('Este aluno nao possui celular cadastrado.')
+      toastError('Este aluno não possui celular cadastrado.')
       return
     }
     const num = celular.replace(/\D/g, '')
@@ -435,7 +435,7 @@ function TabTurmas() {
     try {
       setCopyingLink(true)
       await navigator.clipboard.writeText(url)
-      toastSuccess('Link copiado. Agora voce pode enviar para os alunos.')
+      toastSuccess('Link copiado. Agora você pode enviar para os alunos.')
     } catch (error) {
       console.error('Erro ao copiar link da turma:', error)
       toastError('Não foi possível copiar o link agora.')
@@ -694,7 +694,7 @@ function TabTurmas() {
                     {batismoPanelOpen && (
                       <div className="ml-12 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
                         <p className="text-xs font-semibold text-blue-700">Confirmar batismo de {getNome(a)}</p>
-                        <p className="text-[11px] text-blue-600 mt-1">Defina a data para atualizar a secretaria e concluir o fluxo da Escola Biblica.</p>
+                        <p className="text-[11px] text-blue-600 mt-1">Defina a data para atualizar a secretaria e concluir o fluxo da Escola Bíblica.</p>
                         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                           <input
                             type="date"
@@ -1135,8 +1135,8 @@ function TabTurmas() {
           )}
           {scopedIgrejas.length === 0 && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <p className="text-sm font-medium text-amber-800">Nenhuma igreja disponivel neste escopo.</p>
-              <p className="text-xs text-amber-700 mt-1">Revise a lotacao do usuario antes de criar uma turma.</p>
+              <p className="text-sm font-medium text-amber-800">Nenhuma igreja disponível neste escopo.</p>
+              <p className="text-xs text-amber-700 mt-1">Revise a lotação do usuário antes de criar uma turma.</p>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">

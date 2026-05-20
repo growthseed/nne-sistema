@@ -5,7 +5,7 @@ import { useFinanceiroLancamentos } from '@/hooks/useFinanceiroLancamentos'
 import type { DadosFinanceiros } from '@/types'
 
 const MESES = [
-  'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
@@ -91,7 +91,7 @@ export default function FinanceiroPage() {
     { label: 'Total Receitas', value: formatCurrency(stats.totalReceitas), color: 'text-green-600' },
     { label: 'Total Despesas', value: formatCurrency(stats.totalDespesas), color: 'text-red-600' },
     { label: 'Saldo', value: formatCurrency(stats.saldo), color: stats.saldo >= 0 ? 'text-blue-600' : 'text-red-600' },
-    { label: 'Dizimos', value: formatCurrency(stats.totalDizimos), color: 'text-purple-600' },
+    { label: 'Dízimos', value: formatCurrency(stats.totalDizimos), color: 'text-purple-600' },
   ]
 
   return (
@@ -99,17 +99,17 @@ export default function FinanceiroPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Financeiro</h1>
-          <p className="mt-1 text-gray-500">Gestao de receitas, despesas e movimentacao financeira</p>
+          <p className="mt-1 text-gray-500">Gestão de receitas, despesas e movimentação financeira</p>
         </div>
         <Link to="/financeiro/lancamentos" className="btn-primary inline-flex w-fit items-center gap-2">
-          + Novo Lancamento
+          + Novo Lançamento
         </Link>
       </div>
 
       <div className="card">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Mes:</label>
+            <label className="text-sm font-medium text-gray-600">Mês:</label>
             <select
               value={mes}
               onChange={(e) => setMes(Number(e.target.value))}
@@ -180,10 +180,10 @@ export default function FinanceiroPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-800 transition-colors group-hover:text-green-600">
-                Lancamentos
+                Lançamentos
               </h3>
               <p className="text-sm text-gray-500">
-                Registrar receitas, despesas e movimentacoes financeiras
+                Registrar receitas, despesas e movimentações financeiras
               </p>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function FinanceiroPage() {
       ) : (
         <div className="card overflow-hidden p-0">
           <div className="border-b border-gray-100 px-4 py-4">
-            <h2 className="text-lg font-semibold text-gray-800">Lancamentos do Periodo</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Lançamentos do Período</h2>
           </div>
 
           {entries.length === 0 ? (
@@ -226,11 +226,11 @@ export default function FinanceiroPage() {
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
                     <th className="px-2 py-3 text-left font-semibold text-gray-600">Igreja</th>
-                    <th className="px-2 py-3 text-left font-semibold text-gray-600">Periodo</th>
+                    <th className="px-2 py-3 text-left font-semibold text-gray-600">Período</th>
                     <th className="px-2 py-3 text-right font-semibold text-gray-600">Receitas</th>
                     <th className="px-2 py-3 text-right font-semibold text-gray-600">Despesas</th>
                     <th className="px-2 py-3 text-right font-semibold text-gray-600">Saldo</th>
-                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Dizimos</th>
+                    <th className="px-2 py-3 text-right font-semibold text-gray-600">Dízimos</th>
                     <th className="px-2 py-3 text-center font-semibold text-gray-600">Status</th>
                   </tr>
                 </thead>
@@ -308,7 +308,7 @@ export default function FinanceiroPage() {
                         </p>
                       </div>
                       <div className="rounded-lg bg-gray-50 px-3 py-2">
-                        <p className="text-[11px] uppercase tracking-wide text-gray-400">Dizimos</p>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400">Dízimos</p>
                         <p className="mt-1 font-medium text-purple-600">
                           {formatCurrency((entry.receita_dizimos || 0) + ((entry as any).dizimo || 0))}
                         </p>
