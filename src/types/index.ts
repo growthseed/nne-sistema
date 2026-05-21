@@ -87,6 +87,8 @@ export interface UserProfile {
   permissoes: string[] | null
   created_at: string
   updated_at: string
+  /** Cargo ministerial (Pastor, Missionário Sênior, Master, etc) — só para papel=missionario. */
+  cargo_ministerial?: string | null
 }
 
 // ========== PESSOAS / MEMBROS ==========

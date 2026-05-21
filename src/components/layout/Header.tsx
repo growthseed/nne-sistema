@@ -1,5 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { HiOutlineLogout, HiOutlineBell, HiOutlineMenu } from 'react-icons/hi'
+import { displayPapelLabel } from '@/lib/role-display'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 interface HeaderProps {
   onMenuToggle: () => void
@@ -7,6 +9,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuToggle }: HeaderProps) {
   const { profile, signOut } = useAuth()
+  const { labels: cargoLabels } = useCargoLabels()
 
   return (
     <header className="h-14 lg:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-4 lg:px-6">
@@ -28,6 +31,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           {profile?.papel === 'diretor_es' && 'Escola Sabatina'}
           {profile?.papel === 'professor_es' && 'Escola Sabatina'}
           {profile?.papel === 'secretario_es' && 'Escola Sabatina'}
+          {profile?.papel === 'missionario' && displayPapelLabel(profile.papel, profile.cargo_ministerial, cargoLabels)}
           {profile?.papel === 'membro' && 'Área do Membro'}
         </h2>
       </div>

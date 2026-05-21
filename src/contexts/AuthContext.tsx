@@ -89,7 +89,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single()
 
     if (!error && data) {
-      setProfile(data as UserProfile)
+      const base = data as UserProfile
+      // Para missionário, carrega cargo_ministerial (Pastor, Sênior, Master…)
+      if (base.papel === 'missionario') {
+        const { data: m } = await supabase
+          .from('missionarios')
+          .select('cargo_ministerial')
+          .eq('usuario_id', userId)
+          .maybeSingle()
+        base.cargo_ministerial = (m?.cargo_ministerial as string | null) ?? null
+      }
+      setProfile(base)
     } else if (error) {
       // Profile doesn't exist yet in usuarios table - auto-create via RPC
       console.warn('Perfil não encontrado, tentando criar via ensure_user_profile...')

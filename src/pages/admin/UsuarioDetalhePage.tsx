@@ -12,6 +12,8 @@ import {
   FiCheckSquare,
 } from 'react-icons/fi'
 import { ACCESS_RULES, SIDEBAR_GROUPS, canAccessRule, type AccessRuleKey } from '@/lib/access'
+import { displayPapelLabel } from '@/lib/role-display'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -215,6 +217,13 @@ export default function UsuarioDetalhePage() {
   const [msgIgrejasResp, setMsgIgrejasResp] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [buscaIgrejaResp, setBuscaIgrejaResp] = useState('')
 
+  // ── CARGO MINISTERIAL state ────────────────────────────────────────────
+  const [cargoMinisterial, setCargoMinisterial] = useState<string>('')
+  const [cargoOriginal, setCargoOriginal] = useState<string>('')
+  const [savingCargo, setSavingCargo] = useState(false)
+  const [msgCargo, setMsgCargo] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const { labels: cargoLabels } = useCargoLabels()
+
   const igrejasFiltradas = useMemo(
     () => associacaoId ? igrejas.filter(ig => ig.associacao_id === associacaoId) : igrejas,
     [igrejas, associacaoId]
@@ -264,22 +273,47 @@ export default function UsuarioDetalhePage() {
 
     setPermissoesExtra(new Set((u.permissoes || []) as AccessRuleKey[]))
 
-    // Carrega igrejas sob responsabilidade (espelho em missionarios)
+    // Carrega igrejas sob responsabilidade + cargo_ministerial (espelho em missionarios)
     if (u.papel === 'missionario') {
       const { data: m } = await supabase
         .from('missionarios')
-        .select('igrejas_responsavel')
+        .select('igrejas_responsavel, cargo_ministerial')
         .eq('usuario_id', u.id)
         .maybeSingle()
       const arr = (m?.igrejas_responsavel as string[] | null) ?? []
       setIgrejasResponsavel(new Set(arr))
       setIgrejasOriginais(new Set(arr))
+      const c = (m?.cargo_ministerial as string | null) ?? ''
+      setCargoMinisterial(c)
+      setCargoOriginal(c)
     } else {
       setIgrejasResponsavel(new Set())
       setIgrejasOriginais(new Set())
+      setCargoMinisterial('')
+      setCargoOriginal('')
     }
 
     setLoading(false)
+  }
+
+  // ── Save Cargo Ministerial ─────────────────────────────────────────────
+  async function handleSalvarCargo() {
+    setSavingCargo(true); setMsgCargo(null)
+    try {
+      const { error } = await supabase
+        .from('missionarios')
+        .update({ cargo_ministerial: cargoMinisterial || null, updated_at: new Date().toISOString() })
+        .eq('usuario_id', usuario!.id)
+      if (error) throw error
+      if (actorUser) {
+        await logAudit('USER_PERFIL_UPDATED', { target_id: usuario!.id, cargo_ministerial: cargoMinisterial }, actorUser.id)
+      }
+      setCargoOriginal(cargoMinisterial)
+      setMsgCargo({ type: 'success', text: 'Cargo ministerial atualizado.' })
+    } catch (err: any) {
+      trackError(err, { context: 'admin_set_cargo_ministerial', target_id: usuario?.id })
+      setMsgCargo({ type: 'error', text: 'Erro: ' + err.message })
+    } finally { setSavingCargo(false) }
   }
 
   // ── Save Igrejas Sob Responsabilidade ─────────────────────────────────
@@ -564,7 +598,7 @@ export default function UsuarioDetalhePage() {
             <p className="text-sm text-gray-500">{usuario.email}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full">
-                <FiShield className="w-3 h-3" />{roleLabels[usuario.papel] || usuario.papel}
+                <FiShield className="w-3 h-3" />{displayPapelLabel(usuario.papel, cargoOriginal, cargoLabels)}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${usuario.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {usuario.ativo ? 'Ativo' : 'Inativo'}
@@ -862,6 +896,54 @@ export default function UsuarioDetalhePage() {
               </SectionCard>
             )
           })()}
+
+          {/* Cargo Ministerial — só aparece se papel = missionario */}
+          {papel === 'missionario' && (
+            <SectionCard title="Cargo Ministerial" icon={<FiShield className="w-5 h-5" />}>
+              <p className="text-sm text-gray-600 mb-4">
+                Cargo de credenciamento do obreiro (Pastor, Sênior, Master, etc). É o que aparece no
+                cabeçalho quando o missionário faz login — substitui o genérico "Missionário".
+                Gerencie a lista completa de cargos em <b>Configurações → Cargos Ministeriais</b>.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Cargo">
+                  <select
+                    value={cargoMinisterial}
+                    onChange={e => setCargoMinisterial(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="">— Sem cargo definido —</option>
+                    {Object.entries(cargoLabels)
+                      .sort(([, a], [, b]) => a.localeCompare(b, 'pt-BR'))
+                      .map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                      ))}
+                  </select>
+                </Field>
+                <Field label="Como o sistema exibirá">
+                  <input
+                    type="text"
+                    readOnly
+                    value={displayPapelLabel('missionario', cargoMinisterial, cargoLabels)}
+                    className="input-field bg-gray-50 text-gray-700"
+                  />
+                </Field>
+              </div>
+
+              <Msg msg={msgCargo} />
+
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={handleSalvarCargo}
+                  disabled={savingCargo || cargoMinisterial === cargoOriginal}
+                  className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+                >
+                  <FiSave className="w-4 h-4" />
+                  {savingCargo ? 'Salvando...' : 'Salvar Cargo'}
+                </button>
+              </div>
+            </SectionCard>
+          )}
         </div>
       )}
 

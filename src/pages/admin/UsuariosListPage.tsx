@@ -5,30 +5,29 @@ import { UserProfile } from '@/types'
 import {
   FiUsers, FiSearch, FiPlus, FiEdit, FiShield,
 } from 'react-icons/fi'
-
-const roleLabels: Record<string, string> = {
-  admin: 'Administrador',
-  admin_uniao: 'Admin União',
-  admin_associacao: 'Admin Associação',
-  diretor_es: 'Diretor ES',
-  professor_es: 'Professor ES',
-  secretario_es: 'Secretário ES',
-  tesoureiro: 'Tesoureiro',
-  secretario_igreja: 'Secretário Igreja',
-  membro: 'Membro',
-}
+import { displayPapelLabel } from '@/lib/role-display'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 interface UsuarioRow extends UserProfile {
   igreja?: { nome: string } | null
   associacao?: { nome: string; sigla: string } | null
   uniao?: { nome: string; sigla: string } | null
   avatar_url?: string | null
+  missionario?: { cargo_ministerial: string | null } | { cargo_ministerial: string | null }[] | null
+}
+
+function cargoOf(u: UsuarioRow): string | null {
+  const m = u.missionario
+  if (!m) return null
+  if (Array.isArray(m)) return m[0]?.cargo_ministerial ?? null
+  return m.cargo_ministerial ?? null
 }
 
 const PAGE_SIZE = 20
 
 export default function UsuariosListPage() {
   const navigate = useNavigate()
+  const { labels: cargoLabels } = useCargoLabels()
   const [usuarios, setUsuarios] = useState<UsuarioRow[]>([])
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
@@ -46,7 +45,7 @@ export default function UsuariosListPage() {
       let query = supabase
         .from('usuarios')
         .select(
-          '*, igreja:igrejas(nome), associacao:associacoes(nome, sigla), uniao:unioes(nome, sigla)',
+          '*, igreja:igrejas(nome), associacao:associacoes(nome, sigla), uniao:unioes(nome, sigla), missionario:missionarios(cargo_ministerial)',
           { count: 'exact' },
         )
         .order('nome')
@@ -176,7 +175,7 @@ export default function UsuariosListPage() {
                       <td className="px-4 py-3 text-gray-500 text-xs">{u.email}</td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full">
-                          <FiShield className="w-3 h-3" />{roleLabels[u.papel] || u.papel}
+                          <FiShield className="w-3 h-3" />{displayPapelLabel(u.papel, cargoOf(u), cargoLabels)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs">{u.associacao?.sigla || '-'}</td>
@@ -218,7 +217,7 @@ export default function UsuariosListPage() {
                     <p className="font-medium text-gray-800 truncate">{u.nome}</p>
                     <p className="text-xs text-gray-400 truncate">{u.email}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="text-xs font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full">{roleLabels[u.papel] || u.papel}</span>
+                      <span className="text-xs font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full">{displayPapelLabel(u.papel, cargoOf(u), cargoLabels)}</span>
                       {u.associacao?.sigla && <span className="text-xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">{u.associacao.sigla}</span>}
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.ativo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {u.ativo ? 'Ativo' : 'Inativo'}

@@ -29,6 +29,8 @@ import {
   getVisibleSidebarGroups,
   type SidebarIconKey,
 } from '@/lib/access'
+import { displayPapelLabel } from '@/lib/role-display'
+import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 interface SidebarProps {
   onClose?: () => void
@@ -61,6 +63,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const { profile } = useAuth()
   const location = useLocation()
   const visibleGroups = getVisibleSidebarGroups(profile)
+  const { labels: cargoLabels } = useCargoLabels()
 
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
     try {
@@ -101,7 +104,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-xl font-bold text-primary-600">NNE Sistema</h1>
-        <p className="text-xs text-gray-500 mt-1">Uniao Norte Nordeste Brasileira</p>
+        <p className="text-xs text-gray-500 mt-1">União Norte Nordeste Brasileira</p>
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -157,7 +160,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-700 truncate">{profile.nome}</p>
-              <p className="text-xs text-gray-500 truncate">{profile.papel.replace(/_/g, ' ')}</p>
+              <p className="text-xs text-gray-500 truncate">{displayPapelLabel(profile.papel, profile.cargo_ministerial, cargoLabels)}</p>
             </div>
           </div>
         </div>
