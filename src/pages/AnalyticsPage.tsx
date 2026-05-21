@@ -127,6 +127,13 @@ export default function AnalyticsPage() {
     return query.eq('id', profile.igreja_id!)
   }
 
+  // Para tabelas que SÓ têm igreja_id: confia em RLS para escopos altos.
+  function applyScopeIgrejaOnly(query: any) {
+    if (!profile) return query
+    if (profile.papel === 'admin' || profile.papel === 'admin_uniao' || profile.papel === 'admin_associacao' || profile.papel === 'missionario') return query
+    return query.eq('igreja_id', profile.igreja_id!)
+  }
+
   // ------- Data Fetching -------
   useEffect(() => {
     if (profile) fetchAll()
@@ -156,10 +163,10 @@ export default function AnalyticsPage() {
       applyScopeIgrejas(
         supabase.from('igrejas').select('id', { count: 'exact', head: true }).eq('ativo', true)
       ),
-      applyScope(
+      applyScopeIgrejaOnly(
         supabase.from('contagem_mensal').select('batismos').eq('ano', ano)
       ),
-      applyScope(
+      applyScopeIgrejaOnly(
         supabase.from('contagem_mensal').select('total_membros').eq('ano', ano - 1).eq('mes', 12)
       ),
     ])
@@ -219,7 +226,7 @@ export default function AnalyticsPage() {
   }
 
   async function fetchCrescimento() {
-    const { data } = await applyScope(
+    const { data } = await applyScopeIgrejaOnly(
       supabase.from('contagem_mensal').select('mes, total_membros').eq('ano', ano)
     )
 
@@ -233,7 +240,7 @@ export default function AnalyticsPage() {
   }
 
   async function fetchFinanceiro() {
-    const { data } = await applyScope(
+    const { data } = await applyScopeIgrejaOnly(
       supabase.from('dados_financeiros')
         .select('mes, receita_dizimos, receita_oferta_regular, receita_oferta_especial, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias')
         .eq('ano', ano)

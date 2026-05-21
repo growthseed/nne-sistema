@@ -56,6 +56,13 @@ export default function Dashboard() {
     return query.eq('igreja_id', profile!.igreja_id!)
   }
 
+  // Para tabelas que SÓ têm igreja_id (sem uniao_id/associacao_id):
+  // confia na RLS para limitar o resultado ao escopo do usuário.
+  function scopeFilterIgreja(query: any) {
+    if (papel === 'admin' || papel === 'admin_uniao' || papel === 'admin_associacao' || papel === 'missionario') return query
+    return query.eq('igreja_id', profile!.igreja_id!)
+  }
+
   async function fetchStats() {
     const [membros, interessados, igrejas, batismos, transferencias, fin] = await Promise.all([
       scopeFilter(supabase.from('pessoas').select('id', { count: 'exact', head: true }).eq('situacao', 'ativo').eq('tipo', 'membro')),
@@ -67,9 +74,9 @@ export default function Dashboard() {
           : papel === 'admin_associacao'
             ? supabase.from('igrejas').select('id', { count: 'exact', head: true }).eq('ativo', true).eq('associacao_id', profile!.associacao_id!)
             : { count: 1 },
-      scopeFilter(supabase.from('contagem_mensal').select('batismos').eq('mes', mesAtual).eq('ano', anoAtual)),
+      scopeFilterIgreja(supabase.from('contagem_mensal').select('batismos').eq('mes', mesAtual).eq('ano', anoAtual)),
       supabase.from('transferencias').select('id', { count: 'exact', head: true }).eq('status', 'solicitada'),
-      scopeFilter(supabase.from('dados_financeiros').select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias').eq('mes', mesAtual).eq('ano', anoAtual)),
+      scopeFilterIgreja(supabase.from('dados_financeiros').select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias').eq('mes', mesAtual).eq('ano', anoAtual)),
     ])
 
     const totalBatismos = (batismos.data || []).reduce((sum: number, r: any) => sum + (r.batismos || 0), 0)
@@ -100,7 +107,7 @@ export default function Dashboard() {
       let a = anoAtual
       if (m <= 0) { m += 12; a -= 1 }
 
-      const { data } = await scopeFilter(
+      const { data } = await scopeFilterIgreja(
         supabase.from('dados_financeiros')
           .select('receita_dizimos, receita_oferta_regular, receita_oferta_especial, receita_oferta_missoes, receita_oferta_agradecimento, receita_oferta_es, receita_doacoes, receita_fundo_assistencial, receita_proventos_imoveis, receita_outras, despesa_salarios, despesa_manutencao, despesa_agua, despesa_energia, despesa_internet, despesa_material_es, despesa_outras, dizimo, primicias')
           .eq('mes', m).eq('ano', a)
