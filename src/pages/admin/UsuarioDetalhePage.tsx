@@ -208,6 +208,13 @@ export default function UsuarioDetalhePage() {
   const [savingPermissoes, setSavingPermissoes] = useState(false)
   const [msgPermissoes, setMsgPermissoes] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // ── CAMPO MISSIONÁRIO state (igrejas sob responsabilidade) ────────────
+  const [igrejasResponsavel, setIgrejasResponsavel] = useState<Set<string>>(new Set())
+  const [igrejasOriginais, setIgrejasOriginais] = useState<Set<string>>(new Set())
+  const [savingIgrejasResp, setSavingIgrejasResp] = useState(false)
+  const [msgIgrejasResp, setMsgIgrejasResp] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [buscaIgrejaResp, setBuscaIgrejaResp] = useState('')
+
   const igrejasFiltradas = useMemo(
     () => associacaoId ? igrejas.filter(ig => ig.associacao_id === associacaoId) : igrejas,
     [igrejas, associacaoId]
@@ -257,7 +264,56 @@ export default function UsuarioDetalhePage() {
 
     setPermissoesExtra(new Set((u.permissoes || []) as AccessRuleKey[]))
 
+    // Carrega igrejas sob responsabilidade (espelho em missionarios)
+    if (u.papel === 'missionario') {
+      const { data: m } = await supabase
+        .from('missionarios')
+        .select('igrejas_responsavel')
+        .eq('usuario_id', u.id)
+        .maybeSingle()
+      const arr = (m?.igrejas_responsavel as string[] | null) ?? []
+      setIgrejasResponsavel(new Set(arr))
+      setIgrejasOriginais(new Set(arr))
+    } else {
+      setIgrejasResponsavel(new Set())
+      setIgrejasOriginais(new Set())
+    }
+
     setLoading(false)
+  }
+
+  // ── Save Igrejas Sob Responsabilidade ─────────────────────────────────
+  async function handleSalvarIgrejasResp() {
+    setSavingIgrejasResp(true); setMsgIgrejasResp(null)
+    try {
+      const ids = Array.from(igrejasResponsavel)
+      const { error } = await supabase.rpc('admin_set_missionario_igrejas', {
+        p_user_id: usuario!.id,
+        p_igreja_ids: ids,
+      })
+      if (error) throw error
+      if (actorUser) {
+        await logAudit('MISSIONARIO_IGREJAS_CHANGED', { target_id: usuario!.id, count: ids.length }, actorUser.id)
+      }
+      setIgrejasOriginais(new Set(ids))
+      setMsgIgrejasResp({
+        type: 'success',
+        text: ids.length === 0
+          ? 'Nenhuma igreja vinculada (acesso removido).'
+          : `${ids.length} igreja${ids.length === 1 ? '' : 's'} vinculada${ids.length === 1 ? '' : 's'} ao missionário.`,
+      })
+    } catch (err: any) {
+      trackError(err, { context: 'admin_set_missionario_igrejas', target_id: usuario?.id })
+      setMsgIgrejasResp({ type: 'error', text: 'Erro: ' + err.message })
+    } finally { setSavingIgrejasResp(false) }
+  }
+
+  function toggleIgrejaResp(igrejaId: string) {
+    setIgrejasResponsavel(prev => {
+      const next = new Set(prev)
+      if (next.has(igrejaId)) next.delete(igrejaId); else next.add(igrejaId)
+      return next
+    })
   }
 
   // ── Save Permissões ────────────────────────────────────────────────────
@@ -266,10 +322,10 @@ export default function UsuarioDetalhePage() {
     setSavingPermissoes(true); setMsgPermissoes(null)
     try {
       const arr = Array.from(permissoesExtra)
-      const { error } = await supabase
-        .from('usuarios')
-        .update({ permissoes: arr.length > 0 ? arr : null })
-        .eq('id', usuario!.id)
+      const { error } = await supabase.rpc('admin_update_user_permissoes', {
+        p_user_id: usuario!.id,
+        p_permissoes: arr,
+      })
       if (error) throw error
       if (actorUser) {
         await logAudit('USER_PERMISSIONS_CHANGED', { target_id: usuario!.id, permissoes: arr }, actorUser.id)
@@ -328,28 +384,40 @@ export default function UsuarioDetalhePage() {
     setSavingPerfil(true); setMsgPerfil(null)
     try {
       const avatarUrl = await uploadAvatar()
-      const update: Record<string, any> = {
-        nome: nome.trim(),
-        telefone: telefone.trim() || null,
-        avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
-      }
-      // Campos opcionais (existem somente após migration)
-      if (cargo !== undefined) update.cargo = cargo.trim() || null
-      if (dataNascimento !== undefined) update.data_nascimento = dataNascimento || null
-      if (sexo !== undefined) update.sexo = sexo || null
-      if (cpf !== undefined) update.cpf = cpf.trim() || null
-      if (enderecoRua !== undefined) update.endereco_rua = enderecoRua.trim() || null
-      if (enderecoCidade !== undefined) update.endereco_cidade = enderecoCidade.trim() || null
-      if (enderecoEstado !== undefined) update.endereco_estado = enderecoEstado || null
-      if (enderecoCep !== undefined) update.endereco_cep = enderecoCep.trim() || null
-      if (observacoes !== undefined) update.observacoes = observacoes.trim() || null
-
-      const { error } = await supabase.from('usuarios').update(update).eq('id', usuario!.id)
+      const { error } = await supabase.rpc('admin_update_user_profile', {
+        p_user_id: usuario!.id,
+        p_nome: nome.trim(),
+        p_telefone: telefone.trim() || null,
+        p_cargo: cargo.trim() || null,
+        p_data_nascimento: dataNascimento || null,
+        p_sexo: sexo || null,
+        p_cpf: cpf.trim() || null,
+        p_endereco_rua: enderecoRua.trim() || null,
+        p_endereco_cidade: enderecoCidade.trim() || null,
+        p_endereco_estado: enderecoEstado || null,
+        p_endereco_cep: enderecoCep.trim() || null,
+        p_observacoes: observacoes.trim() || null,
+        p_avatar_url: avatarUrl || null,
+      })
       if (error) throw error
       if (actorUser) {
-        await logAudit('USER_PERFIL_UPDATED', { target_id: usuario!.id, fields: Object.keys(update).filter(k => k !== 'updated_at') }, actorUser.id)
+        await logAudit('USER_PERFIL_UPDATED', { target_id: usuario!.id }, actorUser.id)
       }
+      setUsuario(u => u ? {
+        ...u,
+        nome: nome.trim(),
+        telefone: telefone.trim() || null,
+        cargo: cargo.trim() || null,
+        data_nascimento: dataNascimento || null,
+        sexo: sexo || null,
+        cpf: cpf.trim() || null,
+        endereco_rua: enderecoRua.trim() || null,
+        endereco_cidade: enderecoCidade.trim() || null,
+        endereco_estado: enderecoEstado || null,
+        endereco_cep: enderecoCep.trim() || null,
+        observacoes: observacoes.trim() || null,
+        avatar_url: avatarUrl,
+      } : u)
       setMsgPerfil({ type: 'success', text: 'Perfil atualizado com sucesso!' })
     } catch (err: any) {
       setMsgPerfil({ type: 'error', text: 'Erro: ' + err.message })
@@ -362,10 +430,14 @@ export default function UsuarioDetalhePage() {
     setSavingAcesso(true); setMsgAcesso(null)
     try {
       const prev = { papel: usuario!.papel, uniao_id: usuario!.uniao_id, associacao_id: usuario!.associacao_id, igreja_id: usuario!.igreja_id, ativo: usuario!.ativo }
-      const { error } = await supabase.from('usuarios').update({
-        papel, uniao_id: uniaoId || null, associacao_id: associacaoId || null,
-        igreja_id: igrejaId || null, ativo,
-      }).eq('id', usuario!.id)
+      const { error } = await supabase.rpc('admin_update_user_acesso', {
+        p_user_id: usuario!.id,
+        p_papel: papel,
+        p_uniao_id: uniaoId || null,
+        p_associacao_id: associacaoId || null,
+        p_igreja_id: igrejaId || null,
+        p_ativo: ativo,
+      })
       if (error) throw error
 
       if (actorUser) {
@@ -688,6 +760,108 @@ export default function UsuarioDetalhePage() {
               <FiSave className="w-4 h-4" />{savingAcesso ? 'Salvando...' : 'Salvar Permissões'}
             </button>
           </div>
+
+          {/* Campo Missionário — só aparece se papel = missionario */}
+          {papel === 'missionario' && (() => {
+            const igrejasDoEscopo = igrejasFiltradas
+            const termo = buscaIgrejaResp.trim().toLowerCase()
+            const igrejasVisiveis = termo
+              ? igrejasDoEscopo.filter(ig => ig.nome.toLowerCase().includes(termo))
+              : igrejasDoEscopo
+            const selecionadas = igrejasResponsavel.size
+            const dirty =
+              selecionadas !== igrejasOriginais.size ||
+              Array.from(igrejasResponsavel).some(x => !igrejasOriginais.has(x))
+            return (
+              <SectionCard title="Campo Missionário — Igrejas Sob Responsabilidade" icon={<FiShield className="w-5 h-5" />}>
+                <p className="text-sm text-gray-600 mb-4">
+                  Selecione uma ou mais igrejas que este missionário atende. Ele terá acesso e poderá gerir os dados apenas dessas igrejas.
+                  Apenas igrejas da <b>associação vinculada</b> aparecem aqui — ajuste a associação acima primeiro se necessário.
+                </p>
+
+                {!associacaoId ? (
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800">
+                    ⚠ Defina a associação do missionário (campo acima) e salve antes de vincular igrejas.
+                  </div>
+                ) : igrejasDoEscopo.length === 0 ? (
+                  <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm text-gray-600">
+                    Nenhuma igreja cadastrada nesta associação.
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                      <div className="relative flex-1 max-w-sm">
+                        <input
+                          type="text"
+                          value={buscaIgrejaResp}
+                          onChange={e => setBuscaIgrejaResp(e.target.value)}
+                          placeholder="Buscar igreja por nome..."
+                          className="input-field text-sm"
+                        />
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span><b className="text-gray-800">{selecionadas}</b> de {igrejasDoEscopo.length} selecionadas</span>
+                        <button
+                          type="button"
+                          onClick={() => setIgrejasResponsavel(new Set(igrejasDoEscopo.map(ig => ig.id)))}
+                          className="text-primary-700 hover:underline"
+                        >
+                          Selecionar todas
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIgrejasResponsavel(new Set())}
+                          className="text-gray-500 hover:underline"
+                        >
+                          Limpar
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100">
+                      {igrejasVisiveis.length === 0 ? (
+                        <p className="p-4 text-sm text-center text-gray-400">Nenhuma igreja encontrada com esse termo.</p>
+                      ) : (
+                        igrejasVisiveis.map(ig => {
+                          const checked = igrejasResponsavel.has(ig.id)
+                          return (
+                            <label
+                              key={ig.id}
+                              className={`flex items-center gap-3 px-3 py-2 text-sm cursor-pointer transition ${
+                                checked ? 'bg-primary-50' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleIgrejaResp(ig.id)}
+                              />
+                              <span className={`flex-1 ${checked ? 'text-primary-800 font-medium' : 'text-gray-700'}`}>
+                                {ig.nome}
+                              </span>
+                            </label>
+                          )
+                        })
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <Msg msg={msgIgrejasResp} />
+
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={handleSalvarIgrejasResp}
+                    disabled={savingIgrejasResp || !dirty || !associacaoId}
+                    className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <FiSave className="w-4 h-4" />
+                    {savingIgrejasResp ? 'Salvando...' : 'Salvar Igrejas do Campo'}
+                  </button>
+                </div>
+              </SectionCard>
+            )
+          })()}
         </div>
       )}
 

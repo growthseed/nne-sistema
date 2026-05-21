@@ -70,6 +70,7 @@ export type UserRole =
   | 'secretario_es'
   | 'tesoureiro'
   | 'secretario_igreja'
+  | 'missionario'
   | 'membro'
 
 export interface UserProfile {
