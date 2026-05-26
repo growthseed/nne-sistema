@@ -5,7 +5,7 @@ import { UserProfile } from '@/types'
 import {
   FiUsers, FiSearch, FiPlus, FiEdit, FiShield,
 } from 'react-icons/fi'
-import { displayPapelLabel } from '@/lib/role-display'
+import { displayPapelLabel, PAPEL_LABELS } from '@/lib/role-display'
 import { useCargoLabels } from '@/hooks/useCargoLabels'
 
 interface UsuarioRow extends UserProfile {
@@ -119,7 +119,7 @@ export default function UsuariosListPage() {
               className="input-field"
             >
               <option value="">Todos os papéis</option>
-              {Object.entries(roleLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              {Object.entries(PAPEL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
             <select
               value={filterAtivo}
