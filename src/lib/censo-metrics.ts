@@ -62,7 +62,11 @@ export const PRIORIDADE_AREA_MAP: Record<string, string[]> = {
   'Ministério com famílias':                ['Integração social'],
   'Integração/comunhão dos membros':        ['Integração social'],
   'Administração':                          ['Área administrativa'],
+  'Área financeira':                        ['Área administrativa'],
 }
+// Prioridades sem proxy honesto em SATISFACAO_ITENS (Recreação, Área para retiro,
+// Ampliação do espaço físico, Programa de rádio e TV) ficam com quadrante
+// 'sem_dados' e devem ser exibidas como "demanda sem área avaliada" — nunca ocultadas.
 
 // =================== TIPOS ===================
 export interface CensoRow {
@@ -264,7 +268,10 @@ export function topPrioridades(rows: CensoRow[], limit = 10) {
       map[p] = (map[p] || 0) + 1
     })
   })
-  const total = rows.length
+  // Denominador = quem efetivamente respondeu a etapa de prioridades.
+  // Usar rows.length incluiria parciais que pararam antes da etapa 9 e
+  // deflacionaria a importância (mudando quadrantes na matriz I×D).
+  const total = rows.filter(r => Array.isArray(r.prioridades) && r.prioridades.length > 0).length
   return Object.entries(map)
     .map(([prioridade, count]) => ({
       prioridade,

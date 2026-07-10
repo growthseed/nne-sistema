@@ -264,6 +264,8 @@ export default function CadastroDashboardPage() {
       query = query.eq('uniao_id', profile!.uniao_id!)
     } else if (profile!.papel === 'admin_associacao') {
       query = query.eq('associacao_id', profile!.associacao_id!)
+    } else if (profile!.papel === 'missionario') {
+      // O RLS limita às igrejas ativas vinculadas ao campo do missionário.
     } else if (profile!.papel !== 'admin') {
       query = query.eq('id', profile!.igreja_id!)
     }
@@ -294,6 +296,8 @@ export default function CadastroDashboardPage() {
           query = query.eq('uniao_id', profile!.uniao_id!)
         } else if (profile!.papel === 'admin_associacao') {
           query = query.eq('associacao_id', profile!.associacao_id!)
+        } else if (profile!.papel === 'missionario') {
+          // O RLS limita às respostas das igrejas sob responsabilidade.
         } else if (profile!.papel !== 'admin') {
           query = query.eq('igreja_id', profile!.igreja_id!)
         }
@@ -1148,76 +1152,76 @@ export default function CadastroDashboardPage() {
       </div>
 
       {/* Stat Cards — números operacionais */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3">
         <div
-          className="card flex items-start gap-4"
+          className="card flex items-start gap-3 p-4"
           title="Total de membros conforme atualizado em Missões > Inventário (igrejas.membros_ativos)"
         >
-          <div className="bg-teal-500 p-3 rounded-xl text-white">
-            <HiOutlineUsers className="w-6 h-6" />
+          <div className="bg-teal-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineUsers className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Membros</p>
-            <p className="text-2xl font-bold text-gray-800">{totalMembrosInventario.toLocaleString('pt-BR')}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">via Inventário</p>
-          </div>
-        </div>
-        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => { setGestaoStatus('todos'); setPageTab('gestao') }}>
-          <div className="bg-blue-500 p-3 rounded-xl text-white">
-            <HiOutlineDocumentText className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Total Cadastros</p>
-            <p className="text-2xl font-bold text-gray-800">{total}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Membros</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">{totalMembrosInventario.toLocaleString('pt-BR')}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5 truncate">via Inventário</p>
           </div>
         </div>
-        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-green-200 transition-all" onClick={() => { setGestaoStatus('completos'); setPageTab('gestao') }}>
-          <div className="bg-green-500 p-3 rounded-xl text-white">
-            <HiOutlineCheckCircle className="w-6 h-6" />
+        <div className="card flex items-start gap-3 p-4 cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => { setGestaoStatus('todos'); setPageTab('gestao') }}>
+          <div className="bg-blue-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineDocumentText className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Completos</p>
-            <p className="text-2xl font-bold text-gray-800">{completos}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Total Cadastros</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">{total}</p>
           </div>
         </div>
-        <div className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-amber-200 transition-all" onClick={() => { setGestaoStatus('parciais'); setPageTab('gestao') }}>
-          <div className="bg-amber-500 p-3 rounded-xl text-white">
-            <HiOutlineClock className="w-6 h-6" />
+        <div className="card flex items-start gap-3 p-4 cursor-pointer hover:ring-2 hover:ring-green-200 transition-all" onClick={() => { setGestaoStatus('completos'); setPageTab('gestao') }}>
+          <div className="bg-green-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineCheckCircle className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Parciais</p>
-            <p className="text-2xl font-bold text-gray-800">{parciais}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Completos</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">{completos}</p>
+          </div>
+        </div>
+        <div className="card flex items-start gap-3 p-4 cursor-pointer hover:ring-2 hover:ring-amber-200 transition-all" onClick={() => { setGestaoStatus('parciais'); setPageTab('gestao') }}>
+          <div className="bg-amber-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineClock className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Parciais</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">{parciais}</p>
           </div>
         </div>
         <div
-          className="card flex items-start gap-4 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all"
+          className="card flex items-start gap-3 p-4 cursor-pointer hover:ring-2 hover:ring-orange-300 transition-all"
           onClick={() => { setGestaoStatus('parou_final'); setPageTab('gestao') }}
           title="Chegaram até a última etapa mas não clicaram 'Enviar'. Candidatos a recuperação."
         >
-          <div className="bg-orange-500 p-3 rounded-xl text-white">
-            <HiOutlineExternalLink className="w-6 h-6" />
+          <div className="bg-orange-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineExternalLink className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Parou na Final</p>
-            <p className="text-2xl font-bold text-gray-800">{parouFinal}</p>
-          </div>
-        </div>
-        <div className="card flex items-start gap-4">
-          <div className="bg-indigo-500 p-3 rounded-xl text-white">
-            <HiOutlineFilter className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Taxa Conclusão</p>
-            <p className="text-2xl font-bold text-gray-800">{taxaComplecao}%</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Parou na Final</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">{parouFinal}</p>
           </div>
         </div>
-        <div className="card flex items-start gap-4">
-          <div className="bg-purple-500 p-3 rounded-xl text-white">
-            <HiOutlineUserGroup className="w-6 h-6" />
+        <div className="card flex items-start gap-3 p-4">
+          <div className="bg-indigo-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineFilter className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Este Mês</p>
-            <p className="text-2xl font-bold text-gray-800">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Taxa Conclusão</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">{taxaComplecao}%</p>
+          </div>
+        </div>
+        <div className="card flex items-start gap-3 p-4">
+          <div className="bg-purple-500 p-2 rounded-lg text-white shrink-0">
+            <HiOutlineUserGroup className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-500 leading-tight">Este Mês</p>
+            <p className="text-xl font-bold text-gray-800 mt-0.5">
               {respostas.filter(r => {
                 const d = new Date(r.created_at)
                 const now = new Date()
@@ -1471,8 +1475,8 @@ export default function CadastroDashboardPage() {
               </div>
               <ExecMatriz items={matrizIxD} />
               <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-500">
-                <p>• <strong>Importância</strong>: % de membros que marcaram a prioridade.</p>
-                <p>• <strong>Desempenho</strong>: 0–100 (nota média 1–4 normalizada).</p>
+                <p>• <strong>Importância</strong>: % de quem respondeu a etapa de prioridades e marcou o tema.</p>
+                <p>• <strong>Desempenho</strong>: 0–100 (nota média 1–4 normalizada da área proxy indicada em "nota via").</p>
               </div>
             </div>
           )}
@@ -2495,7 +2499,9 @@ function AssocStatusListModal({ assocSigla, assocNome, status, respostas, todasR
 
 // Card branco no padrão dos Stat Cards para os 4 KPIs compostos (0–100).
 function KpiIndice({ label, value, icon: Icon, iconBg }: { label: string; value: number; icon: any; iconBg: string }) {
-  const c = classifyScore(value / 25)
+  // Inversa de pct = ((media - 1) / 3) * 100 → media = value * 0.03 + 1.
+  // Usar value/25 deslocava o corte "Saudável" de ~73 para 80.
+  const c = classifyScore(value * 0.03 + 1)
   const cor = classColors(c)
   const labelCls = c === 'saudavel' ? 'Saudável'
     : c === 'atencao' ? 'Atenção'
@@ -2557,18 +2563,21 @@ function AreaScoreCard({ score }: { score: ReturnType<typeof computeAreaScores>[
 }
 
 function ExecMatriz({ items }: { items: ReturnType<typeof importanciaXDesempenho> }) {
+  // Sem slice: ocultar temas dava a falsa impressão de que não existiam.
   const buckets = {
-    agir_agora: items.filter(i => i.quadrante === 'agir_agora').slice(0, 10),
-    manter:     items.filter(i => i.quadrante === 'manter').slice(0, 10),
-    over_invest: items.filter(i => i.quadrante === 'over_invest').slice(0, 10),
-    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia').slice(0, 10),
+    agir_agora: items.filter(i => i.quadrante === 'agir_agora'),
+    manter:     items.filter(i => i.quadrante === 'manter'),
+    over_invest: items.filter(i => i.quadrante === 'over_invest'),
+    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia'),
+    sem_dados: items.filter(i => i.quadrante === 'sem_dados'),
   }
-  const Q = ({ titulo, subtitulo, cor, items: it }: { titulo: string; subtitulo: string; cor: 'red'|'green'|'gray'|'blue'; items: any[] }) => {
+  const Q = ({ titulo, subtitulo, cor, items: it }: { titulo: string; subtitulo: string; cor: 'red'|'green'|'gray'|'blue'|'amber'; items: any[] }) => {
     const pal = {
       red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', dot: 'bg-red-500' },
       green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', dot: 'bg-green-500' },
       gray: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600', dot: 'bg-gray-400' },
       blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', dot: 'bg-blue-500' },
+      amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', dot: 'bg-amber-500' },
     }[cor]
     return (
       <div className={`rounded-xl border ${pal.border} ${pal.bg} p-4`}>
@@ -2581,8 +2590,13 @@ function ExecMatriz({ items }: { items: ReturnType<typeof importanciaXDesempenho
             {it.map((x: any) => (
               <li key={x.prioridade} className="flex items-start gap-2 text-xs">
                 <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${pal.dot}`} />
-                <span className="flex-1 text-gray-700">{x.prioridade}</span>
-                <span className="text-gray-400 tabular-nums shrink-0">{x.importancia}% · {x.desempenho ?? '—'}</span>
+                <span className="flex-1 text-gray-700">
+                  {x.prioridade}
+                  {x.areas?.length > 0 && (
+                    <span className="block text-[10px] text-gray-400">nota via: {x.areas.join(', ')}</span>
+                  )}
+                </span>
+                <span className="text-gray-400 tabular-nums shrink-0">{x.importancia}%{x.desempenho !== null ? ` · ${x.desempenho}` : ''}</span>
               </li>
             ))}
           </ul>
@@ -2591,11 +2605,21 @@ function ExecMatriz({ items }: { items: ReturnType<typeof importanciaXDesempenho
     )
   }
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-4xl">
-      <Q titulo="Agir agora" subtitulo="Alta demanda · Baixo desempenho" cor="red" items={buckets.agir_agora} />
-      <Q titulo="Manter" subtitulo="Alta demanda · Bom desempenho" cor="green" items={buckets.manter} />
-      <Q titulo="Baixa relevância" subtitulo="Baixa demanda · Baixo desempenho" cor="gray" items={buckets.baixa_relevancia} />
-      <Q titulo="Já investido" subtitulo="Baixa demanda · Bom desempenho" cor="blue" items={buckets.over_invest} />
+    <div className="space-y-3 max-w-4xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Q titulo="Agir agora" subtitulo="Alta demanda · Baixo desempenho" cor="red" items={buckets.agir_agora} />
+        <Q titulo="Manter" subtitulo="Alta demanda · Bom desempenho" cor="green" items={buckets.manter} />
+        <Q titulo="Baixa relevância" subtitulo="Baixa demanda · Baixo desempenho" cor="gray" items={buckets.baixa_relevancia} />
+        <Q titulo="Já investido" subtitulo="Baixa demanda · Bom desempenho" cor="blue" items={buckets.over_invest} />
+      </div>
+      {buckets.sem_dados.length > 0 && (
+        <Q
+          titulo="Demanda sem área avaliada"
+          subtitulo="Prioridades marcadas pelos membros sem nota de satisfação correspondente na etapa 8 — avaliar qualitativamente"
+          cor="amber"
+          items={buckets.sem_dados}
+        />
+      )}
     </div>
   )
 }

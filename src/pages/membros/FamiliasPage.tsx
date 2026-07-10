@@ -2,9 +2,14 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Familia } from '@/types'
-import { FiPlus, FiEdit, FiUsers, FiSearch, FiHome, FiChevronDown, FiChevronUp, FiX, FiTrash2 } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiUsers, FiSearch, FiHome, FiChevronDown, FiChevronUp, FiX, FiTrash2, FiUserPlus } from 'react-icons/fi'
 
 interface PessoaResumo {
+  id: string
+  nome: string
+}
+
+interface IgrejaOpt {
   id: string
   nome: string
 }
@@ -12,6 +17,8 @@ interface PessoaResumo {
 interface FamiliaComIgreja extends Familia {
   igreja?: { nome: string } | null
 }
+
+const PARENTESCO_OPTIONS = ['Cônjuge', 'Filho(a)', 'Pai/Mãe', 'Irmão/Irmã', 'Avô/Avó', 'Neto(a)', 'Outro']
 
 export default function FamiliasPage() {
   const { profile } = useAuth()
@@ -23,11 +30,16 @@ export default function FamiliasPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [membrosNomes, setMembrosNomes] = useState<Record<string, string>>({})
 
+  // Escopo de igrejas do usuário: null = sem restrição (admin);
+  // undefined = ainda resolvendo (não buscar antes disso).
+  const [igrejasEscopo, setIgrejasEscopo] = useState<IgrejaOpt[] | null | undefined>(undefined)
+
   // Modal state
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({
     nome: '',
+    igreja_id: '',
     endereco_rua: '',
     endereco_numero: '',
     endereco_complemento: '',
@@ -39,8 +51,72 @@ export default function FamiliasPage() {
   })
   const [buscaMembro, setBuscaMembro] = useState('')
 
-  const fetchFamilias = useCallback(async () => {
+  // Modal "Adicionar familiar" — cria a pessoa no banco (entra na contagem)
+  // e vincula à família. Usado pelo missionário em campo e pela secretaria.
+  const [familiarFamilia, setFamiliarFamilia] = useState<FamiliaComIgreja | null>(null)
+  const [savingFamiliar, setSavingFamiliar] = useState(false)
+  const [familiarForm, setFamiliarForm] = useState({
+    nome: '',
+    parentesco: 'Cônjuge',
+    sexo: '',
+    data_nascimento: '',
+    telefone: '',
+    tipo: 'interessado' as 'membro' | 'interessado',
+  })
+
+  // Resolve o escopo de igrejas conforme o papel (missionário = igrejas do campo).
+  useEffect(() => {
     if (!profile) return
+    let cancelled = false
+    async function resolveEscopo() {
+      try {
+        if (profile!.papel === 'admin') {
+          const { data } = await supabase.from('igrejas').select('id, nome').order('nome')
+          if (!cancelled) setIgrejasEscopo(data && data.length > 0 ? data : null)
+          return
+        }
+        if (profile!.papel === 'admin_uniao' || profile!.papel === 'admin_associacao') {
+          const col = profile!.papel === 'admin_uniao' ? 'uniao_id' : 'associacao_id'
+          const val = profile!.papel === 'admin_uniao' ? profile!.uniao_id : profile!.associacao_id
+          const { data } = await supabase.from('igrejas').select('id, nome').eq(col, val!).order('nome')
+          if (!cancelled) setIgrejasEscopo(data || [])
+          return
+        }
+        if (profile!.papel === 'missionario') {
+          const { data: miss } = await supabase
+            .from('missionarios')
+            .select('igrejas_responsavel')
+            .eq('usuario_id', profile!.id)
+            .maybeSingle()
+          const ids: string[] = miss?.igrejas_responsavel || []
+          if (ids.length === 0) {
+            if (!cancelled) setIgrejasEscopo([])
+            return
+          }
+          const { data } = await supabase.from('igrejas').select('id, nome').in('id', ids).order('nome')
+          if (!cancelled) setIgrejasEscopo(data || [])
+          return
+        }
+        // Papéis de igreja (secretario etc.)
+        if (profile!.igreja_id) {
+          const { data } = await supabase.from('igrejas').select('id, nome').eq('id', profile!.igreja_id)
+          if (!cancelled) setIgrejasEscopo(data || [])
+        } else {
+          if (!cancelled) setIgrejasEscopo([])
+        }
+      } catch (err) {
+        console.error('Erro ao resolver escopo de igrejas:', err)
+        if (!cancelled) setIgrejasEscopo([])
+      }
+    }
+    resolveEscopo()
+    return () => { cancelled = true }
+  }, [profile])
+
+  const igrejaIds = igrejasEscopo === null ? null : (igrejasEscopo || []).map((i) => i.id)
+
+  const fetchFamilias = useCallback(async () => {
+    if (!profile || igrejasEscopo === undefined) return
     setLoading(true)
     try {
       let query = supabase
@@ -48,33 +124,13 @@ export default function FamiliasPage() {
         .select('*, igreja:igrejas(nome)')
         .order('nome')
 
-      // Filtro hierarquico por escopo do usuario
-      if (profile.papel === 'admin') {
-        // admin ve tudo
-      } else if (profile.papel === 'admin_uniao') {
-        const { data: igrejas } = await supabase
-          .from('igrejas')
-          .select('id')
-          .eq('uniao_id', profile.uniao_id!)
-        const igrejaIds = igrejas?.map((i) => i.id) || []
-        if (igrejaIds.length > 0) {
-          query = query.in('igreja_id', igrejaIds)
-        } else {
-          query = query.eq('igreja_id', 'none')
+      if (igrejaIds !== null) {
+        if (igrejaIds.length === 0) {
+          setFamilias([])
+          setLoading(false)
+          return
         }
-      } else if (profile.papel === 'admin_associacao') {
-        const { data: igrejas } = await supabase
-          .from('igrejas')
-          .select('id')
-          .eq('associacao_id', profile.associacao_id!)
-        const igrejaIds = igrejas?.map((i) => i.id) || []
-        if (igrejaIds.length > 0) {
-          query = query.in('igreja_id', igrejaIds)
-        } else {
-          query = query.eq('igreja_id', 'none')
-        }
-      } else {
-        query = query.eq('igreja_id', profile.igreja_id!)
+        query = query.in('igreja_id', igrejaIds)
       }
 
       if (busca.trim()) {
@@ -89,10 +145,11 @@ export default function FamiliasPage() {
     } finally {
       setLoading(false)
     }
-  }, [profile, busca])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, busca, igrejasEscopo])
 
   const fetchPessoas = useCallback(async () => {
-    if (!profile) return
+    if (!profile || igrejasEscopo === undefined) return
     try {
       let query = supabase
         .from('pessoas')
@@ -100,8 +157,12 @@ export default function FamiliasPage() {
         .eq('situacao', 'ativo')
         .order('nome')
 
-      if (profile.papel !== 'admin') {
-        query = query.eq('igreja_id', profile.igreja_id!)
+      if (igrejaIds !== null) {
+        if (igrejaIds.length === 0) {
+          setPessoasDisponiveis([])
+          return
+        }
+        query = query.in('igreja_id', igrejaIds)
       }
 
       const { data, error } = await query
@@ -110,7 +171,8 @@ export default function FamiliasPage() {
     } catch (err) {
       console.error('Erro ao buscar pessoas:', err)
     }
-  }, [profile])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, igrejasEscopo])
 
   useEffect(() => {
     fetchFamilias()
@@ -144,10 +206,14 @@ export default function FamiliasPage() {
     fetchFamilias()
   }
 
+  const defaultIgrejaId = profile?.igreja_id
+    || ((igrejasEscopo && igrejasEscopo.length === 1) ? igrejasEscopo[0].id : '')
+
   function openCreateModal() {
     setEditingId(null)
     setForm({
       nome: '',
+      igreja_id: defaultIgrejaId || '',
       endereco_rua: '',
       endereco_numero: '',
       endereco_complemento: '',
@@ -165,6 +231,7 @@ export default function FamiliasPage() {
     setEditingId(familia.id)
     setForm({
       nome: familia.nome || '',
+      igreja_id: familia.igreja_id || defaultIgrejaId || '',
       endereco_rua: familia.endereco_rua || '',
       endereco_numero: familia.endereco_numero || '',
       endereco_complemento: familia.endereco_complemento || '',
@@ -189,11 +256,15 @@ export default function FamiliasPage() {
 
   async function handleSave() {
     if (!profile || !form.nome.trim()) return
+    if (!form.igreja_id) {
+      alert('Selecione a igreja da família.')
+      return
+    }
     setSaving(true)
     try {
       const payload = {
         nome: form.nome.trim(),
-        igreja_id: profile.igreja_id,
+        igreja_id: form.igreja_id,
         endereco_rua: form.endereco_rua || null,
         endereco_numero: form.endereco_numero || null,
         endereco_complemento: form.endereco_complemento || null,
@@ -210,11 +281,18 @@ export default function FamiliasPage() {
           .update(payload)
           .eq('id', editingId)
         if (error) throw error
+        // Mantém pessoas.familia_id em sincronia com o array da família
+        await supabase.from('pessoas').update({ familia_id: editingId }).in('id', form.membros)
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('familias')
           .insert(payload)
+          .select('id')
+          .single()
         if (error) throw error
+        if (data?.id && form.membros.length > 0) {
+          await supabase.from('pessoas').update({ familia_id: data.id }).in('id', form.membros)
+        }
       }
 
       setShowModal(false)
@@ -239,6 +317,69 @@ export default function FamiliasPage() {
     }
   }
 
+  function openFamiliarModal(familia: FamiliaComIgreja) {
+    setFamiliarForm({
+      nome: '',
+      parentesco: 'Cônjuge',
+      sexo: '',
+      data_nascimento: '',
+      telefone: '',
+      tipo: 'interessado',
+    })
+    setFamiliarFamilia(familia)
+  }
+
+  async function handleSaveFamiliar() {
+    if (!familiarFamilia || !familiarForm.nome.trim()) return
+    setSavingFamiliar(true)
+    try {
+      const payload: Record<string, unknown> = {
+        nome: familiarForm.nome.trim(),
+        tipo: familiarForm.tipo,
+        situacao: 'ativo',
+        ativo: true,
+        sexo: familiarForm.sexo || null,
+        data_nascimento: familiarForm.data_nascimento || null,
+        telefone: familiarForm.telefone || null,
+        igreja_id: familiarFamilia.igreja_id,
+        familia_id: familiarFamilia.id,
+        parentesco: familiarForm.parentesco,
+        origem_cadastro: profile?.papel === 'missionario' ? 'missionario' : 'secretaria',
+      }
+      let { data: pessoa, error } = await supabase
+        .from('pessoas')
+        .insert(payload)
+        .select('id, nome')
+        .single()
+      // Fallback enquanto a migration 039 (coluna origem_cadastro) não é aplicada
+      if (error && `${error.message}`.includes('origem_cadastro')) {
+        delete payload.origem_cadastro
+        const retry = await supabase.from('pessoas').insert(payload).select('id, nome').single()
+        pessoa = retry.data
+        error = retry.error
+      }
+      if (error || !pessoa) throw error || new Error('Insert sem retorno')
+
+      // Vincula ao array de membros da família
+      const novosMembros = [...(familiarFamilia.membros || []), pessoa.id]
+      const { error: famErr } = await supabase
+        .from('familias')
+        .update({ membros: novosMembros })
+        .eq('id', familiarFamilia.id)
+      if (famErr) throw famErr
+
+      setMembrosNomes((prev) => ({ ...prev, [pessoa.id]: pessoa.nome }))
+      setFamiliarFamilia(null)
+      fetchFamilias()
+      fetchPessoas()
+    } catch (err) {
+      console.error('Erro ao adicionar familiar:', err)
+      alert('Erro ao adicionar familiar. Verifique os dados e tente novamente.')
+    } finally {
+      setSavingFamiliar(false)
+    }
+  }
+
   function formatEndereco(f: FamiliaComIgreja): string {
     const parts = [
       f.endereco_rua,
@@ -253,6 +394,8 @@ export default function FamiliasPage() {
   const pessoasFiltradas = pessoasDisponiveis.filter((p) =>
     buscaMembro.trim() === '' || p.nome.toLowerCase().includes(buscaMembro.toLowerCase())
   )
+
+  const mostraSelectIgreja = (igrejasEscopo === null) || ((igrejasEscopo || []).length > 1)
 
   return (
     <div className="space-y-6">
@@ -331,6 +474,13 @@ export default function FamiliasPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => openFamiliarModal(f)}
+                            className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
+                            title="Adicionar familiar"
+                          >
+                            <FiUserPlus className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => setExpandedId(expandedId === f.id ? null : f.id)}
                             className="p-1.5 rounded hover:bg-gray-100 text-gray-400 hover:text-primary-600"
                             title="Ver membros"
@@ -366,23 +516,34 @@ export default function FamiliasPage() {
                   const familia = familias.find((f) => f.id === expandedId)
                   if (!familia) return null
                   const ids = familia.membros || []
-                  if (ids.length === 0) return <p className="text-sm text-gray-400">Nenhum membro vinculado a esta família.</p>
                   return (
                     <div>
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                        Membros da família {familia.nome} ({ids.length})
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {ids.map((id) => (
-                          <span
-                            key={id}
-                            className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700"
-                          >
-                            <FiUsers className="w-3 h-3 text-gray-400" />
-                            {membrosNomes[id] || 'Carregando...'}
-                          </span>
-                        ))}
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-gray-700">
+                          Membros da família {familia.nome} ({ids.length})
+                        </h4>
+                        <button
+                          onClick={() => openFamiliarModal(familia)}
+                          className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-100"
+                        >
+                          <FiUserPlus className="w-3 h-3" /> Adicionar familiar
+                        </button>
                       </div>
+                      {ids.length === 0 ? (
+                        <p className="text-sm text-gray-400">Nenhum membro vinculado a esta família.</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {ids.map((id) => (
+                            <span
+                              key={id}
+                              className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700"
+                            >
+                              <FiUsers className="w-3 h-3 text-gray-400" />
+                              {membrosNomes[id] || 'Carregando...'}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )
                 })()}
@@ -405,12 +566,15 @@ export default function FamiliasPage() {
                       <FiUsers className="w-3 h-3" /> {f.membros?.length || 0}
                     </span>
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => setExpandedId(expandedId === f.id ? null : f.id)}
                       className="text-xs text-primary-600 hover:underline"
                     >
                       {expandedId === f.id ? 'Ocultar membros' : 'Ver membros'}
+                    </button>
+                    <button onClick={() => openFamiliarModal(f)} className="text-xs text-emerald-600 hover:underline">
+                      + Familiar
                     </button>
                     <button onClick={() => openEditModal(f)} className="text-xs text-gray-500 hover:underline ml-auto">
                       Editar
@@ -467,6 +631,23 @@ export default function FamiliasPage() {
                   placeholder="Ex: Família Silva"
                 />
               </div>
+
+              {/* Igreja */}
+              {mostraSelectIgreja && (
+                <div>
+                  <label className="label-field">Igreja *</label>
+                  <select
+                    value={form.igreja_id}
+                    onChange={(e) => setForm({ ...form, igreja_id: e.target.value })}
+                    className="input-field"
+                  >
+                    <option value="">Selecione a igreja...</option>
+                    {(igrejasEscopo || []).map((ig) => (
+                      <option key={ig.id} value={ig.id}>{ig.nome}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Endereço */}
               <div>
@@ -582,6 +763,107 @@ export default function FamiliasPage() {
                 className="btn-primary disabled:opacity-50"
               >
                 {saving ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Criar Família'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Adicionar Familiar */}
+      {familiarFamilia && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">Adicionar Familiar</h2>
+                <p className="text-xs text-gray-500">
+                  Família {familiarFamilia.nome} · {familiarFamilia.igreja?.nome || 'igreja da família'}
+                </p>
+              </div>
+              <button onClick={() => setFamiliarFamilia(null)} className="text-gray-400 hover:text-gray-600">
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-4 space-y-4">
+              <p className="text-xs text-gray-500 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                A pessoa será cadastrada no banco de membros/interessados da igreja e passa a contar
+                nas estatísticas, mesmo sem ter respondido o censo.
+              </p>
+              <div>
+                <label className="label-field">Nome completo *</label>
+                <input
+                  value={familiarForm.nome}
+                  onChange={(e) => setFamiliarForm({ ...familiarForm, nome: e.target.value })}
+                  className="input-field"
+                  placeholder="Nome do familiar"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label-field">Parentesco *</label>
+                  <select
+                    value={familiarForm.parentesco}
+                    onChange={(e) => setFamiliarForm({ ...familiarForm, parentesco: e.target.value })}
+                    className="input-field"
+                  >
+                    {PARENTESCO_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="label-field">Vínculo *</label>
+                  <select
+                    value={familiarForm.tipo}
+                    onChange={(e) => setFamiliarForm({ ...familiarForm, tipo: e.target.value as 'membro' | 'interessado' })}
+                    className="input-field"
+                  >
+                    <option value="interessado">Interessado</option>
+                    <option value="membro">Membro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label-field">Sexo</label>
+                  <select
+                    value={familiarForm.sexo}
+                    onChange={(e) => setFamiliarForm({ ...familiarForm, sexo: e.target.value })}
+                    className="input-field"
+                  >
+                    <option value="">Não informado</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label-field">Nascimento</label>
+                  <input
+                    type="date"
+                    value={familiarForm.data_nascimento}
+                    onChange={(e) => setFamiliarForm({ ...familiarForm, data_nascimento: e.target.value })}
+                    className="input-field"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="label-field">Telefone / WhatsApp</label>
+                  <input
+                    value={familiarForm.telefone}
+                    onChange={(e) => setFamiliarForm({ ...familiarForm, telefone: e.target.value })}
+                    className="input-field"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+              <button onClick={() => setFamiliarFamilia(null)} className="btn-secondary">
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveFamiliar}
+                disabled={savingFamiliar || !familiarForm.nome.trim()}
+                className="btn-primary disabled:opacity-50"
+              >
+                {savingFamiliar ? 'Salvando...' : 'Adicionar Familiar'}
               </button>
             </div>
           </div>

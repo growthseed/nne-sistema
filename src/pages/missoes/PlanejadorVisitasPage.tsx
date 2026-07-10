@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import type { Pessoa, Igreja, PlanoVisita } from '@/types'
 import { generateGoogleCalendarUrl } from '@/lib/projections'
-import { FiFilter, FiMapPin, FiCalendar, FiSave, FiChevronUp, FiChevronDown, FiX, FiGift, FiUserPlus, FiUserX, FiUsers, FiSearch } from 'react-icons/fi'
+import { computeSugestoesVisita, type SugestaoVisita } from '@/lib/visitas-sugeridas'
+import { FiFilter, FiMapPin, FiCalendar, FiSave, FiChevronUp, FiChevronDown, FiX, FiGift, FiUserPlus, FiUserX, FiUsers, FiSearch, FiZap } from 'react-icons/fi'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
@@ -70,11 +71,42 @@ export default function PlanejadorVisitasPage() {
   // Existing plans
   const [planosExistentes, setPlanosExistentes] = useState<PlanoVisita[]>([])
 
+  // Sugestões de visitação (mapper sugestivo)
+  const [sugestoes, setSugestoes] = useState<SugestaoVisita[]>([])
+  const [loadingSugestoes, setLoadingSugestoes] = useState(false)
+  const [sugestoesGeradas, setSugestoesGeradas] = useState(false)
+
+  // Escopo do missionário: igrejas do campo (igrejas_responsavel).
+  // null = escopo ainda não resolvido ou papel não-missionário.
+  const [missIgrejaIds, setMissIgrejaIds] = useState<string[] | null>(null)
+
+  useEffect(() => {
+    if (!profile || profile.papel !== 'missionario') return
+    supabase
+      .from('missionarios')
+      .select('igrejas_responsavel')
+      .eq('usuario_id', profile.id)
+      .maybeSingle()
+      .then(({ data }) => setMissIgrejaIds(data?.igrejas_responsavel || []))
+  }, [profile])
+
+  // Aplica o filtro hierárquico padrão em queries de pessoas/igrejas.
+  function applyScope<T extends { eq: any; in: any }>(query: T, column: string): T {
+    if (!profile) return query
+    if (profile.papel === 'admin') return query
+    if (profile.papel === 'admin_uniao') return query.eq('uniao_id', profile.uniao_id!)
+    if (profile.papel === 'admin_associacao') return query.eq('associacao_id', profile.associacao_id!)
+    if (profile.papel === 'missionario') return query.in(column, missIgrejaIds || [])
+    return query.eq(column, profile.igreja_id!)
+  }
+
   useEffect(() => {
     if (profile) {
       fetchData()
     }
-  }, [profile])
+    // Recarrega quando o escopo do missionário resolve
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, missIgrejaIds])
 
   async function fetchData() {
     setLoading(true)
@@ -102,13 +134,7 @@ export default function PlanejadorVisitasPage() {
         .order('nome')
         .limit(50)
 
-      if (profile.papel === 'admin_uniao') {
-        query = query.eq('uniao_id', profile.uniao_id!)
-      } else if (profile.papel === 'admin_associacao') {
-        query = query.eq('associacao_id', profile.associacao_id!)
-      } else if (profile.papel !== 'admin') {
-        query = query.eq('igreja_id', profile.igreja_id!)
-      }
+      query = applyScope(query, 'igreja_id')
 
       const { data, error } = await query
       if (error) {
@@ -139,13 +165,7 @@ export default function PlanejadorVisitasPage() {
       .eq('ativo', true)
       .order('nome')
 
-    if (profile.papel === 'admin_uniao') {
-      query = query.eq('uniao_id', profile.uniao_id!)
-    } else if (profile.papel === 'admin_associacao') {
-      query = query.eq('associacao_id', profile.associacao_id!)
-    } else if (profile.papel !== 'admin') {
-      query = query.eq('id', profile.igreja_id!)
-    }
+    query = applyScope(query, 'id')
 
     const { data, error } = await query
     if (error) {
@@ -163,7 +183,10 @@ export default function PlanejadorVisitasPage() {
       .order('created_at', { ascending: false })
       .limit(10)
 
-    if (profile.papel !== 'admin') {
+    if (profile.papel === 'missionario') {
+      // Missionário vê os próprios planos (pode cobrir várias igrejas)
+      query = query.eq('visitador_id', profile.id)
+    } else if (profile.papel !== 'admin') {
       query = query.eq('igreja_id', profile.igreja_id!)
     }
 
@@ -195,9 +218,7 @@ export default function PlanejadorVisitasPage() {
       let query = supabase.from('pessoas').select('*').order('nome').limit(100)
 
       // Scope filter
-      if (profile.papel === 'admin_uniao') query = query.eq('uniao_id', profile.uniao_id!)
-      else if (profile.papel === 'admin_associacao') query = query.eq('associacao_id', profile.associacao_id!)
-      else if (profile.papel !== 'admin') query = query.eq('igreja_id', profile.igreja_id!)
+      query = applyScope(query, 'igreja_id')
 
       if (filter === 'aniversariantes') {
         const currentMonth = new Date().getMonth() + 1
@@ -226,6 +247,40 @@ export default function PlanejadorVisitasPage() {
       }
     } finally {
       setSearching(false)
+    }
+  }
+
+  // Mapper sugestivo: puxa o universo de pessoas do escopo e ranqueia
+  // por sinais de prioridade (interessado, inativo, sem contato, aniversário,
+  // cadastro recente, família não mapeada).
+  async function gerarSugestoes() {
+    if (!profile) return
+    setLoadingSugestoes(true)
+    try {
+      let query = supabase
+        .from('pessoas')
+        .select('*')
+        .limit(1000)
+      query = applyScope(query, 'igreja_id')
+      if (filtroIgrejaId) query = query.eq('igreja_id', filtroIgrejaId)
+
+      const { data, error } = await query
+      if (error) throw error
+
+      const ranked = computeSugestoesVisita(data || [])
+      setSugestoes(ranked)
+      setSugestoesGeradas(true)
+      // Injeta as pessoas sugeridas na lista/mapa (dedup por id)
+      setPessoas(prev => {
+        const map = new Map(prev.map(p => [p.id, p]))
+        ranked.forEach(s => map.set(s.pessoa.id, s.pessoa))
+        return [...map.values()]
+      })
+    } catch (err) {
+      console.error('Erro ao gerar sugestões:', err)
+      alert('Erro ao gerar sugestões de visita.')
+    } finally {
+      setLoadingSugestoes(false)
     }
   }
 
@@ -321,7 +376,7 @@ export default function PlanejadorVisitasPage() {
     if (!profile || orderedSelected.length === 0) return
     setSaving(true)
     try {
-      const igrejaId = filtroIgrejaId || profile.igreja_id
+      const igrejaId = filtroIgrejaId || profile.igreja_id || (missIgrejaIds && missIgrejaIds[0]) || null
       const plano = {
         titulo: `Plano de Visitas - ${new Date().toLocaleDateString('pt-BR')}`,
         data: dataInicio,
@@ -411,16 +466,84 @@ export default function PlanejadorVisitasPage() {
             {selectedIds.size > 0 && ` | ${selectedIds.size} selecionada${selectedIds.size !== 1 ? 's' : ''}`}
           </p>
         </div>
-        {selectedIds.size > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            className="btn-primary inline-flex items-center gap-2 w-fit"
-            onClick={() => setShowPlanBuilder(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-50 w-fit"
+            onClick={gerarSugestoes}
+            disabled={loadingSugestoes}
           >
-            <FiMapPin className="w-4 h-4" />
-            Criar Plano ({selectedIds.size})
+            <FiZap className="w-4 h-4" />
+            {loadingSugestoes ? 'Analisando...' : 'Sugerir visitas'}
           </button>
-        )}
+          {selectedIds.size > 0 && (
+            <button
+              className="btn-primary inline-flex items-center gap-2 w-fit"
+              onClick={() => setShowPlanBuilder(true)}
+            >
+              <FiMapPin className="w-4 h-4" />
+              Criar Plano ({selectedIds.size})
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Sugestões de visitação */}
+      {sugestoesGeradas && (
+        <div className="card border border-violet-200">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-semibold text-gray-800 inline-flex items-center gap-2">
+              <FiZap className="w-4 h-4 text-violet-600" />
+              Sugestões de visitação ({sugestoes.length})
+            </h2>
+            <button onClick={() => { setSugestoes([]); setSugestoesGeradas(false) }} className="text-xs text-gray-400 hover:text-gray-600">
+              Ocultar
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            Ranqueadas por prioridade: interessados em acompanhamento, membros inativos, tempo sem contato,
+            aniversariantes do mês, cadastros recentes e famílias não mapeadas. Clique para adicionar ao plano.
+          </p>
+          {sugestoes.length === 0 ? (
+            <p className="text-sm text-gray-400 italic">Nenhuma sugestão no escopo atual — todos os sinais estão em dia.</p>
+          ) : (
+            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+              {sugestoes.map(s => {
+                const isSelected = selectedIds.has(s.pessoa.id)
+                return (
+                  <div
+                    key={s.pessoa.id}
+                    onClick={() => toggleSelectPessoa(s.pessoa)}
+                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      isSelected ? 'border-primary-400 bg-primary-50/40 ring-1 ring-primary-300' : 'border-gray-100 bg-gray-50 hover:border-violet-200 hover:bg-violet-50/40'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold shrink-0">
+                      {s.score}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-gray-800 truncate">{s.pessoa.nome}</span>
+                        {getTipoBadge(s.pessoa)}
+                        {s.pessoa.coordenadas_lat && <span className="text-[10px] text-green-600 font-medium">GPS</span>}
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {s.motivos.map(m => (
+                          <span key={m} className="text-[10px] bg-white border border-violet-100 text-violet-700 rounded-full px-2 py-0.5">
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <span className={`text-xs shrink-0 mt-1 ${isSelected ? 'text-primary-600 font-medium' : 'text-gray-400'}`}>
+                      {isSelected ? 'No plano' : '+ adicionar'}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filter Panel */}
       <div className="card">
@@ -504,7 +627,7 @@ export default function PlanejadorVisitasPage() {
             </select>
           </div>
           <div>
-            <label className="label-field">Data Inicio</label>
+            <label className="label-field">Data Início</label>
             <input
               type="date"
               value={dataInicio}
@@ -545,7 +668,7 @@ export default function PlanejadorVisitasPage() {
                   onClick={clearSelection}
                   className="text-xs text-red-500 hover:underline"
                 >
-                  Limpar selecao
+                  Limpar seleção
                 </button>
               )}
             </div>
@@ -754,7 +877,7 @@ export default function PlanejadorVisitasPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate">{pessoa.nome}</p>
                     <p className="text-xs text-gray-500 truncate">
-                      {[pessoa.endereco_rua, pessoa.endereco_bairro, pessoa.endereco_cidade].filter(Boolean).join(', ') || 'Sem endereco'}
+                      {[pessoa.endereco_rua, pessoa.endereco_bairro, pessoa.endereco_cidade].filter(Boolean).join(', ') || 'Sem endereço'}
                     </p>
                   </div>
 
@@ -834,7 +957,7 @@ export default function PlanejadorVisitasPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 text-left text-gray-500 text-xs uppercase tracking-wider">
-                  <th className="px-4 py-3">Titulo</th>
+                  <th className="px-4 py-3">Título</th>
                   <th className="px-4 py-3">Data</th>
                   <th className="px-4 py-3 text-center">Paradas</th>
                   <th className="px-4 py-3 text-center">Status</th>

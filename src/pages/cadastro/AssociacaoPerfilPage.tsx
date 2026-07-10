@@ -361,18 +361,30 @@ function MatrizQuadrante({ items }: { items: ReturnType<typeof importanciaXDesem
   //   alto × alto = Manter (top-right)
   //   baixo × baixo = Baixa relevância (bottom-left)
   //   baixo × alto = Over-invest (bottom-right)
+  // Sem slice: ocultar temas dava a falsa impressão de que não existiam.
   const buckets = {
-    agir_agora: items.filter(i => i.quadrante === 'agir_agora').slice(0, 6),
-    manter: items.filter(i => i.quadrante === 'manter').slice(0, 6),
-    over_invest: items.filter(i => i.quadrante === 'over_invest').slice(0, 6),
-    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia').slice(0, 6),
+    agir_agora: items.filter(i => i.quadrante === 'agir_agora'),
+    manter: items.filter(i => i.quadrante === 'manter'),
+    over_invest: items.filter(i => i.quadrante === 'over_invest'),
+    baixa_relevancia: items.filter(i => i.quadrante === 'baixa_relevancia'),
+    sem_dados: items.filter(i => i.quadrante === 'sem_dados'),
   }
   return (
-    <div className="grid grid-cols-2 gap-3 max-w-3xl mx-auto">
-      <Quadrant titulo="Agir agora" subtitulo="Alta demanda · Baixo desempenho" cor="red" items={buckets.agir_agora} />
-      <Quadrant titulo="Manter" subtitulo="Alta demanda · Bom desempenho" cor="green" items={buckets.manter} />
-      <Quadrant titulo="Baixa relevância" subtitulo="Baixa demanda · Baixo desempenho" cor="gray" items={buckets.baixa_relevancia} />
-      <Quadrant titulo="Já investido" subtitulo="Baixa demanda · Bom desempenho" cor="blue" items={buckets.over_invest} />
+    <div className="space-y-3 max-w-3xl mx-auto">
+      <div className="grid grid-cols-2 gap-3">
+        <Quadrant titulo="Agir agora" subtitulo="Alta demanda · Baixo desempenho" cor="red" items={buckets.agir_agora} />
+        <Quadrant titulo="Manter" subtitulo="Alta demanda · Bom desempenho" cor="green" items={buckets.manter} />
+        <Quadrant titulo="Baixa relevância" subtitulo="Baixa demanda · Baixo desempenho" cor="gray" items={buckets.baixa_relevancia} />
+        <Quadrant titulo="Já investido" subtitulo="Baixa demanda · Bom desempenho" cor="blue" items={buckets.over_invest} />
+      </div>
+      {buckets.sem_dados.length > 0 && (
+        <Quadrant
+          titulo="Demanda sem área avaliada"
+          subtitulo="Prioridades sem nota de satisfação correspondente — avaliar qualitativamente"
+          cor="amber"
+          items={buckets.sem_dados}
+        />
+      )}
     </div>
   )
 }
@@ -380,14 +392,15 @@ function MatrizQuadrante({ items }: { items: ReturnType<typeof importanciaXDesem
 function Quadrant({ titulo, subtitulo, cor, items }: {
   titulo: string
   subtitulo: string
-  cor: 'red' | 'green' | 'gray' | 'blue'
-  items: { prioridade: string; importancia: number; desempenho: number | null }[]
+  cor: 'red' | 'green' | 'gray' | 'blue' | 'amber'
+  items: { prioridade: string; importancia: number; desempenho: number | null; areas?: string[] }[]
 }) {
   const palette = {
     red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', dot: 'bg-red-500' },
     green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', dot: 'bg-green-500' },
     gray: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600', dot: 'bg-gray-400' },
     blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', dot: 'bg-blue-500' },
+    amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', dot: 'bg-amber-500' },
   }[cor]
   return (
     <div className={`rounded-xl border ${palette.border} ${palette.bg} p-4`}>
@@ -400,8 +413,13 @@ function Quadrant({ titulo, subtitulo, cor, items }: {
           {items.map(it => (
             <li key={it.prioridade} className="flex items-start gap-2 text-xs">
               <span className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${palette.dot}`} />
-              <span className="flex-1 text-gray-700">{it.prioridade}</span>
-              <span className="text-gray-400 tabular-nums shrink-0">{it.importancia}% · {it.desempenho ?? '—'}</span>
+              <span className="flex-1 text-gray-700">
+                {it.prioridade}
+                {(it.areas?.length ?? 0) > 0 && (
+                  <span className="block text-[10px] text-gray-400">nota via: {it.areas!.join(', ')}</span>
+                )}
+              </span>
+              <span className="text-gray-400 tabular-nums shrink-0">{it.importancia}%{it.desempenho !== null ? ` · ${it.desempenho}` : ''}</span>
             </li>
           ))}
         </ul>

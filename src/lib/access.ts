@@ -2,11 +2,16 @@ import type { UserRole } from '@/types'
 
 export const ADMIN_ROLES = ['admin', 'admin_uniao', 'admin_associacao'] as const satisfies readonly UserRole[]
 export const SECRETARIA_ROLES = [...ADMIN_ROLES, 'secretario_igreja'] as const satisfies readonly UserRole[]
+export const CENSO_MANAGEMENT_ROLES = [...ADMIN_ROLES, 'secretario_igreja', 'missionario'] as const satisfies readonly UserRole[]
 export const FINANCEIRO_ROLES = [...ADMIN_ROLES, 'tesoureiro'] as const satisfies readonly UserRole[]
 export const ESCOLA_BIBLICA_ROLES = [...ADMIN_ROLES, 'secretario_igreja', 'diretor_es', 'professor_es'] as const satisfies readonly UserRole[]
 export const ESCOLA_SABATINA_ROLES = [...ADMIN_ROLES, 'diretor_es', 'professor_es', 'secretario_es'] as const satisfies readonly UserRole[]
-export const MISSOES_DASHBOARD_ROLES = [...ADMIN_ROLES, 'secretario_igreja', 'membro'] as const satisfies readonly UserRole[]
-export const MISSOES_PLANNER_ROLES = [...ADMIN_ROLES, 'secretario_igreja'] as const satisfies readonly UserRole[]
+export const MISSOES_DASHBOARD_ROLES = [...ADMIN_ROLES, 'secretario_igreja', 'membro', 'missionario'] as const satisfies readonly UserRole[]
+export const MISSOES_PLANNER_ROLES = [...ADMIN_ROLES, 'secretario_igreja', 'missionario'] as const satisfies readonly UserRole[]
+// Rotas onde o missionário opera o próprio trabalho (painel, relatórios).
+export const MISSIONARIO_SELF_ROLES = [...ADMIN_ROLES, 'missionario'] as const satisfies readonly UserRole[]
+// Famílias: secretaria + missionário (cadastro complementar de familiares em campo).
+export const FAMILIAS_ROLES = [...SECRETARIA_ROLES, 'missionario'] as const satisfies readonly UserRole[]
 export const REPORT_ROLES = [...ADMIN_ROLES, 'secretario_igreja', 'tesoureiro'] as const satisfies readonly UserRole[]
 export const MAP_ROLES = [...ADMIN_ROLES, 'secretario_igreja'] as const satisfies readonly UserRole[]
 
@@ -114,11 +119,11 @@ interface SidebarGroup {
 export const ACCESS_RULES: Record<AccessRuleKey, AccessRule> = {
   dashboard: { label: 'Painel Geral', module: 'inicio', roles: null },
   cadastro: { label: 'Cadastro', module: 'secretaria', roles: SECRETARIA_ROLES },
-  cadastro_dashboard: { label: 'Respostas do Censo', module: 'admin', roles: ADMIN_ROLES },
+  cadastro_dashboard: { label: 'Respostas do Censo', module: 'admin', roles: CENSO_MANAGEMENT_ROLES },
   membros: { label: 'Membros', module: 'secretaria', roles: SECRETARIA_ROLES },
   membro_detalhe: { label: 'Detalhe do Membro', module: 'secretaria', roles: SECRETARIA_ROLES },
   membro_cartao: { label: 'Cartao de Membro', module: 'secretaria', roles: SECRETARIA_ROLES },
-  familias: { label: 'Familias', module: 'secretaria', roles: SECRETARIA_ROLES },
+  familias: { label: 'Familias', module: 'secretaria', roles: FAMILIAS_ROLES },
   secretaria: { label: 'Painel da Secretaria', module: 'secretaria', roles: SECRETARIA_ROLES },
   secretaria_contagem: { label: 'Contagem Mensal', module: 'secretaria', roles: SECRETARIA_ROLES },
   secretaria_transferencias: { label: 'Transferencias', module: 'secretaria', roles: SECRETARIA_ROLES },
@@ -143,11 +148,11 @@ export const ACCESS_RULES: Record<AccessRuleKey, AccessRule> = {
   missoes_inventario: { label: 'Inventario Missionario', module: 'missoes', roles: ADMIN_ROLES },
   missoes_detalhe: { label: 'Detalhe do Missionario', module: 'missoes', roles: ADMIN_ROLES },
   missoes_ficha_campo: { label: 'Ficha de Campo', module: 'missoes', roles: ADMIN_ROLES },
-  missoes_relatorio: { label: 'Relatorio Missionario', module: 'missoes', roles: ADMIN_ROLES },
-  missoes_meu_painel: { label: 'Meu Painel Missionario', module: 'missoes', roles: ADMIN_ROLES },
+  missoes_relatorio: { label: 'Relatorio Missionario', module: 'missoes', roles: MISSIONARIO_SELF_ROLES },
+  missoes_meu_painel: { label: 'Meu Painel Missionario', module: 'missoes', roles: MISSIONARIO_SELF_ROLES },
   missoes_metas: { label: 'Metas e KPIs', module: 'missoes', roles: ADMIN_ROLES },
   missoes_planejador: { label: 'Planejador de Visitas', module: 'missoes', roles: MISSOES_PLANNER_ROLES },
-  missoes_relatorio_campo: { label: 'Relatorio de Campo', module: 'missoes', roles: ADMIN_ROLES },
+  missoes_relatorio_campo: { label: 'Relatorio de Campo', module: 'missoes', roles: MISSIONARIO_SELF_ROLES },
   missoes_diagnostico: { label: 'Diagnostico', module: 'missoes', roles: ADMIN_ROLES },
   missoes_painel_geral: { label: 'Painel Geral Missionario', module: 'missoes', roles: ADMIN_ROLES },
   mapas: { label: 'Mapa Territorial', module: 'inteligencia', roles: MAP_ROLES },
